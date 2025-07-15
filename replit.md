@@ -4,6 +4,15 @@
 
 Stumble Lele is an interactive AI companion application designed for children, featuring a 7-year-old AI friend named Lele who speaks Portuguese. The application provides a safe, engaging environment for children to chat, play games, and interact with an AI companion that remembers their conversations and adapts to their personality.
 
+## Recent Changes
+
+### Voice Improvements (July 15, 2025)
+- Fixed Brazilian Portuguese voice synthesis to use little girl voice characteristics
+- Increased pitch to 1.8 for authentic child-like voice
+- Added priority voice selection for Brazilian Portuguese female voices
+- Improved voice loading and selection mechanism
+- Fixed OpenAI API JSON response format requirement by adding "json" keyword to prompts
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
