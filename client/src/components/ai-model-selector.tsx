@@ -9,21 +9,17 @@ import { Brain, Sparkles } from "lucide-react";
 
 interface AIModelSelectorProps {
   userId: number;
-  currentModel: string;
+  currentModel?: string;
 }
 
-export default function AIModelSelector({ userId, currentModel }: AIModelSelectorProps) {
+export default function AIModelSelector({ userId, currentModel = "openai" }: AIModelSelectorProps) {
   const [selectedModel, setSelectedModel] = useState(currentModel);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const updateModelMutation = useMutation({
     mutationFn: async (aiModel: string) => {
-      return await apiRequest(`/api/user/${userId}/ai-model`, {
-        method: "POST",
-        body: JSON.stringify({ aiModel }),
-        headers: { "Content-Type": "application/json" },
-      });
+      return await apiRequest("POST", `/api/user/${userId}/ai-model`, { aiModel });
     },
     onSuccess: () => {
       toast({

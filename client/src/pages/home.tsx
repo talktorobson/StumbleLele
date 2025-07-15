@@ -85,7 +85,7 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <AIModelSelector userId={userId} />
+              <AIModelSelector userId={userId} currentModel={user?.aiModel} />
               <Button
                 variant="ghost"
                 size="sm"
