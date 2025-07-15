@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { leleAI, type AIModel } from "./services/openai";
 import { insertConversationSchema, insertMemorySchema, insertGameProgressSchema } from "@shared/schema";
+import { ProgressionService } from "./services/progressionService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -241,6 +242,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(progress);
     } catch (error) {
       res.status(500).json({ message: "Erro ao buscar progresso dos jogos" });
+    }
+  });
+
+  // Get detailed game progression with levels and achievements
+  app.get("/api/game/progression/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const gameType = req.query.gameType as string;
+      
+      if (!gameType) {
+        return res.status(400).json({ message: "gameType é obrigatório" });
+      }
+      
+      // Get game history for this specific game type
+      const gameHistory = await storage.getGameProgress(userId);
+      const gameSpecificHistory = gameHistory.filter(g => g.gameType === gameType);
+      
+      // Calculate detailed progression
+      const progression = ProgressionService.calculateProgression(gameType, gameSpecificHistory);
+      
+      // Check for new achievements
+      const newAchievements = ProgressionService.checkAchievements(progression);
+      
+      // Get progress to next level
+      const nextLevelProgress = ProgressionService.getProgressToNextLevel(progression);
+      
+      // Get motivational message
+      const motivationalMessage = ProgressionService.getMotivationalMessage(progression);
+      
+      // Get difficulty recommendation
+      const difficultyRecommendation = ProgressionService.getDifficultyRecommendation(progression);
+      
+      res.json({
+        progression,
+        newAchievements,
+        nextLevelProgress,
+        motivationalMessage,
+        difficultyRecommendation
+      });
+      
+    } catch (error) {
+      console.error("Erro ao buscar progressão do jogo:", error);
+      res.status(500).json({ message: "Erro ao buscar progressão do jogo" });
+    }
+  });
+
+  // Get all progressions for all games
+  app.get("/api/game/progressions/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const gameHistory = await storage.getGameProgress(userId);
+      
+      const gameTypes = ['memory', 'words', 'math', 'emotions'];
+      const progressions = {};
+      
+      for (const gameType of gameTypes) {
+        const gameSpecificHistory = gameHistory.filter(g => g.gameType === gameType);
+        progressions[gameType] = ProgressionService.calculateProgression(gameType, gameSpecificHistory);
+      }
+      
+      res.json(progressions);
+    } catch (error) {
+      console.error("Erro ao buscar progressões:", error);
+      res.status(500).json({ message: "Erro ao buscar progressões dos jogos" });
     }
   });
 

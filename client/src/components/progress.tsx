@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Gamepad2, Heart, Smile } from "lucide-react";
+import { Trophy, Star, Gamepad2, Heart, Smile, ArrowUp, Target, Zap } from "lucide-react";
 
 interface ProgressProps {
   userId: number;
@@ -21,6 +21,10 @@ export default function Progress({ userId }: ProgressProps) {
     queryKey: ["/api/conversations", userId],
   });
 
+  const { data: progressions = {} } = useQuery({
+    queryKey: ["/api/game/progressions", userId],
+  });
+
   const calculateProgress = () => {
     const totalGames = gameProgress.length;
     const avgLevel = totalGames > 0 
@@ -36,6 +40,26 @@ export default function Progress({ userId }: ProgressProps) {
   };
 
   const progress = calculateProgress();
+
+  const getGameIcon = (gameType: string) => {
+    switch (gameType) {
+      case 'memory': return '🧠';
+      case 'words': return '📝';
+      case 'math': return '🔢';
+      case 'emotions': return '💝';
+      default: return '🎮';
+    }
+  };
+
+  const getGameName = (gameType: string) => {
+    switch (gameType) {
+      case 'memory': return 'Memória';
+      case 'words': return 'Palavras';
+      case 'math': return 'Matemática';
+      case 'emotions': return 'Emoções';
+      default: return gameType;
+    }
+  };
 
   const achievements = [
     {
@@ -82,9 +106,54 @@ export default function Progress({ userId }: ProgressProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Learning Progress */}
+          {/* Game Levels Progress */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-lg text-gray-800">Aprendizado</h4>
+            <h4 className="font-semibold text-lg text-gray-800 flex items-center">
+              <Gamepad2 className="mr-2 h-5 w-5 text-blue-500" />
+              Níveis dos Jogos
+            </h4>
+            
+            <div className="space-y-3">
+              {Object.entries(progressions).map(([gameType, progression]: [string, any]) => (
+                <div key={gameType} className="bg-gray-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <span className="text-lg mr-2">{getGameIcon(gameType)}</span>
+                      <span className="text-sm font-semibold text-gray-700">{getGameName(gameType)}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className="bg-blue-500 text-white">
+                        Nível {progression.currentLevel}
+                      </Badge>
+                      <span className="text-sm text-gray-500">{progression.gamesPlayed} jogos</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-gray-600">Progresso para nível {progression.nextLevelRequirements.level}</span>
+                    <span className="text-xs text-gray-500">{Math.round(progression.averageScore)} pts média</span>
+                  </div>
+                  
+                  <ProgressBar 
+                    value={progression.accuracy} 
+                    className="h-2" 
+                  />
+                  
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-gray-500">Precisão: {Math.round(progression.accuracy)}%</span>
+                    <span className="text-xs text-gray-500">Melhor: {progression.bestScore} pts</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skills Progress */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg text-gray-800 flex items-center">
+              <Target className="mr-2 h-5 w-5 text-green-500" />
+              Habilidades Gerais
+            </h4>
             
             <div className="space-y-3">
               <div>

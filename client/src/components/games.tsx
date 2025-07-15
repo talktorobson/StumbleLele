@@ -3,9 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Gamepad2, Brain, Spade, Calculator, Star } from "lucide-react";
+import { Gamepad2, Brain, Spade, Calculator, Star, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import MemoryGame from "./games/memory-game";
+import WordsGame from "./games/words-game";
+import MathGame from "./games/math-game";
+import EmotionGame from "./games/emotion-game";
 
 interface GamesProps {
   userId: number;
@@ -77,26 +81,60 @@ export default function Games({ userId }: GamesProps) {
       gradient: "from-teal-400 to-green-400",
       level: gameProgress.find((p: any) => p.gameType === "math")?.level || 1,
     },
+    {
+      id: "emotions",
+      name: "Jogo das Emoções",
+      description: "Explore sentimentos com a Lele!",
+      icon: Heart,
+      gradient: "from-rose-400 to-pink-400",
+      level: gameProgress.find((p: any) => p.gameType === "emotions")?.level || 1,
+    },
   ];
 
   const handleGameStart = (gameType: string) => {
     setSelectedGame(gameType);
+    setGameLevel(games.find(g => g.id === gameType)?.level || 1);
     toast({
       title: "Vamos jogar! 🎮",
       description: "A Lele está preparando o jogo para você!",
     });
-    
-    // Simulate game completion after 5 seconds
-    setTimeout(() => {
-      const score = Math.floor(Math.random() * 100) + 50;
+  };
+
+  const handleGameComplete = (score: number) => {
+    if (selectedGame) {
       saveProgressMutation.mutate({
-        gameType,
+        gameType: selectedGame,
         level: gameLevel,
         score,
       });
       setSelectedGame(null);
-    }, 5000);
+    }
   };
+
+  const handleGameExit = () => {
+    setSelectedGame(null);
+    toast({
+      title: "Até logo! 👋",
+      description: "A Lele está esperando você voltar!",
+    });
+  };
+
+  // If a game is selected, render the game component
+  if (selectedGame) {
+    switch (selectedGame) {
+      case "memory":
+        return <MemoryGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
+      case "words":
+        return <WordsGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
+      case "math":
+        return <MathGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
+      case "emotions":
+        return <EmotionGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
+      default:
+        setSelectedGame(null);
+        return null;
+    }
+  }
 
   return (
     <Card className="bg-white/95 backdrop-blur-sm shadow-xl" data-section="games">
@@ -118,18 +156,15 @@ export default function Games({ userId }: GamesProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {games.map((game) => {
             const Icon = game.icon;
-            const isPlaying = selectedGame === game.id;
             
             return (
               <div
                 key={game.id}
-                className={`bg-gradient-to-br ${game.gradient} rounded-2xl p-4 game-card-hover cursor-pointer shadow-lg ${
-                  isPlaying ? "animate-pulse" : ""
-                }`}
-                onClick={() => !isPlaying && handleGameStart(game.id)}
+                className={`bg-gradient-to-br ${game.gradient} rounded-2xl p-4 game-card-hover cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                onClick={() => handleGameStart(game.id)}
               >
                 <div className="text-center">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
@@ -143,11 +178,6 @@ export default function Games({ userId }: GamesProps) {
                       Nível {game.level}
                     </Badge>
                   </div>
-                  {isPlaying && (
-                    <div className="mt-3 text-white text-sm">
-                      A Lele está preparando...
-                    </div>
-                  )}
                 </div>
               </div>
             );

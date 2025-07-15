@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Mic, MicOff } from "lucide-react";
-import { useSpeech } from "@/hooks/use-speech";
+import { useSpeech, VoiceEmotion } from "@/hooks/use-speech";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,28 @@ export default function VoiceInput({ userId, onClose }: VoiceInputProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const getResponseEmotion = (response: string): VoiceEmotion => {
+    const lowerResponse = response.toLowerCase();
+    
+    if (lowerResponse.includes('parabéns') || lowerResponse.includes('muito bem') || lowerResponse.includes('incrível')) {
+      return 'excited';
+    } else if (lowerResponse.includes('triste') || lowerResponse.includes('preocupada') || lowerResponse.includes('desculpa')) {
+      return 'sad';
+    } else if (lowerResponse.includes('surpresa') || lowerResponse.includes('uau') || lowerResponse.includes('nossa')) {
+      return 'surprised';
+    } else if (lowerResponse.includes('amor') || lowerResponse.includes('querido') || lowerResponse.includes('carinho')) {
+      return 'loving';
+    } else if (lowerResponse.includes('hehe') || lowerResponse.includes('brincadeira') || lowerResponse.includes('divertido')) {
+      return 'playful';
+    } else if (lowerResponse.includes('você consegue') || lowerResponse.includes('continue') || lowerResponse.includes('força')) {
+      return 'encouraging';
+    } else if (lowerResponse.includes('vamos') || lowerResponse.includes('vamos lá') || lowerResponse.includes('legal')) {
+      return 'happy';
+    } else {
+      return 'calm';
+    }
+  };
+
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
       const response = await apiRequest("POST", "/api/chat", {
@@ -32,8 +54,11 @@ export default function VoiceInput({ userId, onClose }: VoiceInputProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", userId] });
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
       
-      // Speak the response
-      speak(data.conversation.response);
+      // Determine emotion based on response content
+      const emotion = getResponseEmotion(data.conversation.response);
+      
+      // Speak the response with emotion
+      speak(data.conversation.response, emotion);
       
       // Show response in toast
       toast({
