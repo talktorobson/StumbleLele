@@ -66,81 +66,67 @@ export default function LeleAvatar({
         }}
       >
         {/* Main Avatar Circle */}
-        <div className="w-48 h-48 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 border-4 border-lele-pink shadow-2xl overflow-hidden relative">
+        <div className="w-48 h-48 rounded-full bg-gradient-to-br from-yellow-100 to-yellow-200 border-4 border-lele-pink shadow-2xl overflow-hidden relative">
           
-          {/* Avatar based on Helena's picture */}
-          <div className="flex items-center justify-center h-full relative">
+          {/* SVG Avatar based on Helena's picture */}
+          <svg viewBox="0 0 200 200" className="w-full h-full">
             {/* Hair */}
-            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-40 h-24 bg-gradient-to-b from-amber-800 to-amber-700 rounded-t-full border-2 border-amber-900">
-              {/* Hair strands */}
-              <div className="absolute top-2 left-8 w-6 h-8 bg-amber-700 rounded-full transform rotate-12"></div>
-              <div className="absolute top-2 right-8 w-6 h-8 bg-amber-700 rounded-full transform -rotate-12"></div>
-              <div className="absolute top-6 left-12 w-4 h-6 bg-amber-600 rounded-full transform rotate-6"></div>
-              <div className="absolute top-6 right-12 w-4 h-6 bg-amber-600 rounded-full transform -rotate-6"></div>
-            </div>
+            <path d="M40 60 Q100 20 160 60 L160 90 Q140 95 120 90 Q100 85 80 90 Q60 95 40 90 Z" 
+                  fill="#8B4513" stroke="#654321" strokeWidth="2"/>
             
             {/* Face */}
-            <div className="absolute top-16 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-b from-orange-200 to-orange-300 rounded-full border-2 border-orange-400 z-10">
-              
-              {/* Eyes */}
-              <div className="absolute top-8 left-7 w-6 h-6 bg-white rounded-full border border-gray-300">
-                <div className="absolute top-1 left-1 w-4 h-4 bg-black rounded-full">
-                  <div className="absolute top-1 left-1 w-2 h-2 bg-white rounded-full"></div>
-                </div>
-              </div>
-              
-              <div className="absolute top-8 right-7 w-6 h-6 bg-white rounded-full border border-gray-300">
-                <div className="absolute top-1 left-1 w-4 h-4 bg-black rounded-full">
-                  <div className="absolute top-1 left-1 w-2 h-2 bg-white rounded-full"></div>
-                </div>
-              </div>
-              
-              {/* Nose */}
-              <div className="absolute top-16 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-orange-400 rounded-full"></div>
-              
-              {/* Mouth */}
-              <div className="absolute top-20 left-1/2 transform -translate-x-1/2">
-                {emotion === "excited" || emotion === "playful" ? (
-                  <div className="w-8 h-6 bg-red-400 rounded-full relative overflow-hidden">
-                    <div className="absolute bottom-0 w-full h-2 bg-red-500 rounded-b-full"></div>
-                    <div className="absolute top-1 left-1 w-2 h-2 bg-white rounded-full"></div>
-                    <div className="absolute top-1 right-1 w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                ) : emotion === "thinking" ? (
-                  <div className="w-4 h-2 bg-red-400 rounded-full"></div>
-                ) : emotion === "surprised" ? (
-                  <div className="w-4 h-6 bg-red-400 rounded-full"></div>
-                ) : (
-                  <div className="w-6 h-3 bg-red-400 rounded-full relative overflow-hidden">
-                    <div className="absolute bottom-0 w-full h-1 bg-red-500"></div>
-                    {isSpeaking && (
-                      <motion.div
-                        className="absolute inset-0 bg-red-500 rounded-full"
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 0.3, repeat: Infinity }}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              {/* Cheeks */}
-              <div className="absolute top-14 left-3 w-4 h-4 bg-pink-300 rounded-full opacity-60"></div>
-              <div className="absolute top-14 right-3 w-4 h-4 bg-pink-300 rounded-full opacity-60"></div>
-            </div>
+            <circle cx="100" cy="110" r="45" fill="#F4C2A1" stroke="#E6A373" strokeWidth="2"/>
             
-            {/* Blue dress collar */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-16 bg-blue-600 rounded-t-full border-2 border-blue-700 z-5">
-              {/* Bow pattern on dress */}
-              <div className="absolute top-2 left-3 w-3 h-2 bg-white rounded-sm opacity-80"></div>
-              <div className="absolute top-2 right-3 w-3 h-2 bg-white rounded-sm opacity-80"></div>
-              <div className="absolute top-6 left-6 w-2 h-1 bg-white rounded-sm opacity-80"></div>
-            </div>
+            {/* Eyes */}
+            <circle cx="85" cy="100" r="8" fill="white" stroke="#333"/>
+            <circle cx="115" cy="100" r="8" fill="white" stroke="#333"/>
+            <circle cx="85" cy="100" r="4" fill="#333"/>
+            <circle cx="115" cy="100" r="4" fill="#333"/>
+            <circle cx="86" cy="99" r="1" fill="white"/>
+            <circle cx="116" cy="99" r="1" fill="white"/>
             
-            {/* Hair highlights */}
-            <div className="absolute top-6 left-12 w-3 h-3 bg-amber-600 rounded-full opacity-80"></div>
-            <div className="absolute top-8 right-12 w-2 h-2 bg-amber-600 rounded-full opacity-80"></div>
-          </div>
+            {/* Eyebrows */}
+            <path d="M77 92 Q85 90 92 92" stroke="#654321" strokeWidth="2" fill="none"/>
+            <path d="M108 92 Q115 90 123 92" stroke="#654321" strokeWidth="2" fill="none"/>
+            
+            {/* Nose */}
+            <circle cx="100" cy="112" r="2" fill="#E6A373"/>
+            
+            {/* Mouth - changes based on emotion */}
+            {emotion === "excited" || emotion === "playful" ? (
+              <path d="M90 125 Q100 135 110 125" stroke="#CC4444" strokeWidth="3" fill="#FF6666" opacity="0.8"/>
+            ) : emotion === "thinking" ? (
+              <line x1="95" y1="125" x2="105" y2="125" stroke="#CC4444" strokeWidth="2"/>
+            ) : emotion === "surprised" ? (
+              <circle cx="100" cy="125" r="6" fill="#FF6666" stroke="#CC4444" strokeWidth="2"/>
+            ) : (
+              <path d="M92 125 Q100 130 108 125" stroke="#CC4444" strokeWidth="2" fill="none"/>
+            )}
+            
+            {/* Cheeks */}
+            <circle cx="70" cy="115" r="8" fill="#FFB6C1" opacity="0.6"/>
+            <circle cx="130" cy="115" r="8" fill="#FFB6C1" opacity="0.6"/>
+            
+            {/* Blue dress */}
+            <path d="M70 150 Q100 160 130 150 L130 190 Q100 195 70 190 Z" 
+                  fill="#4169E1" stroke="#1E3A8A" strokeWidth="2"/>
+            
+            {/* White bow on dress */}
+            <rect x="95" y="165" width="10" height="6" fill="white" rx="1"/>
+            <rect x="98" y="162" width="4" height="12" fill="white" rx="1"/>
+            
+            {/* Hair details */}
+            <path d="M60 70 Q70 65 80 70" stroke="#654321" strokeWidth="2" fill="none"/>
+            <path d="M120 70 Q130 65 140 70" stroke="#654321" strokeWidth="2" fill="none"/>
+            
+            {/* Speaking animation overlay */}
+            {isSpeaking && (
+              <circle cx="100" cy="125" r="8" fill="#FF8888" opacity="0.6">
+                <animate attributeName="r" values="6;10;6" dur="0.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.4;0.8;0.4" dur="0.5s" repeatCount="indefinite"/>
+              </circle>
+            )}
+          </svg>
         </div>
         
         {/* Name label */}
