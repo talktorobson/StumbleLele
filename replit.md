@@ -13,6 +13,13 @@ Stumble Lele is an interactive AI companion application designed for children, f
 - Improved voice loading and selection mechanism
 - Fixed OpenAI API JSON response format requirement by adding "json" keyword to prompts
 
+### Avatar Design Update (July 15, 2025)
+- Recreated avatar based on Helena's picture showing a girl with brown hair
+- Added detailed CSS-based avatar with proper hair, face, and blue dress elements
+- Implemented dynamic mouth expressions based on emotion states
+- Enhanced visual features including hair strands, facial expressions, and dress details
+- Maintained in-memory storage as requested (no database dependency)
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
