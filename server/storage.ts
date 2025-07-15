@@ -4,6 +4,8 @@ import {
   type Memory, type InsertMemory, type Friend, type InsertFriend,
   type GameProgress, type InsertGameProgress, type AvatarState, type InsertAvatarState
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -248,4 +250,125 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByName(name: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.name, name));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getConversations(userId: number): Promise<Conversation[]> {
+    return await db.select().from(conversations).where(eq(conversations.userId, userId));
+  }
+
+  async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
+    const [conversation] = await db
+      .insert(conversations)
+      .values(insertConversation)
+      .returning();
+    return conversation;
+  }
+
+  async getMemories(userId: number): Promise<Memory[]> {
+    return await db.select().from(memories).where(eq(memories.userId, userId));
+  }
+
+  async getMemoriesByCategory(userId: number, category: string): Promise<Memory[]> {
+    return await db.select().from(memories).where(
+      and(eq(memories.userId, userId), eq(memories.category, category))
+    );
+  }
+
+  async createMemory(insertMemory: InsertMemory): Promise<Memory> {
+    const [memory] = await db
+      .insert(memories)
+      .values(insertMemory)
+      .returning();
+    return memory;
+  }
+
+  async getFriends(userId: number): Promise<Friend[]> {
+    return await db.select().from(friends).where(eq(friends.userId, userId));
+  }
+
+  async createFriend(insertFriend: InsertFriend): Promise<Friend> {
+    const [friend] = await db
+      .insert(friends)
+      .values(insertFriend)
+      .returning();
+    return friend;
+  }
+
+  async updateFriendStatus(userId: number, friendName: string, status: string): Promise<Friend | undefined> {
+    const [updated] = await db
+      .update(friends)
+      .set({ status })
+      .where(and(eq(friends.userId, userId), eq(friends.friendName, friendName)))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getGameProgress(userId: number): Promise<GameProgress[]> {
+    return await db.select().from(gameProgress).where(eq(gameProgress.userId, userId));
+  }
+
+  async getGameProgressByType(userId: number, gameType: string): Promise<GameProgress | undefined> {
+    const [progress] = await db.select().from(gameProgress).where(
+      and(eq(gameProgress.userId, userId), eq(gameProgress.gameType, gameType))
+    );
+    return progress || undefined;
+  }
+
+  async createGameProgress(insertProgress: InsertGameProgress): Promise<GameProgress> {
+    const [progress] = await db
+      .insert(gameProgress)
+      .values(insertProgress)
+      .returning();
+    return progress;
+  }
+
+  async updateGameProgress(userId: number, gameType: string, level: number, score: number): Promise<GameProgress | undefined> {
+    const [updated] = await db
+      .update(gameProgress)
+      .set({ level, score })
+      .where(and(eq(gameProgress.userId, userId), eq(gameProgress.gameType, gameType)))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getAvatarState(userId: number): Promise<AvatarState | undefined> {
+    const [state] = await db.select().from(avatarState).where(eq(avatarState.userId, userId));
+    return state || undefined;
+  }
+
+  async createAvatarState(insertState: InsertAvatarState): Promise<AvatarState> {
+    const [state] = await db
+      .insert(avatarState)
+      .values(insertState)
+      .returning();
+    return state;
+  }
+
+  async updateAvatarState(userId: number, emotion: string, personality: any): Promise<AvatarState | undefined> {
+    const [updated] = await db
+      .update(avatarState)
+      .set({ currentEmotion: emotion, personality })
+      .where(eq(avatarState.userId, userId))
+      .returning();
+    return updated || undefined;
+  }
+}
+
+export const storage = new DatabaseStorage();
