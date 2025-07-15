@@ -99,14 +99,15 @@ export default function Friends({ userId }: FriendsProps) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center">
-            <Users className="mr-2 h-5 w-5 text-purple-400" />
-            <span className="text-2xl font-bold text-gray-800">Amigos da Lele</span>
+            <Users className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">Amigos da Lele</span>
           </div>
           <Dialog open={isAddingFriend} onOpenChange={setIsAddingFriend}>
             <DialogTrigger asChild>
-              <Button size="sm" className="bg-pink-400 hover:bg-pink-500">
-                <Plus className="mr-1 h-4 w-4" />
-                Convidar
+              <Button size="sm" className="bg-pink-400 hover:bg-pink-500 px-2 sm:px-3">
+                <Plus className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Convidar</span>
+                <span className="sm:hidden">+</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -145,22 +146,22 @@ export default function Friends({ userId }: FriendsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {friends.map((friend: any) => (
             <div
               key={friend.id}
-              className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-4 text-center game-card-hover cursor-pointer"
+              className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-3 sm:p-4 text-center game-card-hover cursor-pointer"
             >
-              <div className="w-16 h-16 bg-teal-400 rounded-full mx-auto mb-3 flex items-center justify-center">
-                <User className="h-8 w-8 text-white" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-teal-400 rounded-full mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+                <User className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h4 className="font-semibold text-gray-800 text-sm mb-1">{friend.friendName}</h4>
-              <Badge className={`${getStatusColor(friend.status)} text-white text-xs mb-2`}>
+              <h4 className="font-semibold text-gray-800 text-xs sm:text-sm mb-1 truncate">{friend.friendName}</h4>
+              <Badge className={`${getStatusColor(friend.status)} text-white text-xs mb-2 px-2 py-1`}>
                 {getStatusText(friend.status)}
               </Badge>
               <Button
                 size="sm"
-                className="w-full bg-white/80 hover:bg-white text-gray-700 text-xs"
+                className="w-full bg-white/80 hover:bg-white text-gray-700 text-xs px-2 py-1"
                 onClick={() => {
                   toast({
                     title: `Conversando com ${friend.friendName}`,
@@ -168,25 +169,26 @@ export default function Friends({ userId }: FriendsProps) {
                   });
                 }}
               >
-                <MessageCircle className="mr-1 h-3 w-3" />
-                Conversar
+                <MessageCircle className="mr-1 h-2 w-2 sm:h-3 sm:w-3" />
+                <span className="hidden sm:inline">Conversar</span>
+                <span className="sm:hidden">Chat</span>
               </Button>
             </div>
           ))}
           
           {/* Add Friend Card */}
           <div
-            className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-2xl p-4 text-center hover:border-pink-400 transition-colors cursor-pointer"
+            className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-2xl p-3 sm:p-4 text-center hover:border-pink-400 transition-colors cursor-pointer"
             onClick={() => setIsAddingFriend(true)}
           >
-            <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 flex items-center justify-center">
-              <Plus className="h-8 w-8 text-gray-400" />
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-full mx-auto mb-2 sm:mb-3 flex items-center justify-center">
+              <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
             </div>
-            <h4 className="font-semibold text-gray-600 text-sm mb-1">Adicionar</h4>
+            <h4 className="font-semibold text-gray-600 text-xs sm:text-sm mb-1">Adicionar</h4>
             <p className="text-xs text-gray-500 mb-2">Novo amigo</p>
             <Button
               size="sm"
-              className="w-full bg-pink-400 hover:bg-pink-500 text-white text-xs"
+              className="w-full bg-pink-400 hover:bg-pink-500 text-white text-xs px-2 py-1"
             >
               Convidar
             </Button>

@@ -141,40 +141,42 @@ export default function Games({ userId }: GamesProps) {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center">
-            <Gamepad2 className="mr-2 h-5 w-5 text-teal-400" />
-            <span className="text-2xl font-bold text-gray-800">Mini Jogos</span>
+            <Gamepad2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-teal-400" />
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">Mini Jogos</span>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => gameSuggestionMutation.mutate()}
             disabled={gameSuggestionMutation.isPending}
+            className="px-2 sm:px-3"
           >
-            <Star className="mr-1 h-4 w-4" />
-            Sugestão
+            <Star className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Sugestão</span>
+            <span className="sm:hidden">Dica</span>
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {games.map((game) => {
             const Icon = game.icon;
             
             return (
               <div
                 key={game.id}
-                className={`bg-gradient-to-br ${game.gradient} rounded-2xl p-4 game-card-hover cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                className={`bg-gradient-to-br ${game.gradient} rounded-2xl p-3 sm:p-4 game-card-hover cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
                 onClick={() => handleGameStart(game.id)}
               >
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Icon className="h-8 w-8 text-gray-700" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-700" />
                   </div>
-                  <h4 className="font-bold text-lg text-white mb-2">{game.name}</h4>
-                  <p className="text-sm text-white/90 mb-3">{game.description}</p>
+                  <h4 className="font-bold text-base sm:text-lg text-white mb-1 sm:mb-2">{game.name}</h4>
+                  <p className="text-xs sm:text-sm text-white/90 mb-2 sm:mb-3">{game.description}</p>
                   <div className="flex items-center justify-center space-x-2">
-                    <Badge variant="secondary" className="bg-white/80 text-gray-700">
-                      <Star className="mr-1 h-3 w-3" />
+                    <Badge variant="secondary" className="bg-white/80 text-gray-700 text-xs">
+                      <Star className="mr-1 h-2 w-2 sm:h-3 sm:w-3" />
                       Nível {game.level}
                     </Badge>
                   </div>

@@ -64,10 +64,10 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
 
   return (
     <Card className="bg-white/95 backdrop-blur-sm shadow-xl">
-      <CardContent className="p-6 text-center">
+      <CardContent className="p-4 sm:p-6 text-center">
         <div className="relative inline-block">
           {/* Lele Avatar */}
-          <div className="w-64 h-64 mx-auto mb-20 relative">
+          <div className="w-48 h-48 sm:w-64 sm:h-64 mx-auto mb-12 sm:mb-20 relative">
             <LeleAvatar 
               emotion={currentEmotion}
               isAnimating={isAnimating}
@@ -79,8 +79,8 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
           
           {/* Avatar Status */}
           <div className="mb-4">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Olá, Helena! 👋</h2>
-            <p className="text-lg text-gray-600">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Olá, Helena! 👋</h2>
+            <p className="text-base sm:text-lg text-gray-600 px-2">
               {currentEmotion === "excited" ? "Estou super animada hoje!" :
                currentEmotion === "thinking" ? "Estou pensando em algo legal..." :
                currentEmotion === "surprised" ? "Uau! Que interessante!" :
@@ -89,33 +89,33 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
           </div>
           
           {/* Quick Actions */}
-          <div className="flex justify-center space-x-4 mb-6">
+          <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mb-6 px-2">
             <Button 
-              className="px-6 py-3 bg-pink-400 hover:bg-pink-500 text-white rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg"
+              className="px-4 py-2 sm:px-6 sm:py-3 bg-pink-400 hover:bg-pink-500 text-white rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg text-sm sm:text-base"
               onClick={() => {
                 setEmotion("excited");
                 document.querySelector('[data-section="chat"]')?.scrollIntoView({ behavior: 'smooth' });
               }}
             >
-              <MessageCircle className="mr-2 h-4 w-4" />
+              <MessageCircle className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Conversar
             </Button>
             <Button 
-              className="px-6 py-3 bg-teal-400 hover:bg-teal-500 text-white rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg"
+              className="px-4 py-2 sm:px-6 sm:py-3 bg-teal-400 hover:bg-teal-500 text-white rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg text-sm sm:text-base"
               onClick={() => {
                 setEmotion("excited");
                 document.querySelector('[data-section="games"]')?.scrollIntoView({ behavior: 'smooth' });
               }}
             >
-              <Gamepad2 className="mr-2 h-4 w-4" />
+              <Gamepad2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               Jogar
             </Button>
             <Button 
-              className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg"
+              className="px-4 py-2 sm:px-6 sm:py-3 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg text-sm sm:text-base"
               onClick={handleJokeClick}
               disabled={tellJokeMutation.isPending}
             >
-              <Laugh className="mr-2 h-4 w-4" />
+              <Laugh className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {tellJokeMutation.isPending ? "Pensando..." : "Piada"}
             </Button>
           </div>

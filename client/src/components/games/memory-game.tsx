@@ -133,9 +133,9 @@ export default function MemoryGame({ level, onGameComplete, onExit }: MemoryGame
 
   const getGridCols = () => {
     const cardCount = cards.length;
-    if (cardCount <= 8) return 'grid-cols-4';
-    if (cardCount <= 12) return 'grid-cols-4';
-    return 'grid-cols-5';
+    if (cardCount <= 8) return 'grid-cols-3 sm:grid-cols-4';
+    if (cardCount <= 12) return 'grid-cols-3 sm:grid-cols-4';
+    return 'grid-cols-4 sm:grid-cols-5';
   };
 
   const getTimeColor = () => {
@@ -145,38 +145,42 @@ export default function MemoryGame({ level, onGameComplete, onExit }: MemoryGame
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full max-w-4xl mx-auto p-2 sm:p-4">
       {/* Game Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <Badge className="bg-purple-500 text-white">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+          <Badge className="bg-purple-500 text-white text-xs sm:text-sm">
             Nível {level}
           </Badge>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Movimentos:</span>
-            <span className="text-lg font-bold text-blue-600">{moves}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Tempo:</span>
-            <span className={`text-lg font-bold ${getTimeColor()}`}>
-              {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-            </span>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <span className="text-xs sm:text-sm font-medium">Movimentos:</span>
+              <span className="text-sm sm:text-lg font-bold text-blue-600">{moves}</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <span className="text-xs sm:text-sm font-medium">Tempo:</span>
+              <span className={`text-sm sm:text-lg font-bold ${getTimeColor()}`}>
+                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={initializeGame}
             disabled={gameStatus !== 'playing'}
+            className="flex-1 sm:flex-none text-xs sm:text-sm px-2 sm:px-3"
           >
-            <RotateCcw className="w-4 h-4 mr-1" />
+            <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             Reiniciar
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={onExit}
+            className="flex-1 sm:flex-none text-xs sm:text-sm px-2 sm:px-3"
           >
             Sair
           </Button>
@@ -184,7 +188,7 @@ export default function MemoryGame({ level, onGameComplete, onExit }: MemoryGame
       </div>
 
       {/* Game Board */}
-      <div className={`grid ${getGridCols()} gap-3 mb-6`}>
+      <div className={`grid ${getGridCols()} gap-2 sm:gap-3 mb-4 sm:mb-6`}>
         {cards.map((card) => (
           <Card
             key={card.id}
@@ -195,10 +199,10 @@ export default function MemoryGame({ level, onGameComplete, onExit }: MemoryGame
           >
             <CardContent className="p-0 h-full flex items-center justify-center">
               {card.isFlipped || card.isMatched ? (
-                <span className="text-4xl animate-flip">{card.emoji}</span>
+                <span className="text-2xl sm:text-4xl animate-flip">{card.emoji}</span>
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-pink-400 to-purple-500 rounded-lg flex items-center justify-center">
-                  <Shuffle className="w-8 h-8 text-white" />
+                  <Shuffle className="w-4 h-4 sm:w-8 sm:h-8 text-white" />
                 </div>
               )}
             </CardContent>
@@ -208,48 +212,48 @@ export default function MemoryGame({ level, onGameComplete, onExit }: MemoryGame
 
       {/* Game Status */}
       {gameStatus === 'won' && (
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 sm:space-y-4">
           <div className="flex justify-center items-center space-x-2">
-            <Trophy className="w-8 h-8 text-yellow-500" />
-            <h2 className="text-2xl font-bold text-green-600">Parabéns!</h2>
-            <Trophy className="w-8 h-8 text-yellow-500" />
+            <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
+            <h2 className="text-xl sm:text-2xl font-bold text-green-600">Parabéns!</h2>
+            <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
           </div>
-          <p className="text-lg">
+          <p className="text-base sm:text-lg">
             Você completou o jogo em {moves} movimentos!
           </p>
           {showCelebration && (
             <div className="flex justify-center space-x-1 animate-bounce">
-              <Star className="w-6 h-6 text-yellow-400" />
-              <Star className="w-6 h-6 text-yellow-400" />
-              <Star className="w-6 h-6 text-yellow-400" />
+              <Star className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-400" />
+              <Star className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-400" />
+              <Star className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-400" />
             </div>
           )}
         </div>
       )}
 
       {gameStatus === 'lost' && (
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold text-red-600">Tempo Esgotado!</h2>
-          <p className="text-lg">
+        <div className="text-center space-y-3 sm:space-y-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-red-600">Tempo Esgotado!</h2>
+          <p className="text-base sm:text-lg">
             Que tal tentar novamente? Você consegue!
           </p>
-          <Button onClick={initializeGame} className="bg-blue-500 hover:bg-blue-600">
+          <Button onClick={initializeGame} className="bg-blue-500 hover:bg-blue-600 text-sm sm:text-base">
             Jogar Novamente
           </Button>
         </div>
       )}
 
       {/* Progress Bar */}
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium">Progresso</span>
-          <span className="text-sm text-gray-500">
+          <span className="text-xs sm:text-sm font-medium">Progresso</span>
+          <span className="text-xs sm:text-sm text-gray-500">
             {matchedPairs} / {(CARD_SETS[level as keyof typeof CARD_SETS] || CARD_SETS[1]).length} pares
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3">
           <div 
-            className="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-green-400 to-blue-500 h-2 sm:h-3 rounded-full transition-all duration-300"
             style={{ 
               width: `${(matchedPairs / (CARD_SETS[level as keyof typeof CARD_SETS] || CARD_SETS[1]).length) * 100}%` 
             }}
