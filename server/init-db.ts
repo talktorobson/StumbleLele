@@ -3,6 +3,12 @@ import { users, avatarState } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 export async function initializeDatabase() {
+  // Skip database initialization if DATABASE_URL is not set
+  if (!process.env.DATABASE_URL) {
+    console.log("Skipping database initialization - using in-memory storage");
+    return;
+  }
+  
   try {
     // Check if default user exists
     const existingUser = await db.select().from(users).where(eq(users.id, 1));

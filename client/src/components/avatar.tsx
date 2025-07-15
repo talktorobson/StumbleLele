@@ -67,13 +67,13 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       <CardContent className="p-6 text-center">
         <div className="relative inline-block">
           {/* Lele Avatar */}
-          <div className="w-48 h-48 mx-auto mb-4 relative">
+          <div className="w-64 h-64 mx-auto mb-6 relative">
             <LeleAvatar 
               emotion={currentEmotion}
               isAnimating={isAnimating}
               isListening={false}
               isSpeaking={tellJokeMutation.isPending}
-              className="w-full h-full"
+              className="w-full h-full scale-110"
             />
           </div>
           
