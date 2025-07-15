@@ -61,9 +61,13 @@ export default function LeleAvatar({
             {/* Background warm glow */}
             <circle cx="100" cy="100" r="95" fill="#FFF8DC" opacity="0.3"/>
             
-            {/* Hair - Long brown hair with side part */}
-            <path d="M45 50 Q100 15 155 50 L155 120 Q150 125 145 120 L145 100 Q140 105 135 100 L135 85 Q130 90 125 85 L125 75 Q120 80 115 75 L115 70 Q110 75 105 70 L105 68 Q100 72 95 68 L95 70 Q90 75 85 70 L85 75 Q80 80 75 75 L75 85 Q70 90 65 85 L65 100 Q60 105 55 100 L55 120 Q50 125 45 120 Z" 
+            {/* Hair - Long brown hair extending to shoulders */}
+            <path d="M35 45 Q100 10 165 45 L165 135 Q160 140 155 135 L155 120 Q150 125 145 120 L145 105 Q140 110 135 105 L135 90 Q130 95 125 90 L125 80 Q120 85 115 80 L115 75 Q110 80 105 75 L105 73 Q100 77 95 73 L95 75 Q90 80 85 75 L85 80 Q80 85 75 80 L75 90 Q70 95 65 90 L65 105 Q60 110 55 105 L55 120 Q50 125 45 120 L45 135 Q40 140 35 135 Z" 
                   fill="#8B4513" stroke="#654321" strokeWidth="1.5"/>
+            
+            {/* Hair layers for more natural look */}
+            <path d="M40 55 Q100 25 160 55 L160 125 Q155 130 150 125 L150 115 Q145 120 140 115 L140 100 Q135 105 130 100 L130 85 Q125 90 120 85 L120 80 Q115 85 110 80 L110 78 Q105 82 100 78 L100 80 Q95 85 90 80 L90 85 Q85 90 80 85 L80 100 Q75 105 70 100 L70 115 Q65 120 60 115 L60 125 Q55 130 50 125 L50 130 Q45 135 40 130 Z" 
+                  fill="#A0522D" stroke="#654321" strokeWidth="1" opacity="0.7"/>
             
             {/* Hair highlights */}
             <path d="M70 40 Q80 35 90 40" stroke="#A0522D" strokeWidth="1" fill="none" opacity="0.5"/>
@@ -154,7 +158,7 @@ export default function LeleAvatar({
         </div>
         
         {/* Name label */}
-        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-center">
+        <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 text-center">
           <div className="text-2xl font-bold text-gray-700 mb-1">Lele</div>
           <div className="text-sm text-gray-500">Sua amiga AI</div>
         </div>
@@ -162,7 +166,7 @@ export default function LeleAvatar({
         {/* Voice activity indicator */}
         {(isListening || isSpeaking) && (
           <motion.div 
-            className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-16 h-8 bg-gradient-to-r from-lele-turquoise to-lele-mint rounded-full flex items-center justify-center shadow-lg"
+            className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-8 bg-gradient-to-r from-lele-turquoise to-lele-mint rounded-full flex items-center justify-center shadow-lg"
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 0.8, repeat: Infinity }}
           >

@@ -67,7 +67,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       <CardContent className="p-6 text-center">
         <div className="relative inline-block">
           {/* Lele Avatar */}
-          <div className="w-64 h-64 mx-auto mb-6 relative">
+          <div className="w-64 h-64 mx-auto mb-20 relative">
             <LeleAvatar 
               emotion={currentEmotion}
               isAnimating={isAnimating}
