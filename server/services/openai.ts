@@ -1,9 +1,8 @@
 import OpenAI from "openai";
 
-// Using XAI (Grok) models instead of OpenAI
-const xai = new OpenAI({ 
-  apiKey: process.env.XAI_API_KEY || "default_key",
-  baseURL: "https://api.x.ai/v1"
+// Using OpenAI API with GPT-4o model
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY || "default_key"
 });
 
 export interface LeleResponse {
@@ -62,8 +61,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
     try {
       const contextString = context.length > 0 ? `\nContexto das conversas anteriores: ${context.join('. ')}` : '';
       
-      const response = await xai.chat.completions.create({
-        model: "grok-3-latest",
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -75,7 +74,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
           }
         ],
         temperature: 0.7,
-        max_tokens: 500
+        max_tokens: 500,
+        response_format: { type: "json_object" }
       });
 
       const content = response.choices[0].message.content;
@@ -130,8 +130,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async generateJoke(category: string = "geral"): Promise<JokeResponse> {
     try {
-      const response = await xai.chat.completions.create({
-        model: "grok-3-latest",
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -143,7 +143,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
           }
         ],
         temperature: 0.7,
-        max_tokens: 300
+        max_tokens: 300,
+        response_format: { type: "json_object" }
       });
 
       const content = response.choices[0].message.content;
@@ -184,8 +185,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async generateGameSuggestion(userLevel: number = 1): Promise<GameSuggestion> {
     try {
-      const response = await xai.chat.completions.create({
-        model: "grok-3-latest",
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -197,7 +198,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
           }
         ],
         temperature: 0.7,
-        max_tokens: 400
+        max_tokens: 400,
+        response_format: { type: "json_object" }
       });
 
       const content = response.choices[0].message.content;
@@ -238,8 +240,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async createMemory(interaction: string, category: string): Promise<string> {
     try {
-      const response = await xai.chat.completions.create({
-        model: "grok-3-latest",
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
