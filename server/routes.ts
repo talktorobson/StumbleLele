@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { leleAI } from "./services/openai";
+import { leleAI, type AIModel } from "./services/openai";
 import { insertConversationSchema, insertMemorySchema, insertGameProgressSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -17,6 +17,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(user);
     } catch (error) {
       res.status(500).json({ message: "Erro ao buscar usuário" });
+    }
+  });
+
+  // Update user AI model preference
+  app.post("/api/user/:id/ai-model", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { aiModel } = req.body;
+      
+      if (!aiModel || !["openai", "xai"].includes(aiModel)) {
+        return res.status(400).json({ message: "Modelo de AI inválido. Use 'openai' ou 'xai'" });
+      }
+      
+      const user = await storage.updateUserPreferences(userId, aiModel);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Erro ao atualizar preferências do usuário" });
     }
   });
 
@@ -60,12 +81,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "userId e message são obrigatórios" });
       }
 
+      // Get user preferences
+      const user = await storage.getUser(userId);
+      const aiModel = (user?.preferredAI || "openai") as AIModel;
+
       // Get conversation history for context
       const conversations = await storage.getConversations(userId);
       const context = conversations.slice(-5).map(c => `${c.message} -> ${c.response}`);
       
       // Generate AI response
-      const aiResponse = await leleAI.generateResponse(message, context);
+      const aiResponse = await leleAI.generateResponse(message, context, aiModel);
       
       // Save conversation
       const conversation = await storage.createConversation({
@@ -81,7 +106,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (message.length > 20) {
         const memoryContent = await leleAI.createMemory(
           `${message} -> ${aiResponse.response}`,
-          "conversa"
+          "conversa",
+          aiModel
         );
         await storage.createMemory({
           userId,

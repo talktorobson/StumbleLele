@@ -1,9 +1,33 @@
 import OpenAI from "openai";
 
-// Using OpenAI API with GPT-4o model
+// OpenAI client
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || "default_key"
 });
+
+// XAI client
+const xai = new OpenAI({ 
+  apiKey: process.env.XAI_API_KEY || "default_key",
+  baseURL: "https://api.x.ai/v1"
+});
+
+export type AIModel = "openai" | "xai";
+
+interface ModelConfig {
+  client: OpenAI;
+  model: string;
+}
+
+function getModelConfig(aiModel: AIModel): ModelConfig {
+  switch (aiModel) {
+    case "openai":
+      return { client: openai, model: "gpt-4o" };
+    case "xai":
+      return { client: xai, model: "grok-2-1212" };
+    default:
+      return { client: openai, model: "gpt-4o" };
+  }
+}
 
 export interface LeleResponse {
   response: string;
@@ -57,12 +81,13 @@ Sempre responda em português brasileiro. Lembre-se que você é uma criança de
 IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion", "personality" (com enthusiasm, curiosity, playfulness, friendliness) e "suggestedActions".
 `;
 
-  async generateResponse(message: string, context: string[] = []): Promise<LeleResponse> {
+  async generateResponse(message: string, context: string[] = [], aiModel: AIModel = "openai"): Promise<LeleResponse> {
     try {
       const contextString = context.length > 0 ? `\nContexto das conversas anteriores: ${context.join('. ')}` : '';
+      const { client, model } = getModelConfig(aiModel);
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const response = await client.chat.completions.create({
+        model: model,
         messages: [
           {
             role: "system",
@@ -128,10 +153,12 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
     }
   }
 
-  async generateJoke(category: string = "geral"): Promise<JokeResponse> {
+  async generateJoke(category: string = "geral", aiModel: AIModel = "openai"): Promise<JokeResponse> {
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const { client, model } = getModelConfig(aiModel);
+      
+      const response = await client.chat.completions.create({
+        model: model,
         messages: [
           {
             role: "system",
@@ -183,10 +210,12 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
     }
   }
 
-  async generateGameSuggestion(userLevel: number = 1): Promise<GameSuggestion> {
+  async generateGameSuggestion(userLevel: number = 1, aiModel: AIModel = "openai"): Promise<GameSuggestion> {
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const { client, model } = getModelConfig(aiModel);
+      
+      const response = await client.chat.completions.create({
+        model: model,
         messages: [
           {
             role: "system",
@@ -238,10 +267,12 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
     }
   }
 
-  async createMemory(interaction: string, category: string): Promise<string> {
+  async createMemory(interaction: string, category: string, aiModel: AIModel = "openai"): Promise<string> {
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const { client, model } = getModelConfig(aiModel);
+      
+      const response = await client.chat.completions.create({
+        model: model,
         messages: [
           {
             role: "system",

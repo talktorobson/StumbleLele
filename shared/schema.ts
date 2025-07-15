@@ -6,6 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   age: integer("age"),
+  preferredAI: text("preferred_ai").default("openai").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

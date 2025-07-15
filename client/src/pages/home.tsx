@@ -8,6 +8,7 @@ import Memories from "@/components/memories";
 import Progress from "@/components/progress";
 import VoiceInput from "@/components/voice-input";
 import LeleAvatar from "@/components/lele-avatar";
+import AIModelSelector from "@/components/ai-model-selector";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";

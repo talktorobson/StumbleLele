@@ -12,6 +12,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByName(name: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPreferences(userId: number, preferredAI: string): Promise<User | undefined>;
   
   // Conversation operations
   getConversations(userId: number): Promise<Conversation[]>;
@@ -66,7 +67,8 @@ export class MemStorage implements IStorage {
       id: 1,
       name: "Helena",
       age: 7,
-      createdAt: new Date(),
+      preferredAI: "openai",
+      createdAt: new Date()
     };
     this.users.set(1, defaultUser);
     
@@ -102,10 +104,20 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       age: insertUser.age || null,
+      preferredAI: insertUser.preferredAI || "openai",
       createdAt: new Date() 
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUserPreferences(userId: number, preferredAI: string): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (!user) return undefined;
+    
+    const updated = { ...user, preferredAI };
+    this.users.set(userId, updated);
+    return updated;
   }
 
   async getConversations(userId: number): Promise<Conversation[]> {
@@ -267,6 +279,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+
+  async updateUserPreferences(userId: number, preferredAI: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ preferredAI })
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
   }
 
   async getConversations(userId: number): Promise<Conversation[]> {

@@ -20,7 +20,8 @@ export async function initializeDatabase() {
         .insert(users)
         .values({
           name: "Helena",
-          age: 7
+          age: 7,
+          preferredAI: "openai"
         })
         .returning();
       userId = user.id;
