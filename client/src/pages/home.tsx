@@ -7,8 +7,11 @@ import Friends from "@/components/friends";
 import Memories from "@/components/memories";
 import Progress from "@/components/progress";
 import VoiceInput from "@/components/voice-input";
+import LeleAvatar from "@/components/lele-avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAvatar } from "@/hooks/use-avatar";
 import { 
   Home as HomeIcon, 
   Gamepad2, 
@@ -31,6 +34,11 @@ export default function Home() {
   const { data: avatarState } = useQuery({
     queryKey: ["/api/avatar", userId],
   });
+
+  const { currentEmotion } = useAvatar(avatarState?.currentEmotion);
+  
+  // Show sticky avatar when not on home section
+  const showStickyAvatar = currentSection !== "home";
 
   useEffect(() => {
     document.title = "Stumble Lele - Sua Amiga AI";
@@ -183,6 +191,49 @@ export default function Home() {
           onClose={() => setIsVoiceActive(false)}
         />
       )}
+
+      {/* Sticky Avatar - Shows when not on home section */}
+      <AnimatePresence>
+        {showStickyAvatar && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-20 right-6 z-40"
+          >
+            <div 
+              className="bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl border-2 border-lele-pink/20 cursor-pointer hover:scale-105 transition-transform"
+              onClick={() => setCurrentSection("home")}
+            >
+              <div className="w-16 h-16 relative">
+                <LeleAvatar
+                  emotion={currentEmotion}
+                  isAnimating={true}
+                  isListening={isVoiceActive}
+                  isSpeaking={false}
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+            {/* Speech bubble for encouragement */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+              className="absolute -left-32 top-2 bg-white/95 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-lele-pink/20 max-w-28"
+            >
+              <div className="text-xs text-gray-700 font-medium">
+                {currentSection === "games" ? "Vamos jogar!" : 
+                 currentSection === "memories" ? "Que legal!" : 
+                 currentSection === "friends" ? "Oi amigos!" : 
+                 "Estou aqui!"}
+              </div>
+              <div className="absolute right-2 top-3 w-0 h-0 border-l-4 border-l-white/95 border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

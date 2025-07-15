@@ -24,7 +24,7 @@ StumbleLele is an interactive AI companion application for children, featuring L
 ### 🔧 Technical Stack
 - Frontend: React + TypeScript + Vite + TailwindCSS + shadcn/ui
 - Backend: Express.js + TypeScript
-- AI: OpenAI GPT-4
+- AI: XAI Grok-3
 - Database: PostgreSQL with Drizzle ORM (ready but using in-memory fallback)
 - Deployment: Configured for port 5000 (Replit/local development)
 
@@ -45,14 +45,14 @@ StumbleLele is an interactive AI companion application for children, featuring L
 - **Avatar**: Cartoon girl with brown hair, blue dress, expressive eyes
 
 ### API Integration
-- **OpenAI**: Uses GPT-4 with JSON response format
+- **XAI**: Uses Grok-3 with enhanced response handling
 - **Error Handling**: Graceful fallbacks for API failures
 - **Rate Limiting**: Consider implementing for production
 - **Response Format**: Always includes emotion and personality traits
 
 ### Environment Variables
 ```bash
-OPENAI_API_KEY=your_key_here  # Required for AI features
+XAI_API_KEY=your_key_here  # Required for AI features
 DATABASE_URL=postgresql://...  # Optional, falls back to in-memory
 ```
 

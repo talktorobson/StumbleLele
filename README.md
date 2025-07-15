@@ -6,7 +6,7 @@
   [![Node.js](https://img.shields.io/badge/Node.js-v22.14-green)](https://nodejs.org/)
   [![React](https://img.shields.io/badge/React-18.3-blue)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
-  [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange)](https://openai.com/)
+  [![XAI](https://img.shields.io/badge/XAI-Grok--3-orange)](https://x.ai/)
   [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 </div>
 
@@ -17,7 +17,7 @@ StumbleLele is an interactive AI companion designed for children, featuring Lele
 ## ✨ Features
 
 ### 🤖 AI-Powered Interactions
-- **Smart Conversations**: Lele responds intelligently using OpenAI GPT-4
+- **Smart Conversations**: Lele responds intelligently using XAI Grok-3
 - **Contextual Memory**: Remembers past conversations and creates memories
 - **Emotional Intelligence**: Dynamic expressions based on conversation context
 - **Portuguese Language**: Native Brazilian Portuguese for authentic interactions
@@ -38,7 +38,7 @@ StumbleLele is an interactive AI companion designed for children, featuring Lele
 ### Prerequisites
 - Node.js v22.14+ 
 - npm or yarn
-- OpenAI API key
+- XAI API key
 
 ### Installation
 
@@ -58,8 +58,8 @@ StumbleLele is an interactive AI companion designed for children, featuring Lele
    # Create .env file
    cp .env.example .env
    
-   # Add your OpenAI API key
-   OPENAI_API_KEY=your_openai_api_key_here
+   # Add your XAI API key
+   XAI_API_KEY=your_xai_api_key_here
    
    # Optional: Add PostgreSQL connection
    DATABASE_URL=postgresql://user:password@host:port/database
@@ -89,7 +89,7 @@ StumbleLele is an interactive AI companion designed for children, featuring Lele
 ### Backend
 - **Express.js** - Server framework
 - **TypeScript** - Type safety
-- **OpenAI API** - AI responses
+- **XAI API** - AI responses
 - **Drizzle ORM** - Database ORM
 - **PostgreSQL** - Database (optional)
 
@@ -118,7 +118,7 @@ StumbleLele/
 ### Environment Variables
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `OPENAI_API_KEY` | Your OpenAI API key for AI features | Yes |
+| `XAI_API_KEY` | Your XAI API key for AI features | Yes |
 | `DATABASE_URL` | PostgreSQL connection string | No (uses in-memory) |
 | `PORT` | Server port (default: 5000) | No |
 
@@ -173,7 +173,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- OpenAI for GPT-4 API
+- XAI for Grok-3 API
 - shadcn/ui for beautiful components
 - The React and TypeScript communities
 - Inspired by the need for safe, educational AI companions for children

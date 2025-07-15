@@ -1,8 +1,9 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key" 
+// Using XAI (Grok) models instead of OpenAI
+const xai = new OpenAI({ 
+  apiKey: process.env.XAI_API_KEY || "default_key",
+  baseURL: "https://api.x.ai/v1"
 });
 
 export interface LeleResponse {
@@ -61,8 +62,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
     try {
       const contextString = context.length > 0 ? `\nContexto das conversas anteriores: ${context.join('. ')}` : '';
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const response = await xai.chat.completions.create({
+        model: "grok-3-latest",
         messages: [
           {
             role: "system",
@@ -73,17 +74,33 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
             content: message
           }
         ],
-        response_format: { type: "json_object" },
-        max_tokens: 500,
-        temperature: 0.8
+        temperature: 0.7,
+        max_tokens: 500
       });
 
       const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("Resposta vazia do OpenAI");
+        throw new Error("Resposta vazia do XAI");
       }
 
-      const parsed = JSON.parse(content);
+      // Try to parse JSON, but handle non-JSON responses gracefully
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (jsonError) {
+        // If not JSON, create a structured response
+        parsed = {
+          response: content,
+          emotion: "happy",
+          personality: {
+            enthusiasm: 0.9,
+            curiosity: 0.8,
+            playfulness: 0.95,
+            friendliness: 0.9
+          },
+          suggestedActions: []
+        };
+      }
       
       return {
         response: parsed.response || "Oi Helena! Como posso te ajudar?",
@@ -113,8 +130,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async generateJoke(category: string = "geral"): Promise<JokeResponse> {
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const response = await xai.chat.completions.create({
+        model: "grok-3-latest",
         messages: [
           {
             role: "system",
@@ -125,17 +142,28 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
             content: `Conta uma piada sobre ${category} para a Helena!`
           }
         ],
-        response_format: { type: "json_object" },
-        max_tokens: 300,
-        temperature: 0.9
+        temperature: 0.7,
+        max_tokens: 300
       });
 
       const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("Resposta vazia do OpenAI");
+        throw new Error("Resposta vazia do XAI");
       }
 
-      const parsed = JSON.parse(content);
+      // Try to parse JSON, but handle non-JSON responses gracefully
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (jsonError) {
+        // If not JSON, create a structured response
+        parsed = {
+          joke: content,
+          setup: "Aqui está uma piada para você:",
+          punchline: content,
+          category: category
+        };
+      }
       
       return {
         joke: parsed.joke || "Por que a galinha atravessou a rua? Para chegar do outro lado! 🐔",
@@ -156,8 +184,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async generateGameSuggestion(userLevel: number = 1): Promise<GameSuggestion> {
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const response = await xai.chat.completions.create({
+        model: "grok-3-latest",
         messages: [
           {
             role: "system",
@@ -168,17 +196,28 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
             content: `Sugere um jogo divertido para brincarmos juntas!`
           }
         ],
-        response_format: { type: "json_object" },
-        max_tokens: 400,
-        temperature: 0.8
+        temperature: 0.7,
+        max_tokens: 400
       });
 
       const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("Resposta vazia do OpenAI");
+        throw new Error("Resposta vazia do XAI");
       }
 
-      const parsed = JSON.parse(content);
+      // Try to parse JSON, but handle non-JSON responses gracefully
+      let parsed;
+      try {
+        parsed = JSON.parse(content);
+      } catch (jsonError) {
+        // If not JSON, create a structured response
+        parsed = {
+          gameType: "memory",
+          description: content,
+          difficulty: userLevel,
+          instructions: "Vamos brincar juntas!"
+        };
+      }
       
       return {
         gameType: parsed.gameType || "memory",
@@ -199,8 +238,8 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async createMemory(interaction: string, category: string): Promise<string> {
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const response = await xai.chat.completions.create({
+        model: "grok-3-latest",
         messages: [
           {
             role: "system",
