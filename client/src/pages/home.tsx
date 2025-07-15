@@ -8,7 +8,6 @@ import Memories from "@/components/memories";
 import Progress from "@/components/progress";
 import VoiceInput from "@/components/voice-input";
 import LeleAvatar from "@/components/lele-avatar";
-import AIModelSelector from "@/components/ai-model-selector";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,7 +84,6 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <AIModelSelector userId={userId} currentModel={user?.aiModel} />
               <Button
                 variant="ghost"
                 size="sm"

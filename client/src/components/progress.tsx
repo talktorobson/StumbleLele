@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress as ProgressBar } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Star, Gamepad2, Heart, Smile, ArrowUp, Target, Zap } from "lucide-react";
+import { Trophy, Star, Gamepad2, Heart, Smile, ArrowUp, Target, Zap, Settings } from "lucide-react";
+import AIModelSelector from "@/components/ai-model-selector";
 
 interface ProgressProps {
   userId: number;
@@ -23,6 +24,10 @@ export default function Progress({ userId }: ProgressProps) {
 
   const { data: progressions = {} } = useQuery({
     queryKey: ["/api/game/progressions", userId],
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ["/api/user", userId],
   });
 
   const calculateProgress = () => {
@@ -229,6 +234,18 @@ export default function Progress({ userId }: ProgressProps) {
                   </div>
                 );
               })}
+            </div>
+          </div>
+          
+          {/* AI Model Configuration */}
+          <div className="space-y-3 sm:space-y-4 lg:col-span-2">
+            <h4 className="font-semibold text-base sm:text-lg text-gray-800 flex items-center">
+              <Settings className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+              Configurações da Lele
+            </h4>
+            
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <AIModelSelector userId={userId} currentModel={user?.aiModel} />
             </div>
           </div>
         </div>

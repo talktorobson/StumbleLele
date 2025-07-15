@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Sparkles } from "lucide-react";
@@ -43,57 +41,53 @@ export default function AIModelSelector({ userId, currentModel = "openai" }: AIM
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Brain className="h-5 w-5" />
-          Modelo de AI da Lele
-        </CardTitle>
-        <CardDescription>
+    <div className="w-full space-y-4">
+      <div className="space-y-2">
+        <h5 className="font-semibold text-sm text-gray-800">Modelo de AI da Lele</h5>
+        <p className="text-xs text-gray-600">
           Escolha qual inteligência artificial a Lele deve usar para conversar
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Select value={selectedModel} onValueChange={handleModelChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Escolha o modelo de AI" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="openai">
-              <div className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                OpenAI GPT-4o
-              </div>
-            </SelectItem>
-            <SelectItem value="xai">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                XAI Grok
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        
-        <div className="text-sm text-muted-foreground">
-          {selectedModel === "openai" ? (
-            <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
-              <Brain className="h-4 w-4 text-blue-600" />
-              <span>OpenAI GPT-4o - Modelo conversacional avançado</span>
+        </p>
+      </div>
+      
+      <Select value={selectedModel} onValueChange={handleModelChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Escolha o modelo de AI" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="openai">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              OpenAI GPT-4o
             </div>
-          ) : (
-            <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-md">
-              <Sparkles className="h-4 w-4 text-purple-600" />
-              <span>XAI Grok - Modelo criativo e divertido</span>
+          </SelectItem>
+          <SelectItem value="xai">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              XAI Grok
             </div>
-          )}
-        </div>
-        
-        {updateModelMutation.isPending && (
-          <div className="text-sm text-muted-foreground">
-            Atualizando modelo...
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      
+      <div className="text-sm text-muted-foreground">
+        {selectedModel === "openai" ? (
+          <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+            <Brain className="h-4 w-4 text-blue-600" />
+            <span className="text-xs">OpenAI GPT-4o - Modelo conversacional avançado</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-md">
+            <Sparkles className="h-4 w-4 text-purple-600" />
+            <span className="text-xs">XAI Grok - Modelo criativo e divertido</span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      
+      {updateModelMutation.isPending && (
+        <div className="text-xs text-muted-foreground">
+          Atualizando modelo...
+        </div>
+      )}
+    </div>
   );
 }
