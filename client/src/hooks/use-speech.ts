@@ -80,20 +80,37 @@ export function useSpeech() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'pt-BR';
-    utterance.rate = 0.9;
-    utterance.pitch = 1.2; // Slightly higher pitch for a young girl's voice
-    utterance.volume = 0.8;
+    utterance.rate = 1.1; // Slightly faster for a child's speech
+    utterance.pitch = 1.8; // Much higher pitch for a little girl's voice
+    utterance.volume = 0.9;
 
-    // Try to find a Portuguese female voice
-    const voices = synthesis.getVoices();
-    const portugueseVoice = voices.find(voice => 
-      voice.lang.includes('pt') && voice.name.toLowerCase().includes('female')
-    ) || voices.find(voice => 
-      voice.lang.includes('pt')
-    );
+    // Wait for voices to load, then find the best Brazilian Portuguese female voice
+    const setVoice = () => {
+      const voices = synthesis.getVoices();
+      
+      // Priority order: Brazilian Portuguese female voices
+      const voicePriority = [
+        (voice: SpeechSynthesisVoice) => voice.lang === 'pt-BR' && (voice.name.toLowerCase().includes('female') || voice.name.toLowerCase().includes('mulher')),
+        (voice: SpeechSynthesisVoice) => voice.lang === 'pt-BR' && (voice.name.toLowerCase().includes('maria') || voice.name.toLowerCase().includes('lucia')),
+        (voice: SpeechSynthesisVoice) => voice.lang === 'pt-BR',
+        (voice: SpeechSynthesisVoice) => voice.lang.includes('pt') && (voice.name.toLowerCase().includes('female') || voice.name.toLowerCase().includes('mulher')),
+        (voice: SpeechSynthesisVoice) => voice.lang.includes('pt')
+      ];
 
-    if (portugueseVoice) {
-      utterance.voice = portugueseVoice;
+      for (const condition of voicePriority) {
+        const selectedVoice = voices.find(condition);
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+          break;
+        }
+      }
+    };
+
+    // Set voice immediately if available, or wait for voices to load
+    if (synthesis.getVoices().length > 0) {
+      setVoice();
+    } else {
+      synthesis.addEventListener('voiceschanged', setVoice, { once: true });
     }
 
     utterance.onend = () => {

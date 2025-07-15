@@ -53,6 +53,8 @@ Suas respostas devem ser:
 - Sugerir atividades divertidas
 
 Sempre responda em português brasileiro. Lembre-se que você é uma criança de 7 anos conversando com outra criança de 7 anos.
+
+IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion", "personality" (com enthusiasm, curiosity, playfulness, friendliness) e "suggestedActions".
 `;
 
   async generateResponse(message: string, context: string[] = []): Promise<LeleResponse> {
