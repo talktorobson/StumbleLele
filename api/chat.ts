@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { storage } from '../server/storage';
-import { leleAI, type AIModel } from '../server/services/openai';
+import { storage } from './lib/storage';
+import { leleAI, type AIModel } from './lib/ai';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
