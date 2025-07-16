@@ -11,16 +11,27 @@ interface CosmicBlasterGameProps {
 export default function CosmicBlasterGame({ onExit, onGameComplete, level }: CosmicBlasterGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<CosmicBlasterMock | null>(null);
-  const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement'>('menu');
+  const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement' | 'bossDefeated'>('menu');
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(150);
   const [wave, setWave] = useState(1);
   const [weaponLevel, setWeaponLevel] = useState(1);
+  const [bossName, setBossName] = useState('');
+
+  // Helena's friends list for boss names
+  const helenaFriends = [
+    'TomTom', 'Duda', 'Emily', 'Julia Prima', 'Paola', 
+    'Alice', 'Bruno', 'Bento', 'Arthur', 'Lucas Couto'
+  ];
 
   // Add logging to React state changes
-  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement') => {
+  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement' | 'bossDefeated') => {
     console.log('React: State change requested from', gameState, 'to', newState);
     setGameState(newState);
+  };
+
+  const handleBossNameChange = (name: string) => {
+    setBossName(name);
   };
 
   useEffect(() => {
@@ -33,6 +44,8 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
           onHealthChange: setHealth,
           onWaveChange: setWave,
           onWeaponLevelChange: setWeaponLevel,
+          onBossNameChange: handleBossNameChange,
+          helenaFriends: helenaFriends,
           onGameComplete: (finalScore: number) => {
             onGameComplete(finalScore);
           }
@@ -222,6 +235,29 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
             <h2 className="text-3xl md:text-5xl font-bold text-red-500 animate-pulse">
               🔥 Fase {wave} - BOSS! 👹
             </h2>
+            <p className="text-2xl md:text-3xl font-bold text-yellow-400 mt-4 animate-bounce">
+              Boss {bossName}
+            </p>
+            <p className="text-lg text-orange-300 mt-2">
+              {bossName} desafia a Helena!
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Boss Defeated Modal */}
+      {gameState === 'bossDefeated' && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[1001]">
+          <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-green-400 animate-pulse">
+              🎉 Boss {bossName} Derrotado! 🏆
+            </h2>
+            <p className="text-xl text-yellow-300 mt-4">
+              Helena venceu {bossName}!
+            </p>
+            <p className="text-lg text-blue-300 mt-2">
+              ☮️ 5 segundos de paz... ☮️
+            </p>
           </div>
         </div>
       )}
@@ -234,14 +270,16 @@ class CosmicBlasterMock {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private callbacks: {
-    onStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement') => void;
+    onStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement' | 'bossDefeated') => void;
     onScoreChange: (score: number) => void;
     onHealthChange: (health: number) => void;
     onWaveChange: (wave: number) => void;
     onWeaponLevelChange: (level: number) => void;
+    onBossNameChange: (name: string) => void;
     onGameComplete: (score: number) => void;
+    helenaFriends: string[];
   };
-  private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement' = 'menu';
+  private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement' | 'bossDefeated' = 'menu';
   private animationFrameId: number | null = null;
   private audioCtx: AudioContext;
   
@@ -1112,6 +1150,9 @@ class CosmicBlasterMock {
     
     const config = bossConfigs[Math.min(this.wave - 1, bossConfigs.length - 1)];
     
+    // Get Helena's friend name for this wave
+    const friendName = this.callbacks.helenaFriends[Math.min(this.wave - 1, this.callbacks.helenaFriends.length - 1)];
+    
     const boss = {
       x: this.canvas.width / 2,
       y: -config.baseSize,
@@ -1132,10 +1173,14 @@ class CosmicBlasterMock {
       phase: 'entering', // entering, fighting, retreating
       targetY: 100, // Target position for fighting phase
       retreatTimer: Date.now() + 60000, // Retreat after 60 seconds if not defeated (longer battle)
-      movementTimer: Date.now()
+      movementTimer: Date.now(),
+      friendName: friendName // Helena's friend name
     };
     
     this.boss = boss;
+    
+    // Update the boss name in React state
+    this.callbacks.onBossNameChange(friendName);
     this.playBossWarningSound();
   }
 
@@ -1431,9 +1476,16 @@ class CosmicBlasterMock {
             this.explosions.push({ x: this.boss.x, y: this.boss.y, time: Date.now(), size: 60 });
             this.playSound('explosion');
             this.score += 1000;
+            
+            // Show boss defeated message first
+            this.gameState = 'bossDefeated';
+            this.callbacks.onStateChange(this.gameState);
+            
             this.boss = null;
-            // Complete the wave when boss is defeated
-            this.completeWave();
+            // Complete the wave when boss is defeated (with delay for celebration)
+            setTimeout(() => {
+              this.completeWave();
+            }, 2000); // 2 second celebration before 5 second peace
           }
           break;
         }
@@ -1573,9 +1625,9 @@ class CosmicBlasterMock {
     // Play victory sound for boss defeat
     this.playBossVictorySound();
     
-    // 2 seconds of peace - no enemy spawning
-    this.lastEnemySpawn = Date.now() + 2000;
-    this.lastObstacleSpawn = Date.now() + 2000;
+    // 5 seconds of peace - no enemy spawning (Helena's request!)
+    this.lastEnemySpawn = Date.now() + 5000;
+    this.lastObstacleSpawn = Date.now() + 5000;
     
     setTimeout(() => {
       this.wave++;
@@ -1595,7 +1647,7 @@ class CosmicBlasterMock {
       }
       
       this.updateCallbacks();
-    }, 2000);
+    }, 5000); // Extended to 5 seconds of peace
   }
 
   private playSound(type: string) {
@@ -2249,7 +2301,7 @@ class CosmicBlasterMock {
   }
 
   private gameLoop() {
-    if (this.gameState === 'paused' || this.gameState === 'waveTransition' || this.gameState === 'bossAnnouncement') {
+    if (this.gameState === 'paused' || this.gameState === 'waveTransition' || this.gameState === 'bossAnnouncement' || this.gameState === 'bossDefeated') {
       // Don't update game during transitions
       this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
       return;
