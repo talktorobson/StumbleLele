@@ -1096,18 +1096,18 @@ class CosmicBlasterMock {
   }
 
   private spawnBoss() {
-    // Different boss types for each wave - much stronger and slower
+    // Different boss types for each wave - MUCH stronger for epic battles
     const bossConfigs = [
-      { type: 'megaSlime', color: '#00ff00', baseHealth: 50, baseSize: 80, speed: 0.3 },
-      { type: 'megaBubble', color: '#00bfff', baseHealth: 60, baseSize: 90, speed: 0.4 },
-      { type: 'megaCrystal', color: '#ff69b4', baseHealth: 70, baseSize: 100, speed: 0.2 },
-      { type: 'megaFire', color: '#ff4500', baseHealth: 80, baseSize: 95, speed: 0.5 },
-      { type: 'megaIce', color: '#00ffff', baseHealth: 90, baseSize: 105, speed: 0.2 },
-      { type: 'megaThunder', color: '#ffff00', baseHealth: 100, baseSize: 110, speed: 0.4 },
-      { type: 'megaShadow', color: '#8b008b', baseHealth: 110, baseSize: 115, speed: 0.3 },
-      { type: 'megaGold', color: '#ffd700', baseHealth: 120, baseSize: 120, speed: 0.3 },
-      { type: 'megaVoid', color: '#4b0082', baseHealth: 130, baseSize: 125, speed: 0.4 },
-      { type: 'megaFinal', color: '#ff00ff', baseHealth: 200, baseSize: 150, speed: 0.2 }
+      { type: 'megaSlime', color: '#00ff00', baseHealth: 150, baseSize: 80, speed: 0.3 },
+      { type: 'megaBubble', color: '#00bfff', baseHealth: 200, baseSize: 90, speed: 0.4 },
+      { type: 'megaCrystal', color: '#ff69b4', baseHealth: 250, baseSize: 100, speed: 0.2 },
+      { type: 'megaFire', color: '#ff4500', baseHealth: 300, baseSize: 95, speed: 0.5 },
+      { type: 'megaIce', color: '#00ffff', baseHealth: 350, baseSize: 105, speed: 0.2 },
+      { type: 'megaThunder', color: '#ffff00', baseHealth: 400, baseSize: 110, speed: 0.4 },
+      { type: 'megaShadow', color: '#8b008b', baseHealth: 450, baseSize: 115, speed: 0.3 },
+      { type: 'megaGold', color: '#ffd700', baseHealth: 500, baseSize: 120, speed: 0.3 },
+      { type: 'megaVoid', color: '#4b0082', baseHealth: 600, baseSize: 125, speed: 0.4 },
+      { type: 'megaFinal', color: '#ff00ff', baseHealth: 800, baseSize: 150, speed: 0.2 }
     ];
     
     const config = bossConfigs[Math.min(this.wave - 1, bossConfigs.length - 1)];
@@ -1121,8 +1121,8 @@ class CosmicBlasterMock {
       color: config.color,
       size: config.baseSize,
       baseSpeed: config.speed,
-      health: config.baseHealth + this.wave * 10, // More health scaling
-      maxHealth: config.baseHealth + this.wave * 10,
+      health: config.baseHealth + this.wave * 25, // Much more health scaling
+      maxHealth: config.baseHealth + this.wave * 25,
       canShoot: true,
       canAccelerate: true,
       lastShot: Date.now(),
@@ -1131,7 +1131,7 @@ class CosmicBlasterMock {
       wave: this.wave,
       phase: 'entering', // entering, fighting, retreating
       targetY: 100, // Target position for fighting phase
-      retreatTimer: Date.now() + 30000, // Retreat after 30 seconds if not defeated
+      retreatTimer: Date.now() + 60000, // Retreat after 60 seconds if not defeated (longer battle)
       movementTimer: Date.now()
     };
     
@@ -1329,14 +1329,14 @@ class CosmicBlasterMock {
         }
       }
       
-      // Boss shooting with unique weapons
-      if (Date.now() - this.boss.lastShot > 800) {
+      // Boss shooting with unique weapons (slower rate for longer battles)
+      if (Date.now() - this.boss.lastShot > 1200) {
         this.shootBossWeapon();
         this.boss.lastShot = Date.now();
       }
       
-      // Special attacks less frequently but more powerful
-      if (Date.now() - this.boss.specialAttackTimer > 8000) {
+      // Special attacks less frequently for longer battles
+      if (Date.now() - this.boss.specialAttackTimer > 12000) {
         this.bossSpecialAttack();
         this.boss.specialAttackTimer = Date.now();
       }
