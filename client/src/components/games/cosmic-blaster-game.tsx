@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -90,7 +89,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
       />
 
       {/* Game UI Overlay */}
-      <div className="absolute top-4 left-4 text-white text-sm md:text-lg font-bold z-40 space-y-2">
+      <div className="absolute top-4 left-4 text-white text-sm md:text-lg font-bold z-[1001] space-y-2">
         <div className="bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg">
           ⭐ Pontuação: {score}
         </div>
@@ -104,7 +103,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
 
       {/* Game Instructions Modal */}
       {gameState === 'menu' && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-40">
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm md:max-w-md mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400">
               🚀 Defesa Cósmica da Lele! 🚀
@@ -130,7 +129,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
 
       {/* Victory Modal */}
       {gameState === 'victory' && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-40">
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400">
               Você Venceu! 🚀⭐
@@ -148,7 +147,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
 
       {/* Game Over Modal */}
       {gameState === 'gameOver' && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-40">
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-red-400">
               Fim de Jogo! 😢
