@@ -1154,3 +1154,4 @@ class CosmicBlasterMock {
       console.warn('Error during game destruction:', error);
     }
   }
+}
