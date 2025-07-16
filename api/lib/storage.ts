@@ -15,15 +15,26 @@ class Storage {
   }
 
   async getOrCreateUser(id: number): Promise<User> {
-    let user = await this.getUser(id);
-    if (!user) {
-      user = await this.createUser({
+    try {
+      let user = await this.getUser(id);
+      if (!user) {
+        user = await this.createUser({
+          name: `User${id}`,
+          preferredAI: "xai"
+        });
+      }
+      return user;
+    } catch (error) {
+      console.error('Database error in getOrCreateUser:', error);
+      // Return a default user if database fails
+      return {
         id,
         name: `User${id}`,
-        preferredAI: "xai"
-      });
+        preferredAI: "xai",
+        age: null,
+        createdAt: new Date()
+      };
     }
-    return user;
   }
 
   async createUser(user: InsertUser): Promise<User> {
@@ -38,7 +49,12 @@ class Storage {
 
   // Conversation operations
   async getConversations(userId: number): Promise<Conversation[]> {
-    return await db.select().from(conversations).where(eq(conversations.userId, userId));
+    try {
+      return await db.select().from(conversations).where(eq(conversations.userId, userId));
+    } catch (error) {
+      console.error('Database error in getConversations:', error);
+      return [];
+    }
   }
 
   async createConversation(conversation: InsertConversation): Promise<Conversation> {
@@ -48,7 +64,12 @@ class Storage {
 
   // Memory operations
   async getMemories(userId: number): Promise<Memory[]> {
-    return await db.select().from(memories).where(eq(memories.userId, userId));
+    try {
+      return await db.select().from(memories).where(eq(memories.userId, userId));
+    } catch (error) {
+      console.error('Database error in getMemories:', error);
+      return [];
+    }
   }
 
   async createMemory(memory: InsertMemory): Promise<Memory> {
@@ -58,7 +79,12 @@ class Storage {
 
   // Friend operations
   async getFriends(userId: number): Promise<Friend[]> {
-    return await db.select().from(friends).where(eq(friends.userId, userId));
+    try {
+      return await db.select().from(friends).where(eq(friends.userId, userId));
+    } catch (error) {
+      console.error('Database error in getFriends:', error);
+      return [];
+    }
   }
 
   async createFriend(friend: InsertFriend): Promise<Friend> {
@@ -68,7 +94,12 @@ class Storage {
 
   // Game progress operations
   async getGameProgress(userId: number): Promise<GameProgress[]> {
-    return await db.select().from(gameProgress).where(eq(gameProgress.userId, userId));
+    try {
+      return await db.select().from(gameProgress).where(eq(gameProgress.userId, userId));
+    } catch (error) {
+      console.error('Database error in getGameProgress:', error);
+      return [];
+    }
   }
 
   async createGameProgress(progress: InsertGameProgress): Promise<GameProgress> {
@@ -78,8 +109,13 @@ class Storage {
 
   // Avatar state operations
   async getAvatarState(userId: number): Promise<AvatarState | undefined> {
-    const result = await db.select().from(avatarState).where(eq(avatarState.userId, userId)).limit(1);
-    return result[0];
+    try {
+      const result = await db.select().from(avatarState).where(eq(avatarState.userId, userId)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Database error in getAvatarState:', error);
+      return undefined;
+    }
   }
 
   async updateAvatarState(userId: number, emotion: string, personality: any): Promise<AvatarState> {

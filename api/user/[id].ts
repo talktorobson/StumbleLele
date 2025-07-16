@@ -11,7 +11,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.json(user);
     } catch (error) {
       console.error('Error fetching user:', error);
-      res.status(500).json({ message: "Erro ao buscar usuário" });
+      res.status(500).json({ 
+        message: "Erro ao buscar usuário",
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   } else {
     res.setHeader('Allow', ['GET']);
