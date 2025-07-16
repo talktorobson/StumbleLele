@@ -13,8 +13,9 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
   const gameRef = useRef<CosmicBlasterMock | null>(null);
   const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver' | 'paused'>('menu');
   const [score, setScore] = useState(0);
-  const [health, setHealth] = useState(100);
+  const [health, setHealth] = useState(150);
   const [wave, setWave] = useState(1);
+  const [weaponLevel, setWeaponLevel] = useState(1);
 
   // Add logging to React state changes
   const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused') => {
@@ -31,6 +32,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
           onScoreChange: setScore,
           onHealthChange: setHealth,
           onWaveChange: setWave,
+          onWeaponLevelChange: setWeaponLevel,
           onGameComplete: (finalScore: number) => {
             onGameComplete(finalScore);
           }
@@ -106,10 +108,13 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
           ⭐ Pontuação: {score}
         </div>
         <div className="bg-red-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
-          ❤️ Health: {health}%
+          ❤️ Health: {health}/150
         </div>
         <div className="bg-green-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
           🌊 Fase: {wave}
+        </div>
+        <div className="bg-yellow-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
+          🔫 Arma: Nível {weaponLevel}
         </div>
       </div>
 
@@ -211,6 +216,7 @@ class CosmicBlasterMock {
     onScoreChange: (score: number) => void;
     onHealthChange: (health: number) => void;
     onWaveChange: (wave: number) => void;
+    onWeaponLevelChange: (level: number) => void;
     onGameComplete: (score: number) => void;
   };
   private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' = 'menu';
@@ -219,7 +225,7 @@ class CosmicBlasterMock {
   
   // Game state
   private score = 0;
-  private health = 100;
+  private health = 150; // Increased starting health
   private wave = 1;
   private waveProgress = 0;
   private waveEnemiesKilled = 0;
@@ -254,7 +260,7 @@ class CosmicBlasterMock {
   private lastObstacleSpawn = 0;
   private obstacleSpawnRate = 4000;
   private lastPickupSpawn = 0;
-  private pickupSpawnRate = 8000;
+  private pickupSpawnRate = 5000; // More frequent pickups
   private difficultyMultiplier = 1;
   
   // Controls
@@ -520,7 +526,7 @@ class CosmicBlasterMock {
 
   private resetGame() {
     this.score = 0;
-    this.health = 100;
+    this.health = 150; // Increased starting health
     this.wave = 1;
     this.waveProgress = 0;
     this.waveEnemiesKilled = 0;
@@ -560,6 +566,7 @@ class CosmicBlasterMock {
     this.callbacks.onScoreChange(this.score);
     this.callbacks.onHealthChange(this.health);
     this.callbacks.onWaveChange(this.wave);
+    this.callbacks.onWeaponLevelChange(this.weaponLevel);
   }
 
   private shoot() {
@@ -741,7 +748,8 @@ class CosmicBlasterMock {
   }
 
   private spawnPickup() {
-    const types = ['weapon', 'health', 'shield', 'helper', 'mine', 'wing'];
+    // Weighted distribution to favor health pickups
+    const types = ['weapon', 'health', 'health', 'shield', 'helper', 'mine', 'wing', 'health'];
     const type = types[Math.floor(Math.random() * types.length)];
     
     const colors = {
@@ -826,7 +834,7 @@ class CosmicBlasterMock {
           x: enemy.x,
           y: enemy.y + enemy.size,
           vy: 5,
-          damage: 10,
+          damage: 5, // Reduced enemy bullet damage
           size: 4,
           color: '#ff0000'
         });
@@ -835,7 +843,7 @@ class CosmicBlasterMock {
       }
       
       if (enemy.y > this.canvas.height) {
-        this.health -= 10;
+        this.health -= 5; // Reduced damage from escaped enemies
         this.updateCallbacks();
         return false;
       }
@@ -858,7 +866,7 @@ class CosmicBlasterMock {
           x: this.boss.x,
           y: this.boss.y + this.boss.size,
           vy: 5,
-          damage: 15,
+          damage: 8, // Reduced boss bullet damage
           size: 6,
           color: '#ff0000'
         });
@@ -875,7 +883,7 @@ class CosmicBlasterMock {
               y: this.boss.y + this.boss.size,
               vx: i * 1,
               vy: 5,
-              damage: 10,
+              damage: 5, // Reduced special attack damage
               size: 4,
               color: '#ff0000'
             });
@@ -894,8 +902,9 @@ class CosmicBlasterMock {
       }
       
       if (this.boss.y > this.canvas.height) {
-        this.health -= 50;
+        this.health -= 20; // Reduced damage from escaped boss
         this.boss = null;
+        this.updateCallbacks();
       }
     }
   }
@@ -1021,12 +1030,12 @@ class CosmicBlasterMock {
         this.score += 100;
         
         if (pickup.type === 'weapon') {
-          this.weaponLevel = Math.min(3, this.weaponLevel + 1);
+          this.weaponLevel = Math.min(6, this.weaponLevel + 1); // Allow up to 6 weapon levels
         } else if (pickup.type === 'health') {
-          this.health = Math.min(100, this.health + 20);
+          this.health = Math.min(150, this.health + 30); // More health from pickups
         } else if (pickup.type === 'shield') {
           this.shieldActive = true;
-          this.shieldTimer = 10000;
+          this.shieldTimer = Date.now() + 10000; // Shield lasts 10 seconds
         } else if (pickup.type === 'helper') {
           this.helpers.push({
             side: this.helpers.length % 2 === 0 ? 1 : -1, // Left or right
@@ -1054,7 +1063,7 @@ class CosmicBlasterMock {
       const dy = this.player.y - enemy.y;
       if (Math.sqrt(dx*dx + dy*dy) < enemy.size + 20) {
         if (!this.shieldActive) {
-          this.health -= 10;
+          this.health -= 5; // Reduced collision damage
         }
         this.enemies.splice(enemyIndex, 1);
         this.explosions.push({ x: enemy.x, y: enemy.y, time: Date.now(), size: 30 });
@@ -1069,7 +1078,7 @@ class CosmicBlasterMock {
       const dy = this.player.y - this.boss.y;
       if (Math.sqrt(dx*dx + dy*dy) < this.boss.size + 20) {
         if (!this.shieldActive) {
-          this.health -= 20;
+          this.health -= 10; // Reduced boss collision damage
         }
         this.explosions.push({ x: this.player.x, y: this.player.y, time: Date.now(), size: 30 });
         this.playSound('hit');
@@ -1118,8 +1127,8 @@ class CosmicBlasterMock {
       this.waveEnemiesKilled = 0;
       this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
       
-      this.enemySpawnRate = Math.max(800, 2000 - this.wave * 50);
-      this.health = Math.min(100, this.health + 20);
+      this.enemySpawnRate = Math.max(1000, 2000 - this.wave * 80); // Slower spawn rate increase
+      this.health = Math.min(150, this.health + 40); // More health between waves
       
       if (this.wave > 10) {
         this.gameState = 'victory';
@@ -1599,6 +1608,10 @@ class CosmicBlasterMock {
         if (Date.now() - this.lastPickupSpawn > this.pickupSpawnRate) {
           console.log('Spawning pickup...');
           this.spawnPickup();
+          // Chance for double pickup spawn
+          if (Math.random() < 0.3) {
+            setTimeout(() => this.spawnPickup(), 500);
+          }
           this.lastPickupSpawn = Date.now();
         }
         
@@ -1611,6 +1624,19 @@ class CosmicBlasterMock {
         this.updatePickups();
         this.updateEnemyBullets();
         this.checkCollisions();
+        
+        // Update shield timer
+        if (this.shieldActive && Date.now() > this.shieldTimer) {
+          this.shieldActive = false;
+        }
+        
+        // Auto-upgrade weapon over time
+        this.weaponUpgradeTimer += 16; // Approximate frame time
+        if (this.weaponUpgradeTimer > this.weaponUpgradeDuration && this.weaponLevel < 6) {
+          this.weaponLevel++;
+          this.weaponUpgradeTimer = 0;
+          console.log('Weapon auto-upgraded to level', this.weaponLevel);
+        }
         
         // Check game over
         if (this.health <= 0) {

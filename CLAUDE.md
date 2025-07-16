@@ -15,9 +15,16 @@ StumbleLele is an interactive AI companion application for children, featuring L
 - **Progress Tracking**: Records game scores and achievements
 - **Voice Input**: Browser-based speech recognition
 - **Responsive UI**: Mobile-friendly interface with bottom navigation
+- **Cosmic Blaster Game**: Complete 1945 Air Force-style space shooter with:
+  - Touch-drag movement controls (mobile-first design)
+  - Automatic continuous shooting with 6-level weapon progression
+  - Balanced 10-wave campaign with progressive difficulty
+  - Power-up system (health, shields, weapons, helpers)
+  - Boss battles and special attacks
+  - Real-time HUD with health, score, wave, and weapon level
 
 ### 🚧 Features In Development
-- **Games**: Currently simulated - need actual game implementations
+- **Additional Games**: Memory, word, and math games need implementation
 - **Voice Synthesis**: Limited to browser TTS - needs enhancement
 - **Database**: Using in-memory storage - PostgreSQL ready but not configured
 
@@ -103,14 +110,32 @@ DATABASE_URL=postgresql://...  # Optional, falls back to in-memory
 - Provide visual feedback for all actions
 - Support high contrast modes
 
+## Recent Updates (July 16, 2025)
+
+### Cosmic Blaster Game Balance Improvements v2.4
+- **Health System**: Increased starting health from 100 to 150 HP
+- **Damage Reduction**: All damage sources reduced by 50-60% for longer gameplay
+- **Power-up Improvements**: 
+  - More frequent spawns (5s instead of 8s)
+  - Health pickups restore 30 HP (was 20 HP)
+  - 30% chance for double pickup spawns
+  - Weighted distribution favoring health pickups
+- **Weapon Progression**: 
+  - Extended to 6 levels (was 3)
+  - Auto-upgrades every 10 seconds
+  - Visual indicator in HUD
+- **Campaign Extension**: Game continues to wave 10 before victory
+- **Shield Mechanics**: Fixed timer implementation for proper protection
+
 ## Future Enhancements
-1. **Real Games**: Implement memory, word, and math games
+1. **Additional Games**: Implement memory, word, and math games
 2. **Enhanced Voice**: Add emotion-based voice synthesis
 3. **Multiplayer**: Allow friends to play together
 4. **Parental Controls**: Add parent dashboard
 5. **Offline Mode**: Cache responses for offline play
 6. **Achievement System**: Badges and rewards
 7. **Story Mode**: Interactive storytelling with Lele
+8. **Game Improvements**: Add more enemy types, special weapons, and boss varieties
 
 ## Debugging Tips
 - Check browser console for API errors
