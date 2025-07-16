@@ -8,7 +8,8 @@ StumbleLele is an interactive AI companion application for children, featuring L
 ## Current Project Status
 
 ### ✅ Working Features
-- **AI Chat System**: Fully functional with OpenAI GPT-4 integration
+- **Multi-AI Chat System**: Supports Google Gemini (default), OpenAI GPT-4, XAI Grok, and Anthropic Claude
+- **AI Model Selector**: User-friendly interface to switch between AI providers with real-time updates
 - **Avatar System**: Cartoon-style animated character with dynamic expressions
 - **Memory System**: Stores conversations and creates contextual memories
 - **Friend Management**: Basic CRUD operations for virtual friends
@@ -30,7 +31,7 @@ StumbleLele is an interactive AI companion application for children, featuring L
 ### 🔧 Technical Stack
 - Frontend: React + TypeScript + Vite + TailwindCSS + shadcn/ui
 - Backend: Vercel Serverless Functions + TypeScript
-- AI: XAI Grok-3
+- AI: Google Gemini 2.5 Flash (default), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
 - Database: PostgreSQL with Drizzle ORM (Supabase transaction pooler)
 - Deployment: Vercel (production) + port 5000 (local development)
 
@@ -51,14 +52,19 @@ StumbleLele is an interactive AI companion application for children, featuring L
 - **Avatar**: Cartoon girl with brown hair, blue dress, expressive eyes
 
 ### API Integration
-- **XAI**: Uses Grok-3 with enhanced response handling
-- **Error Handling**: Graceful fallbacks for API failures
+- **Multi-AI Support**: Google Gemini (primary), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
+- **Model Selection**: Users can switch AI providers via UI with real-time preference updates
+- **Error Handling**: Graceful fallbacks for API failures across all providers
 - **Rate Limiting**: Consider implementing for production
 - **Response Format**: Always includes emotion and personality traits
+- **Default Provider**: Google Gemini 2.5 Flash for optimal speed and performance
 
 ### Environment Variables
 ```bash
-XAI_API_KEY=your_key_here  # Required for AI features
+GEMINI_API_KEY=your_key_here    # Google Gemini API (primary AI)
+XAI_API_KEY=your_key_here       # XAI Grok API (alternative)
+OPENAI_API_KEY=your_key_here    # OpenAI GPT API (alternative)
+ANTHROPIC_API_KEY=your_key_here # Anthropic Claude API (alternative)
 DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1.pooler.supabase.com:6543/postgres  # Supabase transaction pooler
 ```
 
@@ -84,10 +90,18 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 4. Test with different emotional states
 
 ### Adding New Chat Features
-1. Update `server/routes.ts` with new endpoints
-2. Modify AI prompt in `server/services/openai.ts`
+1. Update `api/[...route].ts` with new endpoints
+2. Modify AI prompt in `api/lib/ai.ts`
 3. Add UI components in `client/src/components/chat.tsx`
 4. Update conversation storage logic
+
+### Adding New AI Provider
+1. Install AI provider SDK in package.json
+2. Add client initialization in `api/lib/ai.ts`
+3. Extend `AIModel` type to include new provider
+4. Add API call logic in `generateResponse` method
+5. Update UI selector in `client/src/components/ai-model-selector.tsx`
+6. Add environment variable and documentation
 
 ## Important Notes
 
@@ -110,6 +124,16 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 - Support high contrast modes
 
 ## Recent Updates (July 16, 2025)
+
+### Google Gemini Integration v2.7
+- **Primary AI Provider**: Google Gemini 2.5 Flash now default for all new users
+- **Multi-AI Architecture**: Complete support for 4 AI providers (Gemini, OpenAI, XAI, Anthropic)
+- **User AI Selection**: Interactive UI component allows real-time AI model switching
+- **API Integration**: @google/genai package with proper error handling and fallbacks
+- **Performance Optimization**: Gemini provides faster responses with maintained quality
+- **UI Enhancement**: Added Gem icon with green styling and "Recomendado" label
+- **Database Schema**: Updated to reflect Gemini as default preferredAI option
+- **API Endpoint**: Created `/api/user/{id}/ai-model` for preference updates
 
 ### Vercel Deployment Fixed v2.6
 - **Full-Stack Deployment**: Successfully deployed to Vercel with working backend
@@ -148,12 +172,17 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 # Frontend Build
 npm run vercel-build  # Builds React app to dist/public
 
-# API Structure
+# API Structure (Consolidated)
 /api
-├── chat.ts                    # AI conversation endpoint
-├── user/[id].ts              # User management
-├── conversations/[userId].ts   # Conversation history
-└── avatar/[userId].ts         # Avatar state management
+└── [...route].ts              # Single catch-all handler for all endpoints
+    ├── /chat                  # AI conversation endpoint
+    ├── /user/{id}             # User management
+    ├── /user/{id}/ai-model    # AI model preference updates
+    ├── /conversations/{userId} # Conversation history
+    ├── /friends/{userId}      # Friend management
+    ├── /memories/{userId}     # Memory storage
+    ├── /game/progress/{userId} # Game progress tracking
+    └── /avatar/{userId}       # Avatar state management
 
 # Configuration
 vercel.json                    # Deployment settings
