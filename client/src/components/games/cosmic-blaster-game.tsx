@@ -957,15 +957,235 @@ class CosmicBlasterMock {
   }
 
   private playSound(type: string) {
-    // (keep the same as before)
+    try {
+      // Check if audio context is available and in a valid state
+      if (!this.audioCtx || this.audioCtx.state === 'closed') {
+        return; // Silently skip audio if context is not available
+      }
+
+      // Resume audio context if suspended (user interaction required)
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {
+          // Failed to resume, skip audio
+          return;
+        });
+        return; // Don't play sound this time, wait for context to resume
+      }
+
+      // Only play sound if context is running
+      if (this.audioCtx.state !== 'running') {
+        return;
+      }
+
+      if (type === 'shoot') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(880, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(440, this.audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 100);
+      } else if (type === 'explosion') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 150;
+        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 200);
+      } else if (type === 'hit') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 100;
+        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 150);
+      } else if (type === 'pickup') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(660, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, this.audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 200);
+      } else if (type === 'enemyShoot') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(440, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(220, this.audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 100);
+      }
+    } catch (error) {
+      // Silent fail
+    }
   }
 
   private drawPlayer() {
-    // (keep the spaceship draw as before)
+    if (!this.player || !this.ctx) return;
+    
+    const px = this.player.x;
+    const py = this.player.y;
+    
+    // Draw spaceship body
+    this.ctx.fillStyle = '#0000ff'; // Blue body
+    this.ctx.beginPath();
+    this.ctx.moveTo(px, py - 30); // Top point
+    this.ctx.lineTo(px - 20, py + 20); // Left bottom
+    this.ctx.lineTo(px + 20, py + 20); // Right bottom
+    this.ctx.closePath();
+    this.ctx.fill();
+    
+    // Wings
+    this.ctx.fillStyle = '#00bfff'; // Light blue wings
+    this.ctx.beginPath();
+    this.ctx.moveTo(px - 10, py + 10);
+    this.ctx.lineTo(px - 30, py + 30);
+    this.ctx.lineTo(px - 15, py + 20);
+    this.ctx.fill();
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(px + 10, py + 10);
+    this.ctx.lineTo(px + 30, py + 30);
+    this.ctx.lineTo(px + 15, py + 20);
+    this.ctx.fill();
+    
+    // Cockpit
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.beginPath();
+    this.ctx.arc(px, py - 15, 8, 0, Math.PI * 2);
+    this.ctx.fill();
+    
+    // Draw shield if active
+    if (this.shieldActive) {
+      this.ctx.strokeStyle = '#00ffff';
+      this.ctx.lineWidth = 3;
+      this.ctx.beginPath();
+      this.ctx.arc(px, py, 40, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+    
+    // Extra wings if active
+    if (this.player.wings > 0) {
+      this.ctx.fillStyle = '#ffff00';
+      for (let i = 1; i <= this.player.wings; i++) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(px - 20 - i * 10, py + 10);
+        this.ctx.lineTo(px - 40 - i * 10, py + 30);
+        this.ctx.lineTo(px - 25 - i * 10, py + 20);
+        this.ctx.fill();
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(px + 20 + i * 10, py + 10);
+        this.ctx.lineTo(px + 40 + i * 10, py + 30);
+        this.ctx.lineTo(px + 25 + i * 10, py + 20);
+        this.ctx.fill();
+      }
+    }
   }
 
   private drawEnemy(enemy: any) {
-    // (keep with different shapes as before)
+    if (!enemy || !this.ctx) return;
+    
+    this.ctx.fillStyle = enemy.color;
+    if (enemy.type === 'slime') {
+      this.ctx.beginPath();
+      this.ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+      this.ctx.fill();
+    } else if (enemy.type === 'bubble') {
+      this.ctx.beginPath();
+      this.ctx.ellipse(enemy.x, enemy.y, enemy.size * 1.2, enemy.size, 0, 0, Math.PI * 2);
+      this.ctx.fill();
+    } else if (enemy.type === 'crystal') {
+      this.ctx.beginPath();
+      this.ctx.moveTo(enemy.x, enemy.y - enemy.size);
+      this.ctx.lineTo(enemy.x - enemy.size, enemy.y + enemy.size);
+      this.ctx.lineTo(enemy.x + enemy.size, enemy.y + enemy.size);
+      this.ctx.closePath();
+      this.ctx.fill();
+    }
+    
+    // Health bar if health > 1
+    if (enemy.maxHealth > 1) {
+      this.ctx.fillStyle = 'red';
+      this.ctx.fillRect(enemy.x - enemy.size, enemy.y - enemy.size - 5, enemy.size * 2 * (enemy.health / enemy.maxHealth), 3);
+    }
+    
+    // Face (eyes)
+    this.ctx.fillStyle = 'white';
+    this.ctx.beginPath();
+    this.ctx.arc(enemy.x - 5, enemy.y - 5, 3, 0, Math.PI * 2);
+    this.ctx.arc(enemy.x + 5, enemy.y - 5, 3, 0, Math.PI * 2);
+    this.ctx.fill();
+    
+    this.ctx.fillStyle = 'black';
+    this.ctx.beginPath();
+    this.ctx.arc(enemy.x - 5, enemy.y - 5, 1, 0, Math.PI * 2);
+    this.ctx.arc(enemy.x + 5, enemy.y - 5, 1, 0, Math.PI * 2);
+    this.ctx.fill();
+  }
+
+  private drawBackground() {
+    // Simple city spatial background
+    this.ctx.fillStyle = '#1e3c72';
+    this.ctx.fillRect(0, this.backgroundY, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
+    
+    // Draw buildings
+    for (let i = 0; i < 5; i++) {
+      this.ctx.fillStyle = '#4a90e2';
+      this.ctx.fillRect(i * 150 + 50, this.backgroundY + 100, 100, 200);
+      this.ctx.fillStyle = '#2a5298';
+      this.ctx.fillRect(i * 150 + 60, this.backgroundY + 120, 80, 180);
+    }
+    
+    // Draw clouds
+    for (let i = 0; i < 3; i++) {
+      this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      this.ctx.beginPath();
+      this.ctx.arc(i * 200 + 100, this.backgroundY + 50, 50, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
   }
 
   private draw() {
@@ -976,31 +1196,134 @@ class CosmicBlasterMock {
       
       this.drawBackground();
       
-      // Draw stars (on top of background)
-      // (keep as before)
+      // Draw stars
+      this.stars.forEach(star => {
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.3 + Math.sin(star.twinkle) * 0.3;
+        this.ctx.fillStyle = 'white';
+        this.ctx.beginPath();
+        this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+        star.twinkle += 0.1;
+      });
       
       // Draw player
-      if (this.player) {
-        this.drawPlayer();
-      }
+      this.drawPlayer();
       
       // Draw bullets
-      // (keep as before)
+      this.bullets.forEach(bullet => {
+        this.ctx.fillStyle = bullet.color;
+        this.ctx.beginPath();
+        this.ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+        this.ctx.fill();
+      });
       
-      // Draw enemies with different shapes and health bars
-      // (keep as before)
+      // Draw enemy bullets
+      this.enemyBullets.forEach(bullet => {
+        this.ctx.fillStyle = bullet.color;
+        this.ctx.beginPath();
+        this.ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
+        this.ctx.fill();
+      });
       
-      // Draw obstacles (barriers)
-      // (keep as before)
+      // Draw enemies
+      this.enemies.forEach(enemy => this.drawEnemy(enemy));
+      
+      // Draw obstacles
+      this.obstacles.forEach(obs => {
+        this.ctx.fillStyle = obs.color;
+        this.ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2, obs.width, obs.height);
+        
+        // Health bar
+        this.ctx.fillStyle = 'red';
+        this.ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2 - 5, obs.width * (obs.health / obs.maxHealth), 3);
+      });
       
       // Draw pickups
-      // (keep as before)
+      this.pickups.forEach(pickup => {
+        const pulseEffect = 0.8 + Math.sin((Date.now() - pickup.pulseTime) * 0.01) * 0.2;
+        this.ctx.save();
+        this.ctx.globalAlpha = pulseEffect;
+        this.ctx.fillStyle = pickup.color;
+        this.ctx.strokeStyle = '#ffffff';
+        this.ctx.lineWidth = 2;
+        
+        if (pickup.type === 'weapon') {
+          const centerX = pickup.x;
+          const centerY = pickup.y;
+          const radius = pickup.size;
+          const spikes = 5;
+          this.ctx.beginPath();
+          for (let i = 0; i < spikes * 2; i++) {
+            const angle = (i * Math.PI) / spikes;
+            const r = i % 2 === 0 ? radius : radius * 0.5;
+            const x = centerX + Math.cos(angle) * r;
+            const y = centerY + Math.sin(angle) * r;
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+          }
+          this.ctx.closePath();
+          this.ctx.fill();
+          this.ctx.stroke();
+        } else if (pickup.type === 'health') {
+          const size = pickup.size;
+          this.ctx.fillRect(pickup.x - size/4, pickup.y - size, size/2, size*2);
+          this.ctx.fillRect(pickup.x - size, pickup.y - size/4, size*2, size/2);
+        } else if (pickup.type === 'shield') {
+          this.ctx.beginPath();
+          this.ctx.arc(pickup.x, pickup.y, pickup.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.stroke();
+        } else if (pickup.type === 'helper') {
+          this.ctx.beginPath();
+          this.ctx.moveTo(pickup.x, pickup.y - 10);
+          this.ctx.lineTo(pickup.x - 10, pickup.y + 10);
+          this.ctx.lineTo(pickup.x + 10, pickup.y + 10);
+          this.ctx.closePath();
+          this.ctx.fill();
+        } else if (pickup.type === 'mine') {
+          this.ctx.beginPath();
+          this.ctx.arc(pickup.x, pickup.y, 10, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.fillRect(pickup.x - 2, pickup.y - 15, 4, 5);
+        } else if (pickup.type === 'wing') {
+          this.ctx.beginPath();
+          this.ctx.moveTo(pickup.x - 10, pickup.y);
+          this.ctx.lineTo(pickup.x, pickup.y - 10);
+          this.ctx.lineTo(pickup.x + 10, pickup.y);
+          this.ctx.fill();
+        }
+        
+        this.ctx.restore();
+      });
       
-      // Draw helpers (allies)
-      // (keep as before)
+      // Draw helpers
+      this.helpers.forEach(helper => {
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.beginPath();
+        this.ctx.moveTo(helper.x, helper.y - 10);
+        this.ctx.lineTo(helper.x - 8, helper.y + 10);
+        this.ctx.lineTo(helper.x + 8, helper.y + 10);
+        this.ctx.closePath();
+        this.ctx.fill();
+      });
       
       // Draw explosions
-      // (keep as before)
+      this.explosions = this.explosions.filter(explosion => {
+        const age = Date.now() - explosion.time;
+        if (age < 500) {
+          this.ctx.save();
+          this.ctx.globalAlpha = 1 - (age / 500);
+          this.ctx.fillStyle = '#ffff00';
+          this.ctx.beginPath();
+          this.ctx.arc(explosion.x, explosion.y, age / 10, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+          return true;
+        }
+        return false;
+      });
     } catch (error) {
       console.error('Draw method error:', error);
     }
