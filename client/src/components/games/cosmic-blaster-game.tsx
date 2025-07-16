@@ -187,6 +187,8 @@ class CosmicBlasterMock {
   private shieldTimer = 0;
   private baseScrollSpeed = 3;
   private scrollSpeed = 3;
+  private autoShootRate = 150; // Automatic shooting every 150ms
+  private lastAutoShot = 0;
   
   // Game objects
   private player: any;
@@ -309,8 +311,8 @@ class CosmicBlasterMock {
   private initializePlayer() {
     this.player = {
       x: this.canvas.width / 2,
-      y: this.canvas.height - 100,
-      width: 60,
+      y: this.canvas.height - 150, // Position higher up for better visibility
+      width: 40,
       height: 60,
       speed: 12
     };
@@ -333,17 +335,27 @@ class CosmicBlasterMock {
       }
     });
 
-    // Touch controls
+    // Touch controls - 1945 Air Force style
     this.canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      if (this.gameState !== 'playing') return;
+      
       this.isTouching = true;
       const touch = e.touches[0];
-      this.touchStartX = touch.clientX;
-      this.touchStartY = touch.clientY;
+      const rect = this.canvas.getBoundingClientRect();
+      const canvasX = touch.clientX - rect.left;
+      const canvasY = touch.clientY - rect.top;
       
-      if (this.gameState === 'playing') {
-        this.shoot();
-      }
+      // Convert to canvas coordinates
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+      
+      this.player.x = canvasX * scaleX;
+      this.player.y = canvasY * scaleY;
+      
+      // Keep player within bounds
+      this.player.x = Math.max(30, Math.min(this.canvas.width - 30, this.player.x));
+      this.player.y = Math.max(50, Math.min(this.canvas.height - 50, this.player.y));
     }, { passive: false });
 
     this.canvas.addEventListener('touchmove', (e) => {
@@ -351,13 +363,21 @@ class CosmicBlasterMock {
       if (!this.isTouching || this.gameState !== 'playing') return;
       
       const touch = e.touches[0];
-      const deltaX = touch.clientX - this.touchStartX;
+      const rect = this.canvas.getBoundingClientRect();
+      const canvasX = touch.clientX - rect.left;
+      const canvasY = touch.clientY - rect.top;
       
-      if (Math.abs(deltaX) > 5) {
-        const targetX = this.player.x + deltaX * 0.2;
-        this.player.x = Math.max(this.laneWidth/2, Math.min(this.canvas.width - this.laneWidth/2, targetX));
-        this.touchStartX = touch.clientX;
-      }
+      // Convert to canvas coordinates
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+      
+      // Smooth movement - player follows finger exactly
+      this.player.x = canvasX * scaleX;
+      this.player.y = canvasY * scaleY;
+      
+      // Keep player within bounds
+      this.player.x = Math.max(30, Math.min(this.canvas.width - 30, this.player.x));
+      this.player.y = Math.max(50, Math.min(this.canvas.height - 50, this.player.y));
     }, { passive: false });
 
     this.canvas.addEventListener('touchend', (e) => {
@@ -378,15 +398,21 @@ class CosmicBlasterMock {
   }
 
   public startGame() {
+    this.resetGame();
     this.gameState = 'playing';
     this.callbacks.onStateChange(this.gameState);
-    this.resetGame();
+    // Reset timers to ensure proper game start
+    this.lastAutoShot = Date.now();
+    this.lastEnemySpawn = Date.now();
   }
 
   public restart() {
     this.resetGame();
     this.gameState = 'playing';
     this.callbacks.onStateChange(this.gameState);
+    // Reset timers to ensure proper game restart
+    this.lastAutoShot = Date.now();
+    this.lastEnemySpawn = Date.now();
   }
 
   private resetGame() {
@@ -442,9 +468,42 @@ class CosmicBlasterMock {
       vx: 0,
       vy: -8,
       damage: 1,
-      color: '#00ff00',
+      color: '#ffd700',
       size: 4,
       type: 'basic',
+      special: 'none'
+    });
+  }
+
+  private autoShoot() {
+    if (this.gameState !== 'playing') return;
+    if (Date.now() - this.lastAutoShot < this.autoShootRate) return;
+    
+    this.lastAutoShot = Date.now();
+    this.playSound('shoot');
+    
+    // Shoot multiple bullets for better visual effect
+    this.bullets.push({
+      x: this.player.x - 8,
+      y: this.player.y - 20,
+      vx: 0,
+      vy: -10,
+      damage: 1,
+      color: '#ffd700',
+      size: 3,
+      type: 'auto',
+      special: 'none'
+    });
+    
+    this.bullets.push({
+      x: this.player.x + 8,
+      y: this.player.y - 20,
+      vx: 0,
+      vy: -10,
+      damage: 1,
+      color: '#ffd700',
+      size: 3,
+      type: 'auto',
       special: 'none'
     });
   }
@@ -647,67 +706,96 @@ class CosmicBlasterMock {
     const px = this.player.x || 0;
     const py = this.player.y || 0;
     
-    // Draw Lele as a beautiful girl
-    this.ctx.fillStyle = '#ffb6c1'; // Skin
-    this.ctx.fillRect(px - 15, py - 20, 30, 20); // Upper body
-    
-    // Dress/skirt
-    this.ctx.fillStyle = '#ff69b4'; // Pink dress
-    this.ctx.beginPath();
-    this.ctx.moveTo(px - 15, py);
-    this.ctx.lineTo(px - 25, py + 30);
-    this.ctx.lineTo(px + 25, py + 30);
-    this.ctx.lineTo(px + 15, py);
-    this.ctx.fill();
-    
-    // Arms with wand
-    this.ctx.fillStyle = '#ffb6c1';
-    this.ctx.fillRect(px - 20, py - 10, 10, 20); // Left arm
-    this.ctx.fillRect(px + 10, py - 10, 10, 20); // Right arm
-    this.ctx.fillStyle = '#ffd700'; // Golden wand
-    this.ctx.fillRect(px + 15, py - 5, 15, 3); // Wand
-    
-    // Head with long hair
-    this.ctx.fillStyle = '#8b4513'; // Long hair
-    this.ctx.beginPath();
-    this.ctx.moveTo(px - 12, py - 30);
-    this.ctx.quadraticCurveTo(px, py - 40, px + 12, py - 30);
-    this.ctx.lineTo(px + 12, py - 10);
-    this.ctx.lineTo(px - 12, py - 10);
-    this.ctx.fill();
-    
-    this.ctx.fillStyle = '#ffb6c1'; // Face
-    this.ctx.beginPath();
-    this.ctx.arc(px, py - 25, 12, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // Eyes
-    this.ctx.fillStyle = 'white';
-    this.ctx.beginPath();
-    this.ctx.arc(px - 5, py - 25, 3, 0, Math.PI * 2);
-    this.ctx.arc(px + 5, py - 25, 3, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    this.ctx.fillStyle = 'black';
-    this.ctx.beginPath();
-    this.ctx.arc(px - 5, py - 25, 1.5, 0, Math.PI * 2);
-    this.ctx.arc(px + 5, py - 25, 1.5, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // Mouth smile
-    this.ctx.strokeStyle = 'black';
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.arc(px, py - 18, 4, 0, Math.PI);
-    this.ctx.stroke();
-    
-    // Draw shield if active
-    if (this.shieldActive) {
-      this.ctx.strokeStyle = '#00ffff';
-      this.ctx.lineWidth = 3;
+    try {
+      // Draw longer flowing hair first (behind the head)
+      this.ctx.fillStyle = '#8b4513'; // Brown hair
       this.ctx.beginPath();
-      this.ctx.arc(px, py, 40, 0, Math.PI * 2);
+      // Hair flowing down both sides and back
+      this.ctx.moveTo(px - 16, py - 35);
+      this.ctx.quadraticCurveTo(px - 8, py - 45, px + 16, py - 35);
+      this.ctx.quadraticCurveTo(px + 20, py - 10, px + 18, py + 15); // Right side hair flowing down
+      this.ctx.quadraticCurveTo(px + 10, py + 20, px, py + 18); // Hair bottom curve
+      this.ctx.quadraticCurveTo(px - 10, py + 20, px - 18, py + 15); // Left side hair flowing down
+      this.ctx.quadraticCurveTo(px - 20, py - 10, px - 16, py - 35);
+      this.ctx.fill();
+      
+      // Body with blue shirt (like in image)
+      this.ctx.fillStyle = '#4169E1'; // Royal blue
+      this.ctx.fillRect(px - 12, py - 5, 24, 25); // Body
+      
+      // Add white dots on blue shirt
+      this.ctx.fillStyle = 'white';
+      this.ctx.beginPath();
+      this.ctx.arc(px - 6, py + 5, 2, 0, Math.PI * 2);
+      this.ctx.arc(px + 6, py + 5, 2, 0, Math.PI * 2);
+      this.ctx.arc(px, py + 12, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Arms
+      this.ctx.fillStyle = '#ffb6c1'; // Skin color
+      this.ctx.fillRect(px - 18, py - 5, 8, 18); // Left arm
+      this.ctx.fillRect(px + 10, py - 5, 8, 18); // Right arm
+      
+      // Face (round and cute)
+      this.ctx.fillStyle = '#ffb6c1'; // Skin
+      this.ctx.beginPath();
+      this.ctx.arc(px, py - 25, 14, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Eyes (big and expressive like in image)
+      this.ctx.fillStyle = 'white';
+      this.ctx.beginPath();
+      this.ctx.arc(px - 6, py - 27, 4, 0, Math.PI * 2);
+      this.ctx.arc(px + 6, py - 27, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Eye pupils (brown/dark)
+      this.ctx.fillStyle = '#8b4513';
+      this.ctx.beginPath();
+      this.ctx.arc(px - 6, py - 27, 2, 0, Math.PI * 2);
+      this.ctx.arc(px + 6, py - 27, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Eye highlights
+      this.ctx.fillStyle = 'white';
+      this.ctx.beginPath();
+      this.ctx.arc(px - 5, py - 28, 1, 0, Math.PI * 2);
+      this.ctx.arc(px + 7, py - 28, 1, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Small orange nose
+      this.ctx.fillStyle = '#ff8c69';
+      this.ctx.beginPath();
+      this.ctx.arc(px, py - 23, 1, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      // Pink smile
+      this.ctx.strokeStyle = '#ff1493';
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(px, py - 18, 5, 0, Math.PI);
       this.ctx.stroke();
+      
+      // Hair bangs/fringe in front
+      this.ctx.fillStyle = '#8b4513';
+      this.ctx.beginPath();
+      this.ctx.moveTo(px - 12, py - 32);
+      this.ctx.quadraticCurveTo(px - 6, py - 38, px, py - 32);
+      this.ctx.quadraticCurveTo(px + 6, py - 38, px + 12, py - 32);
+      this.ctx.quadraticCurveTo(px + 8, py - 30, px, py - 30);
+      this.ctx.quadraticCurveTo(px - 8, py - 30, px - 12, py - 32);
+      this.ctx.fill();
+      
+      // Draw shield if active
+      if (this.shieldActive) {
+        this.ctx.strokeStyle = '#00ffff';
+        this.ctx.lineWidth = 3;
+        this.ctx.beginPath();
+        this.ctx.arc(px, py, 40, 0, Math.PI * 2);
+        this.ctx.stroke();
+      }
+    } catch (error) {
+      console.warn('Player drawing error:', error);
     }
   }
 
@@ -829,6 +917,7 @@ class CosmicBlasterMock {
         }
         
         this.updatePlayer();
+        this.autoShoot(); // Automatic shooting like 1945 Air Force
         this.updateBullets();
         this.updateEnemies();
         this.checkCollisions();
