@@ -21,6 +21,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
       // Small delay to ensure DOM is ready and canvas has proper dimensions
       const timer = setTimeout(() => {
         try {
+          console.log('Creating CosmicBlasterMock instance...');
           gameRef.current = new CosmicBlasterMock(canvasRef.current!, {
             onStateChange: setGameState,
             onScoreChange: setScore,
@@ -30,6 +31,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
               onGameComplete(finalScore);
             }
           });
+          console.log('CosmicBlasterMock instance created successfully');
         } catch (error) {
           console.error('Game initialization error:', error);
         }
@@ -51,8 +53,11 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
   }, [onGameComplete]);
 
   const handleStartGame = () => {
+    console.log('handleStartGame called, gameRef.current:', !!gameRef.current);
     if (gameRef.current) {
       gameRef.current.startGame();
+    } else {
+      console.error('No game instance available!');
     }
   };
 
@@ -223,6 +228,7 @@ class CosmicBlasterMock {
   private laneWidth = 0;
 
   constructor(canvas: HTMLCanvasElement, callbacks: any) {
+    console.log('=== COSMIC BLASTER CONSTRUCTOR ===');
     this.canvas = canvas;
     this.callbacks = callbacks;
     
@@ -260,11 +266,13 @@ class CosmicBlasterMock {
   }
 
   private initialize() {
+    console.log('Initializing game...');
     this.resizeCanvas();
     this.initializeStars();
     this.initializeLanes();
     this.initializePlayer();
     this.bindEvents();
+    console.log('Starting game loop...');
     this.gameLoop();
   }
 
@@ -405,16 +413,19 @@ class CosmicBlasterMock {
   }
 
   public startGame() {
+    console.log('=== GAME START CALLED ===');
     // Initialize audio on first user interaction
     this.initializeAudioOnUserInteraction();
     
     this.resetGame();
     this.gameState = 'playing';
+    console.log('Game state set to:', this.gameState);
     this.callbacks.onStateChange(this.gameState);
     // Reset timers to allow immediate spawning
     this.lastAutoShot = Date.now() - this.autoShootRate; // Allow immediate shooting
     this.lastEnemySpawn = Date.now() - this.enemySpawnRate; // Allow immediate enemy spawn
     this.lastPickupSpawn = Date.now() - this.pickupSpawnRate; // Allow immediate pickup spawn
+    console.log('Timers reset for immediate spawning');
   }
 
   public restart() {
@@ -508,6 +519,7 @@ class CosmicBlasterMock {
     if (!this.player) return;
     if (Date.now() - this.lastAutoShot < this.autoShootRate) return;
     
+    console.log('Auto shooting!');
     this.lastAutoShot = Date.now();
     this.playSound('shoot');
     
@@ -1158,10 +1170,15 @@ class CosmicBlasterMock {
 
   private gameLoop() {
     try {
+      // Log game loop execution every few seconds
+      if (Date.now() % 3000 < 16) {
+        console.log('GameLoop running, state:', this.gameState, 'enemies:', this.enemies.length, 'bullets:', this.bullets.length);
+      }
+      
       if (this.gameState === 'playing') {
-        
         // Spawn enemies
         if (Date.now() - this.lastEnemySpawn > this.enemySpawnRate) {
+          console.log('Spawning enemy...');
           this.spawnEnemy();
           this.lastEnemySpawn = Date.now();
         }
