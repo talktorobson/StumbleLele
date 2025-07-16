@@ -17,7 +17,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
   const [wave, setWave] = useState(1);
 
   useEffect(() => {
-    if (canvasRef.current) {
+    if (canvasRef.current && !gameRef.current) {
       // Small delay to ensure DOM is ready and canvas has proper dimensions
       const timer = setTimeout(() => {
         try {
@@ -41,6 +41,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         clearTimeout(timer);
         if (gameRef.current) {
           gameRef.current.destroy();
+          gameRef.current = null;
         }
       };
     }
@@ -48,9 +49,10 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
     return () => {
       if (gameRef.current) {
         gameRef.current.destroy();
+        gameRef.current = null;
       }
     };
-  }, [onGameComplete]);
+  }, []); // Remove onGameComplete dependency to prevent re-creation
 
   const handleStartGame = () => {
     console.log('handleStartGame called, gameRef.current:', !!gameRef.current);
@@ -68,11 +70,11 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-black z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-black z-[9999] overflow-hidden">
       {/* Back Button */}
       <Button
         onClick={onExit}
-        className="absolute top-4 right-4 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full p-3"
+        className="absolute top-4 right-4 z-[10000] bg-red-500 hover:bg-red-600 text-white rounded-full p-3"
       >
         <ArrowLeft className="h-5 w-5 mr-2" />
         Voltar
@@ -82,7 +84,12 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
       <canvas
         ref={canvasRef}
         className="w-full h-full bg-transparent cursor-default"
-        style={{ touchAction: 'none' }}
+        style={{ 
+          touchAction: 'none',
+          pointerEvents: 'auto',
+          position: 'relative',
+          zIndex: 1000
+        }}
       />
 
       {/* Game UI Overlay */}
@@ -273,7 +280,8 @@ class CosmicBlasterMock {
     this.initializePlayer();
     this.bindEvents();
     console.log('Starting game loop...');
-    this.gameLoop();
+    // Initialize the animation frame ID to start the loop
+    this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
   }
 
   private resizeCanvas() {
@@ -353,6 +361,8 @@ class CosmicBlasterMock {
     // Touch controls - 1945 Air Force style
     this.canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      console.log('Touch start detected, gameState:', this.gameState);
       if (this.gameState !== 'playing') return;
       
       this.isTouching = true;
@@ -375,6 +385,8 @@ class CosmicBlasterMock {
 
     this.canvas.addEventListener('touchmove', (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      console.log('Touch move detected');
       if (!this.isTouching || this.gameState !== 'playing') return;
       
       const touch = e.touches[0];
