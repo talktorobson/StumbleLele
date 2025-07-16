@@ -221,6 +221,9 @@ class CosmicBlasterMock {
   // Lane system
   private numLanes = 2;
   private laneWidth = 0;
+  
+  // Debug
+  private lastDebugLog = 0;
 
   constructor(canvas: HTMLCanvasElement, callbacks: any) {
     this.canvas = canvas;
@@ -411,9 +414,11 @@ class CosmicBlasterMock {
     this.resetGame();
     this.gameState = 'playing';
     this.callbacks.onStateChange(this.gameState);
-    // Reset timers to ensure proper game start
-    this.lastAutoShot = Date.now();
-    this.lastEnemySpawn = Date.now();
+    // Reset timers to allow immediate spawning
+    this.lastAutoShot = Date.now() - this.autoShootRate; // Allow immediate shooting
+    this.lastEnemySpawn = Date.now() - this.enemySpawnRate; // Allow immediate enemy spawn
+    this.lastPickupSpawn = Date.now() - this.pickupSpawnRate; // Allow immediate pickup spawn
+    console.log('StartGame: Game state set to playing, timers reset for immediate action');
   }
 
   public restart() {
@@ -423,9 +428,11 @@ class CosmicBlasterMock {
     this.resetGame();
     this.gameState = 'playing';
     this.callbacks.onStateChange(this.gameState);
-    // Reset timers to ensure proper game restart
-    this.lastAutoShot = Date.now();
-    this.lastEnemySpawn = Date.now();
+    // Reset timers to allow immediate spawning
+    this.lastAutoShot = Date.now() - this.autoShootRate; // Allow immediate shooting
+    this.lastEnemySpawn = Date.now() - this.enemySpawnRate; // Allow immediate enemy spawn
+    this.lastPickupSpawn = Date.now() - this.pickupSpawnRate; // Allow immediate pickup spawn
+    console.log('Restart: Game state set to playing, timers reset for immediate action');
   }
 
   private initializeAudioOnUserInteraction() {
@@ -502,11 +509,19 @@ class CosmicBlasterMock {
   }
 
   private autoShoot() {
-    if (this.gameState !== 'playing') return;
+    if (this.gameState !== 'playing') {
+      console.log('AutoShoot: Game not playing, state:', this.gameState);
+      return;
+    }
+    if (!this.player) {
+      console.log('AutoShoot: No player object');
+      return;
+    }
     if (Date.now() - this.lastAutoShot < this.autoShootRate) return;
     
     this.lastAutoShot = Date.now();
     this.playSound('shoot');
+    console.log('AutoShoot: Firing bullets, weaponLevel:', this.weaponLevel, 'player pos:', this.player.x, this.player.y);
     
     // Automatic weapon progression based on weapon level
     switch (this.weaponLevel) {
@@ -584,6 +599,7 @@ class CosmicBlasterMock {
   }
 
   private spawnEnemy() {
+    console.log('SpawnEnemy: Creating new enemy');
     const types = ['slime', 'bubble', 'crystal'];
     const type = types[Math.floor(Math.random() * types.length)];
     
@@ -1156,6 +1172,13 @@ class CosmicBlasterMock {
   private gameLoop() {
     try {
       if (this.gameState === 'playing') {
+        // Debug: Log game activity once per second
+        const now = Date.now();
+        if (now - (this.lastDebugLog || 0) > 1000) {
+          console.log('GameLoop: enemies:', this.enemies.length, 'bullets:', this.bullets.length, 'state:', this.gameState);
+          this.lastDebugLog = now;
+        }
+        
         // Spawn enemies
         if (Date.now() - this.lastEnemySpawn > this.enemySpawnRate) {
           this.spawnEnemy();
