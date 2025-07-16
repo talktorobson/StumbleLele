@@ -230,6 +230,9 @@ class CosmicBlasterMock {
   private numLanes = 2;
   private laneWidth = 0;
 
+  // Background
+  private backgroundY = 0;
+
   constructor(canvas: HTMLCanvasElement, callbacks: any) {
     console.log('=== COSMIC BLASTER CONSTRUCTOR ===');
     this.canvas = canvas;
@@ -619,112 +622,118 @@ class CosmicBlasterMock {
       crystal: '#ff69b4'
     };
     
-    const lane = Math.floor(Math.random() * this.numLanes);
+    const sizes = {
+      slime: 15,
+      bubble: 25,
+      crystal: 35
+    };
+    
+    const speeds = {
+      slime: 3,
+      bubble: 2,
+      crystal: 1
+    };
+    
+    const healths = {
+      slime: 1,
+      bubble: 2,
+      crystal: 3
+    };
+    
+    const x = Math.random() * (this.canvas.width - 50) + 25; // Any horizontal position
     const enemy = {
-      x: lane * this.laneWidth + this.laneWidth / 2,
+      x: x,
       y: -50,
+      vx: (Math.random() - 0.5) * 2, // Horizontal movement
       type: type,
       color: colors[type as keyof typeof colors],
-      size: 20,
-      speed: 2 * this.difficultyMultiplier,
-      health: 1,
-      maxHealth: 1,
-      lane: lane
+      size: sizes[type as keyof typeof sizes],
+      speed: speeds[type as keyof typeof speeds] * this.difficultyMultiplier,
+      health: healths[type as keyof typeof healths],
+      maxHealth: healths[type as keyof typeof healths],
+      canShoot: Math.random() > 0.7, // Some can shoot
+      canAccelerate: Math.random() > 0.8, // Some accelerate
+      lastShot: Date.now()
     };
     
     this.enemies.push(enemy);
   }
 
   private spawnObstacle() {
-    const types = ['wall', 'gate'];
+    const types = ['wall', 'gate', 'fence'];
     const type = types[Math.floor(Math.random() * types.length)];
     
     const colors = {
       wall: '#8B4513',
-      gate: '#FFD700'
+      gate: '#FFD700',
+      fence: '#A9A9A9'
     };
     
-    const lane = Math.floor(Math.random() * this.numLanes);
+    const x = Math.random() * (this.canvas.width - 100) + 50; // Random horizontal
     const obstacle = {
-      x: lane * this.laneWidth + this.laneWidth / 2,
+      x: x,
       y: -100,
       type: type,
       color: colors[type as keyof typeof colors],
-      width: this.laneWidth - 20,
-      height: 80,
+      width: Math.random() * 80 + 40,
+      height: 50,
       speed: this.scrollSpeed * this.difficultyMultiplier,
-      lane: lane,
-      health: 5, // Example health
-      lastShot: Date.now()
+      health: Math.random() * 3 + 2,
+      maxHealth: Math.random() * 3 + 2
     };
     
     this.obstacles.push(obstacle);
   }
 
   private spawnPickup() {
-    const types = ['weapon', 'health', 'shield'];
+    const types = ['weapon', 'health', 'shield', 'helper', 'mine', 'wing'];
     const type = types[Math.floor(Math.random() * types.length)];
     
     const colors = {
-      weapon: '#ffd700',  // Gold for weapon upgrades
-      health: '#ff6b6b',  // Red for health
-      shield: '#4ecdc4'   // Cyan for shield
+      weapon: '#ffd700',
+      health: '#ff6b6b',
+      shield: '#4ecdc4',
+      helper: '#00ff00',
+      mine: '#ff0000',
+      wing: '#ffff00'
     };
     
-    const lane = Math.floor(Math.random() * this.numLanes);
+    const x = Math.random() * (this.canvas.width - 50) + 25;
     const pickup = {
-      x: lane * this.laneWidth + this.laneWidth / 2,
+      x: x,
       y: -30,
       type: type,
       color: colors[type as keyof typeof colors],
       size: 15,
       speed: 2,
-      pulseTime: Date.now(),
-      lane: lane
+      pulseTime: Date.now()
     };
     
     this.pickups.push(pickup);
   }
 
-  private updatePickups() {
-    this.pickups = this.pickups.filter(pickup => {
-      pickup.y += pickup.speed;
-      
-      // Remove pickups that go off screen
-      if (pickup.y > this.canvas.height + 50) {
-        return false;
-      }
-      
-      return true;
-    });
-  }
-
-  private updatePlayer() {
-    if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
-      this.player.x -= this.player.speed;
-    }
-    if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
-      this.player.x += this.player.speed;
-    }
-    
-    if (this.keys['ArrowUp']) {
-      this.scrollSpeed = this.baseScrollSpeed * 2;
-    }
-    
-    this.player.x = Math.max(this.laneWidth/2, Math.min(this.canvas.width - this.laneWidth/2, this.player.x));
-  }
-
-  private updateBullets() {
-    this.bullets = this.bullets.filter(bullet => {
-      bullet.x += bullet.vx;
-      bullet.y += bullet.vy;
-      return bullet.y > -50;
-    });
-  }
-
   private updateEnemies() {
     this.enemies = this.enemies.filter(enemy => {
+      enemy.x += enemy.vx;
       enemy.y += enemy.speed;
+      
+      if (enemy.canAccelerate && Math.random() > 0.98) {
+        enemy.speed *= 1.5;
+      }
+      
+      if (enemy.canShoot && Date.now() - enemy.lastShot > 2000) {
+        this.enemyBullets.push({
+          x: enemy.x,
+          y: enemy.y + enemy.size,
+          vx: 0,
+          vy: 5,
+          damage: 10,
+          size: 4,
+          color: '#ff0000'
+        });
+        enemy.lastShot = Date.now();
+        this.playSound('enemyShoot');
+      }
       
       if (enemy.y > this.canvas.height) {
         this.health -= 10;
@@ -736,289 +745,118 @@ class CosmicBlasterMock {
     });
   }
 
+  private updateObstacles() {
+    this.obstacles = this.obstacles.filter(obstacle => {
+      obstacle.y += obstacle.speed;
+      
+      if (obstacle.y > this.canvas.height) {
+        return false;
+      }
+      
+      return true;
+    });
+  }
+
+  private updateBackground() {
+    this.backgroundY += this.scrollSpeed / 2; // Slower than foreground for parallax
+    if (this.backgroundY > this.canvas.height) {
+      this.backgroundY = 0;
+    }
+  }
+
+  private updateHelpers() {
+    this.helpers = this.helpers.filter(helper => {
+      helper.y += this.scrollSpeed;
+      
+      if (Date.now() - helper.lastShot > 500) {
+        this.bullets.push({
+          x: helper.x,
+          y: helper.y - 10,
+          vx: 0,
+          vy: -10,
+          damage: 1,
+          color: '#00ff00',
+          size: 3
+        });
+        helper.lastShot = Date.now();
+      }
+      
+      if (helper.y > this.canvas.height) {
+        return false;
+      }
+      
+      return true;
+    });
+  }
+
   private checkCollisions() {
-    try {
-      // Bullet vs Enemy collisions - iterate backwards to avoid index issues
-      for (let bulletIndex = this.bullets.length - 1; bulletIndex >= 0; bulletIndex--) {
-        const bullet = this.bullets[bulletIndex];
-        if (!bullet) continue;
+    // ... (keep existing collisions, add for barriers/obstacles)
+    // Bullet vs Obstacle
+    for (let bulletIndex = this.bullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+      const bullet = this.bullets[bulletIndex];
+      
+      for (let obsIndex = this.obstacles.length - 1; obsIndex >= 0; obsIndex--) {
+        const obs = this.obstacles[obsIndex];
         
-        for (let enemyIndex = this.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
-          const enemy = this.enemies[enemyIndex];
-          if (!enemy) continue;
+        if (bullet.x > obs.x - obs.width/2 && bullet.x < obs.x + obs.width/2 &&
+            bullet.y > obs.y - obs.height/2 && bullet.y < obs.y + obs.height/2) {
+          obs.health -= bullet.damage;
+          this.bullets.splice(bulletIndex, 1);
           
-          const dx = bullet.x - enemy.x;
-          const dy = bullet.y - enemy.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < enemy.size + bullet.size) {
+          if (obs.health <= 0) {
+            this.obstacles.splice(obsIndex, 1);
             this.explosions.push({
-              x: enemy.x,
-              y: enemy.y,
+              x: obs.x,
+              y: obs.y,
               time: Date.now(),
-              size: 30
+              size: 40
             });
             this.playSound('explosion');
-            
-            // Remove collided objects
-            this.bullets.splice(bulletIndex, 1);
-            this.enemies.splice(enemyIndex, 1);
-            
-            this.score += 100;
-            this.waveEnemiesKilled++;
-            this.updateCallbacks();
-            this.checkWaveProgress();
-            break; // Exit enemy loop since bullet is destroyed
+            this.score += 50;
           }
+          break;
         }
       }
-
-      // Player vs Pickup collisions - automatic collection and weapon upgrade
-      for (let pickupIndex = this.pickups.length - 1; pickupIndex >= 0; pickupIndex--) {
-        const pickup = this.pickups[pickupIndex];
-        if (!pickup || !this.player) continue;
-        
-        const dx = this.player.x - pickup.x;
-        const dy = this.player.y - pickup.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < pickup.size + 20) {
-          // Automatic weapon upgrade on pickup collection
-          if (pickup.type === 'weapon' && this.weaponLevel < 6) {
-            this.weaponLevel++;
-            this.autoShootRate = Math.max(100, this.autoShootRate - 10); // Faster shooting
-          } else if (pickup.type === 'health') {
-            this.health = Math.min(100, this.health + 30);
-          } else if (pickup.type === 'shield') {
-            this.shieldActive = true;
-            this.shieldTimer = Date.now() + 5000; // 5 seconds shield
-          }
-          
-          this.pickups.splice(pickupIndex, 1);
-          this.explosions.push({
-            x: pickup.x,
-            y: pickup.y,
-            time: Date.now(),
-            size: 20,
-            color: pickup.type === 'weapon' ? '#ffd700' : pickup.type === 'health' ? '#ff6b6b' : '#4ecdc4'
-          });
-          this.playSound('pickup');
-          this.score += 50;
-          this.updateCallbacks();
+    }
+    
+    // Player vs Obstacle (damage if hit)
+    for (let obsIndex = this.obstacles.length - 1; obsIndex >= 0; obsIndex--) {
+      const obs = this.obstacles[obsIndex];
+      
+      const dx = this.player.x - obs.x;
+      const dy = this.player.y - obs.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance < 30 + 25) { // Approximate sizes
+        if (!this.shieldActive) {
+          this.health -= 20;
         }
+        this.obstacles.splice(obsIndex, 1);
+        this.playSound('hit');
       }
-
-      // Player vs Enemy collisions - iterate backwards
-      for (let enemyIndex = this.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
-        const enemy = this.enemies[enemyIndex];
-        if (!enemy || !this.player) continue;
-        
-        const dx = this.player.x - enemy.x;
-        const dy = this.player.y - enemy.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < enemy.size + 20) {
-          if (!this.shieldActive) {
-            this.health -= 20;
-          }
-          this.enemies.splice(enemyIndex, 1);
-          this.explosions.push({
-            x: enemy.x,
-            y: enemy.y,
-            time: Date.now(),
-            size: 30
-          });
-          this.playSound('hit');
-          this.updateCallbacks();
-        }
-      }
-    } catch (error) {
-      console.warn('Collision detection error:', error);
     }
   }
 
-  private checkWaveProgress() {
-    const enemiesNeeded = Math.min(10 + this.wave * 2, 30);
-    if (this.waveEnemiesKilled >= enemiesNeeded) {
-      this.wave++;
-      this.waveEnemiesKilled = 0;
-      this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
-      
-      this.enemySpawnRate = Math.max(800, 2000 - this.wave * 50);
-      this.health = Math.min(100, this.health + 20);
-      
-      if (this.wave > 10) {
-        this.gameState = 'victory';
-        this.callbacks.onStateChange(this.gameState);
-        this.callbacks.onGameComplete(this.score);
-      }
-      
-      this.updateCallbacks();
+  private drawBackground() {
+    // Simple city spatial background
+    this.ctx.fillStyle = '#1e3c72';
+    this.ctx.fillRect(0, this.backgroundY, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
+    
+    // Draw buildings
+    for (let i = 0; i < 5; i++) {
+      this.ctx.fillStyle = '#4a90e2';
+      this.ctx.fillRect(i * 150 + 50, this.backgroundY + 100, 100, 200);
+      this.ctx.fillStyle = '#2a5298';
+      this.ctx.fillRect(i * 150 + 60, this.backgroundY + 120, 80, 180);
     }
-  }
-
-  private playSound(type: string) {
-    try {
-      // Check if audio context is available and in a valid state
-      if (!this.audioCtx || this.audioCtx.state === 'closed') {
-        return; // Silently skip audio if context is not available
-      }
-
-      // Resume audio context if suspended (user interaction required)
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume().catch(() => {
-          // Failed to resume, skip audio
-          return;
-        });
-        return; // Don't play sound this time, wait for context to resume
-      }
-
-      // Only play sound if context is running
-      if (this.audioCtx.state !== 'running') {
-        return;
-      }
-
-      if (type === 'shoot') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(880, this.audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(440, this.audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 100);
-      } else if (type === 'explosion') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 150;
-        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 200);
-      } else if (type === 'hit') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 100;
-        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 150);
-      } else if (type === 'pickup') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'triangle';
-        oscillator.frequency.setValueAtTime(660, this.audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1320, this.audioCtx.currentTime + 0.2);
-        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 200);
-      }
-    } catch (error) {
-      // Audio context may not be available - silently fail
-      // Don't log warnings as this is expected behavior in many cases
-    }
-  }
-
-  private drawPlayer() {
-    if (!this.player || !this.ctx) return;
     
-    const px = this.player.x || 0;
-    const py = this.player.y || 0;
-    
-    try {
-      // Draw spaceship body
-      this.ctx.fillStyle = '#0000ff'; // Blue body
+    // Draw clouds
+    for (let i = 0; i < 3; i++) {
+      this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
       this.ctx.beginPath();
-      this.ctx.moveTo(px, py - 30); // Top point
-      this.ctx.lineTo(px - 20, py + 20); // Left bottom
-      this.ctx.lineTo(px + 20, py + 20); // Right bottom
-      this.ctx.closePath();
+      this.ctx.arc(i * 200 + 100, this.backgroundY + 50, 50, 0, Math.PI * 2);
       this.ctx.fill();
-      
-      // Wings
-      this.ctx.fillStyle = '#00bfff'; // Light blue wings
-      this.ctx.beginPath();
-      this.ctx.moveTo(px - 10, py + 10);
-      this.ctx.lineTo(px - 30, py + 30);
-      this.ctx.lineTo(px - 15, py + 20);
-      this.ctx.fill();
-      
-      this.ctx.beginPath();
-      this.ctx.moveTo(px + 10, py + 10);
-      this.ctx.lineTo(px + 30, py + 30);
-      this.ctx.lineTo(px + 15, py + 20);
-      this.ctx.fill();
-      
-      // Cockpit
-      this.ctx.fillStyle = '#ffffff';
-      this.ctx.beginPath();
-      this.ctx.arc(px, py - 15, 8, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Draw shield if active
-      if (this.shieldActive) {
-        this.ctx.strokeStyle = '#00ffff';
-        this.ctx.lineWidth = 3;
-        this.ctx.beginPath();
-        this.ctx.arc(px, py, 40, 0, Math.PI * 2);
-        this.ctx.stroke();
-      }
-    } catch (error) {
-      console.warn('Player drawing error:', error);
-    }
-  }
-
-  private drawEnemy(enemy: any) {
-    if (!enemy || !this.ctx) return;
-    
-    try {
-      this.ctx.fillStyle = enemy.color || '#ff0000';
-      this.ctx.beginPath();
-      this.ctx.arc(enemy.x || 0, enemy.y || 0, enemy.size || 10, 0, Math.PI * 2);
-      this.ctx.fill();
-    
-      // Eyes
-      this.ctx.fillStyle = 'white';
-      this.ctx.beginPath();
-      this.ctx.arc((enemy.x || 0) - 8, (enemy.y || 0) - 5, 5, 0, Math.PI * 2);
-      this.ctx.arc((enemy.x || 0) + 8, (enemy.y || 0) - 5, 5, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      this.ctx.fillStyle = 'red';
-      this.ctx.beginPath();
-      this.ctx.arc((enemy.x || 0) - 8, (enemy.y || 0) - 5, 2, 0, Math.PI * 2);
-      this.ctx.arc((enemy.x || 0) + 8, (enemy.y || 0) - 5, 2, 0, Math.PI * 2);
-      this.ctx.fill();
-    } catch (error) {
-      console.warn('Enemy drawing error:', error);
     }
   }
 
@@ -1028,7 +866,9 @@ class CosmicBlasterMock {
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       
-      // Draw stars
+      this.drawBackground();
+      
+      // Draw stars (on top of background)
       if (this.stars && this.stars.length > 0) {
         this.stars.forEach(star => {
           if (!star) return;
@@ -1067,12 +907,60 @@ class CosmicBlasterMock {
         });
       }
       
-      // Draw enemies
+      // Draw enemies with different shapes and health bars
       if (this.enemies && this.enemies.length > 0) {
         this.enemies.forEach(enemy => {
           if (enemy) {
-            this.drawEnemy(enemy);
+            // Draw different shapes
+            this.ctx.fillStyle = enemy.color;
+            if (enemy.type === 'slime') {
+              this.ctx.beginPath();
+              this.ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+              this.ctx.fill();
+            } else if (enemy.type === 'bubble') {
+              this.ctx.beginPath();
+              this.ctx.ellipse(enemy.x, enemy.y, enemy.size * 1.2, enemy.size, 0, 0, Math.PI * 2);
+              this.ctx.fill();
+            } else if (enemy.type === 'crystal') {
+              this.ctx.beginPath();
+              this.ctx.moveTo(enemy.x, enemy.y - enemy.size);
+              this.ctx.lineTo(enemy.x - enemy.size, enemy.y + enemy.size);
+              this.ctx.lineTo(enemy.x + enemy.size, enemy.y + enemy.size);
+              this.ctx.closePath();
+              this.ctx.fill();
+            }
+            
+            // Health bar if health > 1
+            if (enemy.maxHealth > 1) {
+              this.ctx.fillStyle = 'red';
+              this.ctx.fillRect(enemy.x - enemy.size, enemy.y - enemy.size - 5, enemy.size * 2 * (enemy.health / enemy.maxHealth), 3);
+            }
+            
+            // Face (eyes)
+            this.ctx.fillStyle = 'white';
+            this.ctx.beginPath();
+            this.ctx.arc(enemy.x - 5, enemy.y - 5, 3, 0, Math.PI * 2);
+            this.ctx.arc(enemy.x + 5, enemy.y - 5, 3, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            this.ctx.fillStyle = 'black';
+            this.ctx.beginPath();
+            this.ctx.arc(enemy.x - 5, enemy.y - 5, 1, 0, Math.PI * 2);
+            this.ctx.arc(enemy.x + 5, enemy.y - 5, 1, 0, Math.PI * 2);
+            this.ctx.fill();
           }
+        });
+      }
+      
+      // Draw obstacles (barriers)
+      if (this.obstacles && this.obstacles.length > 0) {
+        this.obstacles.forEach(obs => {
+          this.ctx.fillStyle = obs.color;
+          this.ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2, obs.width, obs.height);
+          
+          // Health bar
+          this.ctx.fillStyle = 'red';
+          this.ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2 - 5, obs.width * (obs.health / obs.maxHealth), 3);
         });
       }
       
@@ -1118,12 +1006,46 @@ class CosmicBlasterMock {
               this.ctx.arc(pickup.x || 0, pickup.y || 0, pickup.size || 15, 0, Math.PI * 2);
               this.ctx.fill();
               this.ctx.stroke();
+            } else if (pickup.type === 'helper') {
+              // Draw small ship for helper
+              this.ctx.beginPath();
+              this.ctx.moveTo(pickup.x, pickup.y - 10);
+              this.ctx.lineTo(pickup.x - 10, pickup.y + 10);
+              this.ctx.lineTo(pickup.x + 10, pickup.y + 10);
+              this.ctx.closePath();
+              this.ctx.fill();
+            } else if (pickup.type === 'mine') {
+              // Draw bomb for mine
+              this.ctx.beginPath();
+              this.ctx.arc(pickup.x, pickup.y, 10, 0, Math.PI * 2);
+              this.ctx.fill();
+              this.ctx.fillRect(pickup.x - 2, pickup.y - 15, 4, 5);
+            } else if (pickup.type === 'wing') {
+              // Draw wing for extra shots
+              this.ctx.beginPath();
+              this.ctx.moveTo(pickup.x - 10, pickup.y);
+              this.ctx.lineTo(pickup.x, pickup.y - 10);
+              this.ctx.lineTo(pickup.x + 10, pickup.y);
+              this.ctx.fill();
             }
             
             this.ctx.restore();
           } catch (e) {
             console.warn('Pickup drawing error:', e);
           }
+        });
+      }
+      
+      // Draw helpers (allies)
+      if (this.helpers && this.helpers.length > 0) {
+        this.helpers.forEach(helper => {
+          this.ctx.fillStyle = '#00ff00';
+          this.ctx.beginPath();
+          this.ctx.moveTo(helper.x, helper.y - 10);
+          this.ctx.lineTo(helper.x - 8, helper.y + 10);
+          this.ctx.lineTo(helper.x + 8, helper.y + 10);
+          this.ctx.closePath();
+          this.ctx.fill();
         });
       }
       
@@ -1163,6 +1085,9 @@ class CosmicBlasterMock {
       }
       
       if (this.gameState === 'playing') {
+        this.updateBackground();
+        this.updateHelpers();
+        
         // Spawn enemies
         if (Date.now() - this.lastEnemySpawn > this.enemySpawnRate) {
           console.log('Spawning enemy...');
@@ -1177,7 +1102,7 @@ class CosmicBlasterMock {
           this.lastObstacleSpawn = Date.now();
         }
         
-        // Spawn pickups for automatic weapon upgrades
+        // Spawn pickups
         if (Date.now() - this.lastPickupSpawn > this.pickupSpawnRate) {
           this.spawnPickup();
           this.lastPickupSpawn = Date.now();
@@ -1187,6 +1112,7 @@ class CosmicBlasterMock {
         this.autoShoot(); // Automatic shooting like 1945 Air Force
         this.updateBullets();
         this.updateEnemies();
+        this.updateObstacles();
         this.updatePickups();
         this.checkCollisions();
         
