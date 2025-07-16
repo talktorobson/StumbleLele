@@ -18,15 +18,29 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
 
   useEffect(() => {
     if (canvasRef.current) {
-      gameRef.current = new CosmicBlasterMock(canvasRef.current, {
-        onStateChange: setGameState,
-        onScoreChange: setScore,
-        onHealthChange: setHealth,
-        onWaveChange: setWave,
-        onGameComplete: (finalScore: number) => {
-          onGameComplete(finalScore);
+      // Small delay to ensure DOM is ready and canvas has proper dimensions
+      const timer = setTimeout(() => {
+        try {
+          gameRef.current = new CosmicBlasterMock(canvasRef.current!, {
+            onStateChange: setGameState,
+            onScoreChange: setScore,
+            onHealthChange: setHealth,
+            onWaveChange: setWave,
+            onGameComplete: (finalScore: number) => {
+              onGameComplete(finalScore);
+            }
+          });
+        } catch (error) {
+          console.error('Game initialization error:', error);
         }
-      });
+      }, 100);
+
+      return () => {
+        clearTimeout(timer);
+        if (gameRef.current) {
+          gameRef.current.destroy();
+        }
+      };
     }
 
     return () => {
@@ -217,7 +231,21 @@ class CosmicBlasterMock {
     }
     this.ctx = ctx;
     
-    this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    // Initialize audio context with error handling
+    try {
+      this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch (error) {
+      console.warn('Audio context initialization failed:', error);
+      // Create a mock audio context to prevent errors
+      this.audioCtx = {
+        createOscillator: () => null,
+        createGain: () => null,
+        destination: null,
+        currentTime: 0,
+        state: 'suspended',
+        close: () => Promise.resolve()
+      } as any;
+    }
     
     this.initialize();
   }
@@ -232,10 +260,23 @@ class CosmicBlasterMock {
   }
 
   private resizeCanvas() {
-    const container = this.canvas.parentElement;
-    if (container) {
-      this.canvas.width = container.clientWidth;
-      this.canvas.height = container.clientHeight;
+    try {
+      const container = this.canvas.parentElement;
+      if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = container.clientHeight;
+        this.laneWidth = this.canvas.width / this.numLanes;
+      } else {
+        // Fallback dimensions
+        this.canvas.width = 800;
+        this.canvas.height = 600;
+        this.laneWidth = this.canvas.width / this.numLanes;
+      }
+    } catch (error) {
+      console.warn('Canvas resize error:', error);
+      // Use safe defaults
+      this.canvas.width = 800;
+      this.canvas.height = 600;
       this.laneWidth = this.canvas.width / this.numLanes;
     }
   }
@@ -472,54 +513,69 @@ class CosmicBlasterMock {
   }
 
   private checkCollisions() {
-    // Bullet vs Enemy collisions
-    this.bullets.forEach((bullet, bulletIndex) => {
-      this.enemies.forEach((enemy, enemyIndex) => {
-        const dx = bullet.x - enemy.x;
-        const dy = bullet.y - enemy.y;
+    try {
+      // Bullet vs Enemy collisions - iterate backwards to avoid index issues
+      for (let bulletIndex = this.bullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+        const bullet = this.bullets[bulletIndex];
+        if (!bullet) continue;
+        
+        for (let enemyIndex = this.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+          const enemy = this.enemies[enemyIndex];
+          if (!enemy) continue;
+          
+          const dx = bullet.x - enemy.x;
+          const dy = bullet.y - enemy.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < enemy.size + bullet.size) {
+            this.explosions.push({
+              x: enemy.x,
+              y: enemy.y,
+              time: Date.now(),
+              size: 30
+            });
+            this.playSound('explosion');
+            
+            // Remove collided objects
+            this.bullets.splice(bulletIndex, 1);
+            this.enemies.splice(enemyIndex, 1);
+            
+            this.score += 100;
+            this.waveEnemiesKilled++;
+            this.updateCallbacks();
+            this.checkWaveProgress();
+            break; // Exit enemy loop since bullet is destroyed
+          }
+        }
+      }
+
+      // Player vs Enemy collisions - iterate backwards
+      for (let enemyIndex = this.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+        const enemy = this.enemies[enemyIndex];
+        if (!enemy || !this.player) continue;
+        
+        const dx = this.player.x - enemy.x;
+        const dy = this.player.y - enemy.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < enemy.size + bullet.size) {
+        if (distance < enemy.size + 20) {
+          if (!this.shieldActive) {
+            this.health -= 20;
+          }
+          this.enemies.splice(enemyIndex, 1);
           this.explosions.push({
             x: enemy.x,
             y: enemy.y,
             time: Date.now(),
             size: 30
           });
-          this.playSound('explosion');
-          
-          this.bullets.splice(bulletIndex, 1);
-          this.enemies.splice(enemyIndex, 1);
-          
-          this.score += 100;
-          this.waveEnemiesKilled++;
+          this.playSound('hit');
           this.updateCallbacks();
-          this.checkWaveProgress();
         }
-      });
-    });
-
-    // Player vs Enemy collisions
-    this.enemies.forEach((enemy, enemyIndex) => {
-      const dx = this.player.x - enemy.x;
-      const dy = this.player.y - enemy.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      if (distance < enemy.size + 20) {
-        if (!this.shieldActive) {
-          this.health -= 20;
-        }
-        this.enemies.splice(enemyIndex, 1);
-        this.explosions.push({
-          x: enemy.x,
-          y: enemy.y,
-          time: Date.now(),
-          size: 30
-        });
-        this.playSound('hit');
-        this.updateCallbacks();
       }
-    });
+    } catch (error) {
+      console.warn('Collision detection error:', error);
+    }
   }
 
   private checkWaveProgress() {
@@ -586,8 +642,10 @@ class CosmicBlasterMock {
   }
 
   private drawPlayer() {
-    const px = this.player.x;
-    const py = this.player.y;
+    if (!this.player || !this.ctx) return;
+    
+    const px = this.player.x || 0;
+    const py = this.player.y || 0;
     
     // Draw Lele as a beautiful girl
     this.ctx.fillStyle = '#ffb6c1'; // Skin
@@ -654,94 +712,148 @@ class CosmicBlasterMock {
   }
 
   private drawEnemy(enemy: any) {
-    this.ctx.fillStyle = enemy.color;
-    this.ctx.beginPath();
-    this.ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
-    this.ctx.fill();
+    if (!enemy || !this.ctx) return;
     
-    // Eyes
-    this.ctx.fillStyle = 'white';
-    this.ctx.beginPath();
-    this.ctx.arc(enemy.x - 8, enemy.y - 5, 5, 0, Math.PI * 2);
-    this.ctx.arc(enemy.x + 8, enemy.y - 5, 5, 0, Math.PI * 2);
-    this.ctx.fill();
+    try {
+      this.ctx.fillStyle = enemy.color || '#ff0000';
+      this.ctx.beginPath();
+      this.ctx.arc(enemy.x || 0, enemy.y || 0, enemy.size || 10, 0, Math.PI * 2);
+      this.ctx.fill();
     
-    this.ctx.fillStyle = 'red';
-    this.ctx.beginPath();
-    this.ctx.arc(enemy.x - 8, enemy.y - 5, 2, 0, Math.PI * 2);
-    this.ctx.arc(enemy.x + 8, enemy.y - 5, 2, 0, Math.PI * 2);
-    this.ctx.fill();
+      // Eyes
+      this.ctx.fillStyle = 'white';
+      this.ctx.beginPath();
+      this.ctx.arc((enemy.x || 0) - 8, (enemy.y || 0) - 5, 5, 0, Math.PI * 2);
+      this.ctx.arc((enemy.x || 0) + 8, (enemy.y || 0) - 5, 5, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      this.ctx.fillStyle = 'red';
+      this.ctx.beginPath();
+      this.ctx.arc((enemy.x || 0) - 8, (enemy.y || 0) - 5, 2, 0, Math.PI * 2);
+      this.ctx.arc((enemy.x || 0) + 8, (enemy.y || 0) - 5, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+    } catch (error) {
+      console.warn('Enemy drawing error:', error);
+    }
   }
 
   private draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    // Draw stars
-    this.stars.forEach(star => {
-      this.ctx.save();
-      this.ctx.globalAlpha = 0.3 + Math.sin(star.twinkle) * 0.3;
-      this.ctx.fillStyle = 'white';
-      this.ctx.beginPath();
-      this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.restore();
-      star.twinkle += 0.1;
-    });
-    
-    // Draw player
-    this.drawPlayer();
-    
-    // Draw bullets
-    this.bullets.forEach(bullet => {
-      this.ctx.fillStyle = bullet.color;
-      this.ctx.beginPath();
-      this.ctx.arc(bullet.x, bullet.y, bullet.size, 0, Math.PI * 2);
-      this.ctx.fill();
-    });
-    
-    // Draw enemies
-    this.enemies.forEach(enemy => this.drawEnemy(enemy));
-    
-    // Draw explosions
-    this.explosions = this.explosions.filter(explosion => {
-      const age = Date.now() - explosion.time;
-      if (age < 500) {
-        this.ctx.save();
-        this.ctx.globalAlpha = 1 - (age / 500);
-        this.ctx.fillStyle = '#ffff00';
-        this.ctx.beginPath();
-        this.ctx.arc(explosion.x, explosion.y, age / 10, 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.restore();
-        return true;
+    try {
+      if (!this.ctx || !this.canvas) return;
+      
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      
+      // Draw stars
+      if (this.stars && this.stars.length > 0) {
+        this.stars.forEach(star => {
+          if (!star) return;
+          try {
+            this.ctx.save();
+            this.ctx.globalAlpha = 0.3 + Math.sin(star.twinkle || 0) * 0.3;
+            this.ctx.fillStyle = 'white';
+            this.ctx.beginPath();
+            this.ctx.arc(star.x || 0, star.y || 0, star.size || 1, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+            star.twinkle = (star.twinkle || 0) + 0.1;
+          } catch (e) {
+            console.warn('Star drawing error:', e);
+          }
+        });
       }
-      return false;
-    });
+      
+      // Draw player
+      if (this.player) {
+        this.drawPlayer();
+      }
+      
+      // Draw bullets
+      if (this.bullets && this.bullets.length > 0) {
+        this.bullets.forEach(bullet => {
+          if (!bullet) return;
+          try {
+            this.ctx.fillStyle = bullet.color || '#00ff00';
+            this.ctx.beginPath();
+            this.ctx.arc(bullet.x || 0, bullet.y || 0, bullet.size || 2, 0, Math.PI * 2);
+            this.ctx.fill();
+          } catch (e) {
+            console.warn('Bullet drawing error:', e);
+          }
+        });
+      }
+      
+      // Draw enemies
+      if (this.enemies && this.enemies.length > 0) {
+        this.enemies.forEach(enemy => {
+          if (enemy) {
+            this.drawEnemy(enemy);
+          }
+        });
+      }
+      
+      // Draw explosions
+      if (this.explosions && this.explosions.length > 0) {
+        this.explosions = this.explosions.filter(explosion => {
+          if (!explosion) return false;
+          try {
+            const age = Date.now() - (explosion.time || 0);
+            if (age < 500) {
+              this.ctx.save();
+              this.ctx.globalAlpha = 1 - (age / 500);
+              this.ctx.fillStyle = '#ffff00';
+              this.ctx.beginPath();
+              this.ctx.arc(explosion.x || 0, explosion.y || 0, age / 10, 0, Math.PI * 2);
+              this.ctx.fill();
+              this.ctx.restore();
+              return true;
+            }
+            return false;
+          } catch (e) {
+            console.warn('Explosion drawing error:', e);
+            return false;
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Draw method error:', error);
+    }
   }
 
   private gameLoop() {
-    if (this.gameState === 'playing') {
-      // Spawn enemies
-      if (Date.now() - this.lastEnemySpawn > this.enemySpawnRate) {
-        this.spawnEnemy();
-        this.lastEnemySpawn = Date.now();
+    try {
+      if (this.gameState === 'playing') {
+        // Spawn enemies
+        if (Date.now() - this.lastEnemySpawn > this.enemySpawnRate) {
+          this.spawnEnemy();
+          this.lastEnemySpawn = Date.now();
+        }
+        
+        this.updatePlayer();
+        this.updateBullets();
+        this.updateEnemies();
+        this.checkCollisions();
+        
+        // Check game over
+        if (this.health <= 0) {
+          this.gameState = 'gameOver';
+          this.callbacks.onStateChange(this.gameState);
+          this.callbacks.onGameComplete(this.score);
+        }
       }
       
-      this.updatePlayer();
-      this.updateBullets();
-      this.updateEnemies();
-      this.checkCollisions();
+      this.draw();
       
-      // Check game over
-      if (this.health <= 0) {
-        this.gameState = 'gameOver';
-        this.callbacks.onStateChange(this.gameState);
-        this.callbacks.onGameComplete(this.score);
+      // Continue game loop only if not destroyed
+      if (this.animationFrameId !== null) {
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+      }
+    } catch (error) {
+      console.error('Game loop error:', error);
+      // Try to continue the game loop after error
+      if (this.animationFrameId !== null) {
+        this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
       }
     }
-    
-    this.draw();
-    this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
   }
 
   public destroy() {
