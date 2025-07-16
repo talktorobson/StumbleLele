@@ -20,7 +20,7 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
 ## ✨ Features
 
 ### 🤖 AI-Powered Interactions
-- **Dual AI Support**: Choose between OpenAI GPT-4 and XAI Grok-3 models
+- **Triple AI Support**: Choose between OpenAI GPT-4, XAI Grok-3, and Anthropic Claude models
 - **Smart Conversations**: Lele responds intelligently with contextual awareness
 - **Contextual Memory**: Remembers past conversations and creates meaningful memories
 - **Emotional Intelligence**: Dynamic expressions and responses based on conversation context
@@ -182,8 +182,9 @@ StumbleLele/
 ### Environment Variables
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `OPENAI_API_KEY` | OpenAI API key for GPT-4 | Yes (or XAI) |
-| `XAI_API_KEY` | XAI API key for Grok-3 | Yes (or OpenAI) |
+| `OPENAI_API_KEY` | OpenAI API key for GPT-4 | Yes (or other AI) |
+| `XAI_API_KEY` | XAI API key for Grok-3 | Yes (or other AI) |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude | Yes (or other AI) |
 | `DATABASE_URL` | PostgreSQL connection string | No (uses in-memory) |
 | `PORT` | Server port (default: 5000) | No |
 
@@ -259,6 +260,38 @@ StumbleLele/
 - [ ] **AR/VR integration** for immersive experiences
 - [ ] **Native mobile apps** for iOS and Android
 - [ ] **Tablet-optimized layouts** with enhanced features
+
+## 🚀 Deployment
+
+### Production Deployment (Vercel + Supabase)
+For production deployment, we recommend using Vercel with Supabase:
+
+1. **Set up Supabase Database**:
+   - Create a new project at [supabase.com](https://supabase.com)
+   - Get your connection string from Settings > Database
+
+2. **Deploy to Vercel**:
+   - Import your repository at [vercel.com](https://vercel.com)
+   - Add environment variables:
+     ```
+     DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres
+     OPENAI_API_KEY=your_openai_api_key_here
+     XAI_API_KEY=your_xai_api_key_here
+     ANTHROPIC_API_KEY=your_anthropic_api_key_here
+     NODE_ENV=production
+     ```
+
+3. **Set up Database**:
+   ```bash
+   npm run db:setup
+   ```
+
+📖 **Complete deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+### Alternative Platforms
+- **Railway**: Works with the same configuration
+- **Render**: Compatible with PostgreSQL addon
+- **Heroku**: Use Heroku Postgres addon
 
 ## 🤝 Contributing
 

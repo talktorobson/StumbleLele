@@ -6,7 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   age: integer("age"),
-  preferredAI: text("preferred_ai").default("openai").notNull(),
+  preferredAI: text("preferred_ai").default("openai").notNull(), // "openai" | "xai" | "anthropic"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -54,6 +54,7 @@ export const avatarState = pgTable("avatar_state", {
 export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
   age: true,
+  preferredAI: true,
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).pick({

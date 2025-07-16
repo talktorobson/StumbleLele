@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Sparkles } from "lucide-react";
+import { Brain, Sparkles, Zap } from "lucide-react";
 
 interface AIModelSelectorProps {
   userId: number;
@@ -66,6 +66,12 @@ export default function AIModelSelector({ userId, currentModel = "openai" }: AIM
               XAI Grok
             </div>
           </SelectItem>
+          <SelectItem value="anthropic">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              Anthropic Claude
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
       
@@ -75,10 +81,15 @@ export default function AIModelSelector({ userId, currentModel = "openai" }: AIM
             <Brain className="h-4 w-4 text-blue-600" />
             <span className="text-xs">OpenAI GPT-4o - Modelo conversacional avançado</span>
           </div>
-        ) : (
+        ) : selectedModel === "xai" ? (
           <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-md">
             <Sparkles className="h-4 w-4 text-purple-600" />
             <span className="text-xs">XAI Grok - Modelo criativo e divertido</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 p-2 bg-orange-50 rounded-md">
+            <Zap className="h-4 w-4 text-orange-600" />
+            <span className="text-xs">Anthropic Claude - Modelo inteligente e útil</span>
           </div>
         )}
       </div>

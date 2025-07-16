@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
 // OpenAI client
 const openai = new OpenAI({ 
@@ -11,21 +12,29 @@ const xai = new OpenAI({
   baseURL: "https://api.x.ai/v1"
 });
 
-export type AIModel = "openai" | "xai";
+// Anthropic client
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || "default_key"
+});
+
+export type AIModel = "openai" | "xai" | "anthropic";
 
 interface ModelConfig {
-  client: OpenAI;
+  type: "openai" | "anthropic";
+  client: OpenAI | Anthropic;
   model: string;
 }
 
 function getModelConfig(aiModel: AIModel): ModelConfig {
   switch (aiModel) {
     case "openai":
-      return { client: openai, model: "gpt-4o" };
+      return { type: "openai", client: openai, model: "gpt-4o" };
     case "xai":
-      return { client: xai, model: "grok-2-1212" };
+      return { type: "openai", client: xai, model: "grok-2-1212" };
+    case "anthropic":
+      return { type: "anthropic", client: anthropic, model: "claude-3-5-sonnet-20241022" };
     default:
-      return { client: openai, model: "gpt-4o" };
+      return { type: "openai", client: openai, model: "gpt-4o" };
   }
 }
 
@@ -84,28 +93,51 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
   async generateResponse(message: string, context: string[] = [], aiModel: AIModel = "openai"): Promise<LeleResponse> {
     try {
       const contextString = context.length > 0 ? `\nContexto das conversas anteriores: ${context.join('. ')}` : '';
-      const { client, model } = getModelConfig(aiModel);
+      const { type, client, model } = getModelConfig(aiModel);
       
-      const response = await client.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content: this.systemPrompt + contextString
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-        response_format: { type: "json_object" }
-      });
+      let content: string;
+      
+      if (type === "anthropic") {
+        // Handle Anthropic API call
+        const anthropicClient = client as Anthropic;
+        const response = await anthropicClient.messages.create({
+          model: model,
+          max_tokens: 500,
+          temperature: 0.7,
+          messages: [
+            {
+              role: "user",
+              content: `${this.systemPrompt + contextString}\n\nMensagem do usuário: ${message}`
+            }
+          ]
+        });
+        
+        content = response.content[0].type === 'text' ? response.content[0].text : '';
+      } else {
+        // Handle OpenAI/XAI API call
+        const openaiClient = client as OpenAI;
+        const response = await openaiClient.chat.completions.create({
+          model: model,
+          messages: [
+            {
+              role: "system",
+              content: this.systemPrompt + contextString
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+          response_format: { type: "json_object" }
+        });
+        
+        content = response.choices[0].message.content || '';
+      }
 
-      const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("Resposta vazia do XAI");
+        throw new Error("Resposta vazia da API");
       }
 
       // Try to parse JSON, but handle non-JSON responses gracefully
@@ -155,28 +187,51 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async generateJoke(category: string = "geral", aiModel: AIModel = "openai"): Promise<JokeResponse> {
     try {
-      const { client, model } = getModelConfig(aiModel);
+      const { type, client, model } = getModelConfig(aiModel);
       
-      const response = await client.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content: `Você é Lele, uma criança de 7 anos que adora contar piadas apropriadas para crianças. Crie uma piada divertida e adequada para uma criança de 7 anos em português brasileiro. A piada deve ser sobre ${category}. Responda em formato JSON com setup, punchline, joke (piada completa), e category.`
-          },
-          {
-            role: "user",
-            content: `Conta uma piada sobre ${category} para a Helena!`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 300,
-        response_format: { type: "json_object" }
-      });
+      let content: string;
+      
+      if (type === "anthropic") {
+        // Handle Anthropic API call
+        const anthropicClient = client as Anthropic;
+        const response = await anthropicClient.messages.create({
+          model: model,
+          max_tokens: 300,
+          temperature: 0.7,
+          messages: [
+            {
+              role: "user",
+              content: `Você é Lele, uma criança de 7 anos que adora contar piadas apropriadas para crianças. Crie uma piada divertida e adequada para uma criança de 7 anos em português brasileiro. A piada deve ser sobre ${category}. Responda em formato JSON com setup, punchline, joke (piada completa), e category.\n\nConta uma piada sobre ${category} para a Helena!`
+            }
+          ]
+        });
+        
+        content = response.content[0].type === 'text' ? response.content[0].text : '';
+      } else {
+        // Handle OpenAI/XAI API call
+        const openaiClient = client as OpenAI;
+        const response = await openaiClient.chat.completions.create({
+          model: model,
+          messages: [
+            {
+              role: "system",
+              content: `Você é Lele, uma criança de 7 anos que adora contar piadas apropriadas para crianças. Crie uma piada divertida e adequada para uma criança de 7 anos em português brasileiro. A piada deve ser sobre ${category}. Responda em formato JSON com setup, punchline, joke (piada completa), e category.`
+            },
+            {
+              role: "user",
+              content: `Conta uma piada sobre ${category} para a Helena!`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 300,
+          response_format: { type: "json_object" }
+        });
+        
+        content = response.choices[0].message.content || '';
+      }
 
-      const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("Resposta vazia do XAI");
+        throw new Error("Resposta vazia da API");
       }
 
       // Try to parse JSON, but handle non-JSON responses gracefully
@@ -212,28 +267,51 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async generateGameSuggestion(userLevel: number = 1, aiModel: AIModel = "openai"): Promise<GameSuggestion> {
     try {
-      const { client, model } = getModelConfig(aiModel);
+      const { type, client, model } = getModelConfig(aiModel);
       
-      const response = await client.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content: `Você é Lele, uma criança de 7 anos que adora jogos. Sugira um mini-jogo educativo e divertido apropriado para uma criança de 7 anos. O nível atual é ${userLevel}. Responda em formato JSON com gameType, description, difficulty (1-5), e instructions.`
-          },
-          {
-            role: "user",
-            content: `Sugere um jogo divertido para brincarmos juntas!`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 400,
-        response_format: { type: "json_object" }
-      });
+      let content: string;
+      
+      if (type === "anthropic") {
+        // Handle Anthropic API call
+        const anthropicClient = client as Anthropic;
+        const response = await anthropicClient.messages.create({
+          model: model,
+          max_tokens: 400,
+          temperature: 0.7,
+          messages: [
+            {
+              role: "user",
+              content: `Você é Lele, uma criança de 7 anos que adora jogos. Sugira um mini-jogo educativo e divertido apropriado para uma criança de 7 anos. O nível atual é ${userLevel}. Responda em formato JSON com gameType, description, difficulty (1-5), e instructions.\n\nSugere um jogo divertido para brincarmos juntas!`
+            }
+          ]
+        });
+        
+        content = response.content[0].type === 'text' ? response.content[0].text : '';
+      } else {
+        // Handle OpenAI/XAI API call
+        const openaiClient = client as OpenAI;
+        const response = await openaiClient.chat.completions.create({
+          model: model,
+          messages: [
+            {
+              role: "system",
+              content: `Você é Lele, uma criança de 7 anos que adora jogos. Sugira um mini-jogo educativo e divertido apropriado para uma criança de 7 anos. O nível atual é ${userLevel}. Responda em formato JSON com gameType, description, difficulty (1-5), e instructions.`
+            },
+            {
+              role: "user",
+              content: `Sugere um jogo divertido para brincarmos juntas!`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 400,
+          response_format: { type: "json_object" }
+        });
+        
+        content = response.choices[0].message.content || '';
+      }
 
-      const content = response.choices[0].message.content;
       if (!content) {
-        throw new Error("Resposta vazia do XAI");
+        throw new Error("Resposta vazia da API");
       }
 
       // Try to parse JSON, but handle non-JSON responses gracefully
@@ -269,25 +347,49 @@ IMPORTANTE: Sempre responda em formato JSON com os campos: "response", "emotion"
 
   async createMemory(interaction: string, category: string, aiModel: AIModel = "openai"): Promise<string> {
     try {
-      const { client, model } = getModelConfig(aiModel);
+      const { type, client, model } = getModelConfig(aiModel);
       
-      const response = await client.chat.completions.create({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content: "Você é Lele. Crie uma memória curta e positiva sobre esta interação com Helena. Seja carinhosa e lembre-se de detalhes importantes. Responda apenas com o texto da memória."
-          },
-          {
-            role: "user",
-            content: `Interação: ${interaction}\nCategoria: ${category}`
-          }
-        ],
-        max_tokens: 200,
-        temperature: 0.7
-      });
+      let content: string;
+      
+      if (type === "anthropic") {
+        // Handle Anthropic API call
+        const anthropicClient = client as Anthropic;
+        const response = await anthropicClient.messages.create({
+          model: model,
+          max_tokens: 200,
+          temperature: 0.7,
+          messages: [
+            {
+              role: "user",
+              content: `Você é Lele. Crie uma memória curta e positiva sobre esta interação com Helena. Seja carinhosa e lembre-se de detalhes importantes. Responda apenas com o texto da memória.\n\nInteração: ${interaction}\nCategoria: ${category}`
+            }
+          ]
+        });
+        
+        content = response.content[0].type === 'text' ? response.content[0].text : '';
+      } else {
+        // Handle OpenAI/XAI API call
+        const openaiClient = client as OpenAI;
+        const response = await openaiClient.chat.completions.create({
+          model: model,
+          messages: [
+            {
+              role: "system",
+              content: "Você é Lele. Crie uma memória curta e positiva sobre esta interação com Helena. Seja carinhosa e lembre-se de detalhes importantes. Responda apenas com o texto da memória."
+            },
+            {
+              role: "user",
+              content: `Interação: ${interaction}\nCategoria: ${category}`
+            }
+          ],
+          max_tokens: 200,
+          temperature: 0.7
+        });
+        
+        content = response.choices[0].message.content || '';
+      }
 
-      return response.choices[0].message.content || `Helena e eu tivemos uma conversa sobre ${category}. Foi muito divertido!`;
+      return content || `Helena e eu tivemos uma conversa sobre ${category}. Foi muito divertido!`;
     } catch (error) {
       console.error("Erro ao criar memória:", error);
       return `Helena e eu tivemos uma conversa sobre ${category}. Foi muito divertido!`;

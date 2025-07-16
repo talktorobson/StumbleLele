@@ -27,8 +27,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = parseInt(req.params.id);
       const { aiModel } = req.body;
       
-      if (!aiModel || !["openai", "xai"].includes(aiModel)) {
-        return res.status(400).json({ message: "Modelo de AI inválido. Use 'openai' ou 'xai'" });
+      if (!aiModel || !["openai", "xai", "anthropic"].includes(aiModel)) {
+        return res.status(400).json({ message: "Modelo de AI inválido. Use 'openai', 'xai' ou 'anthropic'" });
       }
       
       const user = await storage.updateUserPreferences(userId, aiModel);
