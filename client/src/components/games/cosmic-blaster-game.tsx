@@ -94,10 +94,10 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
           ⭐ Pontuação: {score}
         </div>
         <div className="bg-red-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
-          ❤️ Base: {health}%
+          ❤️ Health: {health}%
         </div>
         <div className="bg-green-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
-          🌊 Onda: {wave}
+          🌊 Fase: {wave}
         </div>
       </div>
 
@@ -954,83 +954,33 @@ class CosmicBlasterMock {
     const py = this.player.y || 0;
     
     try {
-      // Draw longer flowing hair first (behind the head)
-      this.ctx.fillStyle = '#8b4513'; // Brown hair
+      // Draw spaceship body
+      this.ctx.fillStyle = '#0000ff'; // Blue body
       this.ctx.beginPath();
-      // Hair flowing down both sides and back
-      this.ctx.moveTo(px - 16, py - 35);
-      this.ctx.quadraticCurveTo(px - 8, py - 45, px + 16, py - 35);
-      this.ctx.quadraticCurveTo(px + 20, py - 10, px + 18, py + 15); // Right side hair flowing down
-      this.ctx.quadraticCurveTo(px + 10, py + 20, px, py + 18); // Hair bottom curve
-      this.ctx.quadraticCurveTo(px - 10, py + 20, px - 18, py + 15); // Left side hair flowing down
-      this.ctx.quadraticCurveTo(px - 20, py - 10, px - 16, py - 35);
+      this.ctx.moveTo(px, py - 30); // Top point
+      this.ctx.lineTo(px - 20, py + 20); // Left bottom
+      this.ctx.lineTo(px + 20, py + 20); // Right bottom
+      this.ctx.closePath();
       this.ctx.fill();
       
-      // Body with blue shirt (like in image)
-      this.ctx.fillStyle = '#4169E1'; // Royal blue
-      this.ctx.fillRect(px - 12, py - 5, 24, 25); // Body
-      
-      // Add white dots on blue shirt
-      this.ctx.fillStyle = 'white';
+      // Wings
+      this.ctx.fillStyle = '#00bfff'; // Light blue wings
       this.ctx.beginPath();
-      this.ctx.arc(px - 6, py + 5, 2, 0, Math.PI * 2);
-      this.ctx.arc(px + 6, py + 5, 2, 0, Math.PI * 2);
-      this.ctx.arc(px, py + 12, 2, 0, Math.PI * 2);
+      this.ctx.moveTo(px - 10, py + 10);
+      this.ctx.lineTo(px - 30, py + 30);
+      this.ctx.lineTo(px - 15, py + 20);
       this.ctx.fill();
       
-      // Arms
-      this.ctx.fillStyle = '#ffb6c1'; // Skin color
-      this.ctx.fillRect(px - 18, py - 5, 8, 18); // Left arm
-      this.ctx.fillRect(px + 10, py - 5, 8, 18); // Right arm
-      
-      // Face (round and cute)
-      this.ctx.fillStyle = '#ffb6c1'; // Skin
       this.ctx.beginPath();
-      this.ctx.arc(px, py - 25, 14, 0, Math.PI * 2);
+      this.ctx.moveTo(px + 10, py + 10);
+      this.ctx.lineTo(px + 30, py + 30);
+      this.ctx.lineTo(px + 15, py + 20);
       this.ctx.fill();
       
-      // Eyes (big and expressive like in image)
-      this.ctx.fillStyle = 'white';
+      // Cockpit
+      this.ctx.fillStyle = '#ffffff';
       this.ctx.beginPath();
-      this.ctx.arc(px - 6, py - 27, 4, 0, Math.PI * 2);
-      this.ctx.arc(px + 6, py - 27, 4, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Eye pupils (brown/dark)
-      this.ctx.fillStyle = '#8b4513';
-      this.ctx.beginPath();
-      this.ctx.arc(px - 6, py - 27, 2, 0, Math.PI * 2);
-      this.ctx.arc(px + 6, py - 27, 2, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Eye highlights
-      this.ctx.fillStyle = 'white';
-      this.ctx.beginPath();
-      this.ctx.arc(px - 5, py - 28, 1, 0, Math.PI * 2);
-      this.ctx.arc(px + 7, py - 28, 1, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Small orange nose
-      this.ctx.fillStyle = '#ff8c69';
-      this.ctx.beginPath();
-      this.ctx.arc(px, py - 23, 1, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Pink smile
-      this.ctx.strokeStyle = '#ff1493';
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.arc(px, py - 18, 5, 0, Math.PI);
-      this.ctx.stroke();
-      
-      // Hair bangs/fringe in front
-      this.ctx.fillStyle = '#8b4513';
-      this.ctx.beginPath();
-      this.ctx.moveTo(px - 12, py - 32);
-      this.ctx.quadraticCurveTo(px - 6, py - 38, px, py - 32);
-      this.ctx.quadraticCurveTo(px + 6, py - 38, px + 12, py - 32);
-      this.ctx.quadraticCurveTo(px + 8, py - 30, px, py - 30);
-      this.ctx.quadraticCurveTo(px - 8, py - 30, px - 12, py - 32);
+      this.ctx.arc(px, py - 15, 8, 0, Math.PI * 2);
       this.ctx.fill();
       
       // Draw shield if active
