@@ -60,9 +60,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Serve the app on port 3000 (avoiding 5000 which conflicts with AirDrop on macOS)
+  // Serve the app on port 5000 (matches Replit configuration)
   // this serves both the API and the client.
-  const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
   const host = process.env.HOST || "0.0.0.0"; // Use 0.0.0.0 for Replit/cloud deployment
   server.listen({
     port,
