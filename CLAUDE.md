@@ -26,13 +26,12 @@ StumbleLele is an interactive AI companion application for children, featuring L
 ### 🚧 Features In Development
 - **Additional Games**: Memory, word, and math games need implementation
 - **Voice Synthesis**: Limited to browser TTS - needs enhancement
-- **Database**: Using in-memory storage - PostgreSQL ready but not configured
 
 ### 🔧 Technical Stack
 - Frontend: React + TypeScript + Vite + TailwindCSS + shadcn/ui
 - Backend: Express.js + TypeScript
 - AI: XAI Grok-3
-- Database: PostgreSQL with Drizzle ORM (ready but using in-memory fallback)
+- Database: PostgreSQL with Drizzle ORM (Supabase transaction pooler)
 - Deployment: Configured for port 5000 (Replit/local development)
 
 ## Development Guidelines
@@ -60,7 +59,7 @@ StumbleLele is an interactive AI companion application for children, featuring L
 ### Environment Variables
 ```bash
 XAI_API_KEY=your_key_here  # Required for AI features
-DATABASE_URL=postgresql://...  # Optional, falls back to in-memory
+DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1.pooler.supabase.com:6543/postgres  # Supabase transaction pooler
 ```
 
 ### Testing Approach
@@ -111,6 +110,13 @@ DATABASE_URL=postgresql://...  # Optional, falls back to in-memory
 - Support high contrast modes
 
 ## Recent Updates (July 16, 2025)
+
+### Database Configuration Fixed v2.5
+- **Supabase Integration**: Successfully configured PostgreSQL connection
+- **Transaction Pooler**: Using sa-east-1 region pooler for optimal performance
+- **Connection String**: Updated to use transaction mode on port 6543
+- **Drizzle ORM**: Schema push working correctly with Supabase
+- **Database Operations**: All CRUD operations tested and verified
 
 ### Cosmic Blaster Game Balance Improvements v2.4
 - **Health System**: Increased starting health from 100 to 150 HP
