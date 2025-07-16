@@ -1,0 +1,230 @@
+/* Kids Theme Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@300;400;600;700;800;900&display=swap');
+
+/* Global kid-friendly styles */
+* {
+  font-family: 'Nunito', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fredoka One', cursive;
+}
+
+/* Rainbow gradient border */
+.border-rainbow-gradient {
+  border-image: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #fd79a8) 1;
+}
+
+/* Floating animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes wiggle {
+  0%, 7%, 14%, 21%, 28%, 35%, 42%, 49%, 56%, 63%, 70%, 77%, 84%, 91%, 98%, 100% { transform: rotate(0deg); }
+  3.5% { transform: rotate(-2deg); }
+  10.5% { transform: rotate(2deg); }
+  17.5% { transform: rotate(-2deg); }
+  24.5% { transform: rotate(2deg); }
+  31.5% { transform: rotate(-2deg); }
+  38.5% { transform: rotate(2deg); }
+  45.5% { transform: rotate(-2deg); }
+  52.5% { transform: rotate(2deg); }
+  59.5% { transform: rotate(-2deg); }
+  66.5% { transform: rotate(2deg); }
+  73.5% { transform: rotate(-2deg); }
+  80.5% { transform: rotate(2deg); }
+  87.5% { transform: rotate(-2deg); }
+  94.5% { transform: rotate(2deg); }
+}
+
+@keyframes rainbow {
+  0% { color: #ff6b6b; }
+  16% { color: #4ecdc4; }
+  32% { color: #45b7d1; }
+  48% { color: #96ceb4; }
+  64% { color: #ffeaa7; }
+  80% { color: #fd79a8; }
+  100% { color: #ff6b6b; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+@keyframes bubble {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.8; }
+}
+
+/* Kid-friendly button styles */
+.kid-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 25px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.kid-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.kid-button:active {
+  transform: translateY(0);
+}
+
+.kid-button::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.kid-button:hover::before {
+  opacity: 1;
+  left: 100%;
+}
+
+/* Card hover effects */
+.game-card-hover {
+  transition: all 0.3s ease;
+}
+
+.game-card-hover:hover {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Celebration effects */
+.celebration-stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.celebration-star {
+  position: absolute;
+  font-size: 2rem;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+/* Progress bar animations */
+.progress-bar {
+  background: linear-gradient(90deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #ffeaa7 100%);
+  animation: rainbow 3s ease-in-out infinite;
+}
+
+/* Chat bubble styles */
+.chat-bubble {
+  position: relative;
+  animation: bubble 2s ease-in-out infinite;
+}
+
+/* Responsive typography for kids */
+@media (max-width: 640px) {
+  .kid-title {
+    font-size: 1.5rem;
+  }
+  
+  .kid-subtitle {
+    font-size: 1rem;
+  }
+  
+  .kid-body {
+    font-size: 0.9rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .kid-title {
+    font-size: 2.5rem;
+  }
+  
+  .kid-subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .kid-body {
+    font-size: 1rem;
+  }
+}
+
+/* Accessibility improvements */
+.focus-visible {
+  outline: 3px solid #ff6b6b;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .kid-button {
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Fun cursor effects */
+.cursor-fun {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><text y="20" font-size="20">⭐</text></svg>'), auto;
+}
+
+/* Tooltip styles */
+.kid-tooltip {
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.kid-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: #ff6b6b;
+}
+
+/* Loading animations */
+.loading-bounce {
+  display: inline-block;
+  animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-bounce:nth-child(1) { animation-delay: -0.32s; }
+.loading-bounce:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}

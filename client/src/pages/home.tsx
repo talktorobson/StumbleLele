@@ -8,6 +8,7 @@ import Memories from "@/components/memories";
 import Progress from "@/components/progress";
 import VoiceInput from "@/components/voice-input";
 import LeleAvatar from "@/components/lele-avatar";
+import FloatingLele from "@/components/floating-lele";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,6 +25,7 @@ import {
 export default function Home() {
   const [currentSection, setCurrentSection] = useState("home");
   const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [floatingMessage, setFloatingMessage] = useState("");
   
   const userId = 1; // Default user Helena
 
@@ -68,29 +70,59 @@ export default function Home() {
     }
   };
 
+  // Handle floating Lele interactions
+  const handleFloatingLeleClick = () => {
+    const messages = [
+      "Oi! Vamos brincar juntos! 🎮",
+      "Que tal jogar um jogo? 🌟",
+      "Estou aqui para te ajudar! 💖",
+      "Vamos aprender algo novo? 📚",
+      "Você é incrível! ✨"
+    ];
+    setFloatingMessage(messages[Math.floor(Math.random() * messages.length)]);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-lele-soft-pink via-lele-mint to-lele-turquoise">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-200 rounded-full opacity-50 animate-pulse"></div>
+        <div className="absolute top-32 right-20 w-16 h-16 bg-pink-300 rounded-full opacity-40 animate-bounce"></div>
+        <div className="absolute bottom-20 left-1/4 w-24 h-24 bg-purple-200 rounded-full opacity-30"></div>
+        <div className="absolute top-1/2 right-10 w-12 h-12 bg-blue-300 rounded-full opacity-50"></div>
+        <div className="absolute bottom-40 right-1/3 w-18 h-18 bg-green-200 rounded-full opacity-40 animate-pulse"></div>
+        
+        {/* Floating stars */}
+        <div className="absolute top-20 left-1/3 text-2xl animate-spin">⭐</div>
+        <div className="absolute top-40 right-1/4 text-xl animate-bounce">🌟</div>
+        <div className="absolute bottom-60 left-20 text-lg animate-pulse">✨</div>
+        <div className="absolute top-60 right-40 text-2xl animate-spin">💫</div>
+      </div>
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-3 py-2 sm:px-4 sm:py-3">
+      <header className="bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 backdrop-blur-sm shadow-xl sticky top-0 z-50 border-b-4 border-rainbow-gradient">
+        <div className="container mx-auto px-3 py-3 sm:px-4 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lele-gradient rounded-full flex items-center justify-center">
-                <span className="text-white text-lg sm:text-xl font-bold">L</span>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform">
+                <span className="text-white text-xl sm:text-2xl font-bold animate-pulse">L</span>
               </div>
               <div>
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Stumble Lele</h1>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Sua amiga AI</p>
+                <h1 className="text-xl sm:text-3xl font-black bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                  Stumble Lele
+                </h1>
+                <p className="text-sm sm:text-base text-purple-700 font-semibold hidden sm:block">
+                  🌟 Sua amiga AI mais divertida! 🌟
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-full bg-lele-yellow hover:bg-yellow-400 p-2 sm:p-3"
+                className="rounded-full bg-gradient-to-r from-yellow-300 to-orange-300 hover:from-yellow-400 hover:to-orange-400 p-3 sm:p-4 shadow-lg transform hover:scale-110 transition-all border-2 border-white"
                 onClick={() => setCurrentSection("progress")}
               >
-                <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+                <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </Button>
             </div>
           </div>
@@ -103,63 +135,73 @@ export default function Home() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-50">
-        <div className="container mx-auto px-2 py-2 sm:px-4 sm:py-3">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 backdrop-blur-sm border-t-4 border-white shadow-2xl z-50">
+        <div className="container mx-auto px-2 py-3 sm:px-4 sm:py-4">
           <div className="flex justify-around items-center">
             <Button
               variant="ghost"
               size="sm"
-              className={`flex flex-col items-center space-y-1 px-2 py-2 sm:px-3 sm:py-2 ${
-                currentSection === "home" ? "text-lele-pink" : "text-gray-400"
+              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+                currentSection === "home" 
+                  ? "bg-gradient-to-br from-pink-400 to-purple-400 text-white shadow-lg" 
+                  : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("home")}
             >
-              <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-xs">Início</span>
+              <HomeIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs font-semibold">🏠 Início</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`flex flex-col items-center space-y-1 px-2 py-2 sm:px-3 sm:py-2 ${
-                currentSection === "games" ? "text-lele-turquoise" : "text-gray-400"
+              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+                currentSection === "games" 
+                  ? "bg-gradient-to-br from-green-400 to-blue-400 text-white shadow-lg" 
+                  : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("games")}
             >
-              <Gamepad2 className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-xs">Jogos</span>
+              <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs font-semibold">🎮 Jogos</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`flex flex-col items-center space-y-1 px-2 py-2 sm:px-3 sm:py-2 ${
-                currentSection === "memories" ? "text-lele-yellow" : "text-gray-400"
+              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+                currentSection === "memories" 
+                  ? "bg-gradient-to-br from-yellow-400 to-orange-400 text-white shadow-lg" 
+                  : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("memories")}
             >
-              <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-xs">Memórias</span>
+              <Heart className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs font-semibold">💝 Memórias</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`flex flex-col items-center space-y-1 px-2 py-2 sm:px-3 sm:py-2 ${
-                currentSection === "friends" ? "text-lele-lavender" : "text-gray-400"
+              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+                currentSection === "friends" 
+                  ? "bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg" 
+                  : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("friends")}
             >
-              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-xs">Amigos</span>
+              <Users className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs font-semibold">👥 Amigos</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`flex flex-col items-center space-y-1 px-2 py-2 sm:px-3 sm:py-2 ${
-                currentSection === "progress" ? "text-gray-600" : "text-gray-400"
+              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+                currentSection === "progress" 
+                  ? "bg-gradient-to-br from-gray-400 to-gray-600 text-white shadow-lg" 
+                  : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("progress")}
             >
-              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-xs">Config</span>
+              <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-xs font-semibold">⚙️ Config</span>
             </Button>
           </div>
         </div>
@@ -168,12 +210,12 @@ export default function Home() {
       {/* Floating Voice Button */}
       <Button
         size="lg"
-        className={`fixed bottom-20 right-4 w-14 h-14 sm:right-6 sm:w-16 sm:h-16 lele-gradient rounded-full shadow-xl hover:scale-110 transition-transform z-40 ${
-          isVoiceActive ? "animate-pulse" : ""
+        className={`fixed bottom-24 left-4 w-16 h-16 sm:left-6 sm:w-18 sm:h-18 bg-gradient-to-br from-red-400 to-pink-500 rounded-full shadow-2xl hover:scale-110 transition-all z-40 border-4 border-white ${
+          isVoiceActive ? "animate-pulse from-green-400 to-blue-500" : ""
         }`}
         onClick={() => setIsVoiceActive(!isVoiceActive)}
       >
-        <Mic className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+        <Mic className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
       </Button>
 
       {/* Voice Input Component */}
@@ -226,6 +268,14 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Lele - Always visible */}
+      <FloatingLele
+        isVisible={true}
+        emotion={currentEmotion}
+        message={floatingMessage}
+        onInteraction={handleFloatingLeleClick}
+      />
     </div>
   );
 }

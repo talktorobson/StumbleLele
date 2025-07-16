@@ -137,46 +137,54 @@ export default function Games({ userId }: GamesProps) {
   }
 
   return (
-    <Card className="bg-white/95 backdrop-blur-sm shadow-xl" data-section="games">
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-white via-pink-50 to-purple-50 backdrop-blur-sm shadow-2xl border-4 border-purple-200 rounded-3xl" data-section="games">
+      <CardHeader className="bg-gradient-to-r from-purple-200 to-pink-200 rounded-t-3xl">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center">
-            <Gamepad2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-teal-400" />
-            <span className="text-xl sm:text-2xl font-bold text-gray-800">Mini Jogos</span>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-teal-400 to-blue-400 rounded-full flex items-center justify-center mr-3 shadow-lg">
+              <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </div>
+            <span className="text-xl sm:text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              🎮 Mini Jogos Divertidos! 🎮
+            </span>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => gameSuggestionMutation.mutate()}
             disabled={gameSuggestionMutation.isPending}
-            className="px-2 sm:px-3"
+            className="px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-yellow-300 to-orange-300 hover:from-yellow-400 hover:to-orange-400 rounded-full shadow-lg border-2 border-white transform hover:scale-110 transition-all"
           >
-            <Star className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Sugestão</span>
-            <span className="sm:hidden">Dica</span>
+            <Star className="mr-1 h-4 w-4 sm:h-5 sm:w-5 text-white animate-pulse" />
+            <span className="hidden sm:inline text-white font-bold">Sugestão</span>
+            <span className="sm:hidden text-white font-bold">Dica</span>
           </Button>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {games.map((game) => {
             const Icon = game.icon;
             
             return (
               <div
                 key={game.id}
-                className={`bg-gradient-to-br ${game.gradient} rounded-2xl p-3 sm:p-4 game-card-hover cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                className={`bg-gradient-to-br ${game.gradient} rounded-3xl p-4 sm:p-6 game-card-hover cursor-pointer shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 transform border-4 border-white relative overflow-hidden`}
                 onClick={() => handleGameStart(game.id)}
               >
-                <div className="text-center">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                    <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-700" />
+                {/* Decorative elements */}
+                <div className="absolute top-2 right-2 text-2xl animate-spin">⭐</div>
+                <div className="absolute bottom-2 left-2 text-xl animate-bounce">✨</div>
+                
+                <div className="text-center relative z-10">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-xl border-4 border-yellow-300 transform hover:rotate-12 transition-transform">
+                    <Icon className="h-8 w-8 sm:h-10 sm:w-10 text-gray-700" />
                   </div>
-                  <h4 className="font-bold text-base sm:text-lg text-white mb-1 sm:mb-2">{game.name}</h4>
-                  <p className="text-xs sm:text-sm text-white/90 mb-2 sm:mb-3">{game.description}</p>
+                  <h4 className="font-black text-lg sm:text-xl text-white mb-2 sm:mb-3 drop-shadow-lg">{game.name}</h4>
+                  <p className="text-sm sm:text-base text-white/95 mb-3 sm:mb-4 font-semibold">{game.description}</p>
                   <div className="flex items-center justify-center space-x-2">
-                    <Badge variant="secondary" className="bg-white/80 text-gray-700 text-xs">
-                      <Star className="mr-1 h-2 w-2 sm:h-3 sm:w-3" />
+                    <Badge variant="secondary" className="bg-yellow-300 text-purple-800 text-sm font-bold px-3 py-1 rounded-full border-2 border-white shadow-lg">
+                      <Star className="mr-1 h-3 w-3 sm:h-4 sm:w-4 animate-pulse" />
                       Nível {game.level}
                     </Badge>
                   </div>
