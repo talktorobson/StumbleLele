@@ -612,6 +612,323 @@ class CosmicBlasterMock {
       }
     }, 2000);
   }
+  
+  private shootBossWeapon() {
+    if (!this.boss || this.boss.phase !== 'fighting') return;
+    
+    // Each boss type has unique weapon
+    switch (this.boss.type) {
+      case 'megaSlime':
+        // Triple shot
+        for (let i = -1; i <= 1; i++) {
+          this.enemyBullets.push({
+            x: this.boss.x + i * 20,
+            y: this.boss.y + this.boss.size,
+            vx: i * 0.5,
+            vy: 4,
+            damage: 8,
+            size: 5,
+            color: '#00ff00'
+          });
+        }
+        break;
+        
+      case 'megaBubble':
+        // Big slow bubbles
+        this.enemyBullets.push({
+          x: this.boss.x,
+          y: this.boss.y + this.boss.size,
+          vx: 0,
+          vy: 2,
+          damage: 12,
+          size: 15,
+          color: '#00bfff'
+        });
+        break;
+        
+      case 'megaCrystal':
+        // Crystal shards in spread pattern
+        for (let i = 0; i < 5; i++) {
+          const angle = (i - 2) * 0.3;
+          this.enemyBullets.push({
+            x: this.boss.x,
+            y: this.boss.y + this.boss.size,
+            vx: Math.sin(angle) * 3,
+            vy: Math.cos(angle) * 3 + 2,
+            damage: 6,
+            size: 4,
+            color: '#ff69b4'
+          });
+        }
+        break;
+        
+      case 'megaFire':
+        // Laser beam (multiple rapid shots)
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            if (this.boss) {
+              this.enemyBullets.push({
+                x: this.boss.x,
+                y: this.boss.y + this.boss.size,
+                vx: 0,
+                vy: 8,
+                damage: 10,
+                size: 3,
+                color: '#ff4500'
+              });
+            }
+          }, i * 100);
+        }
+        break;
+        
+      case 'megaIce':
+        // Guided missile towards player
+        const dx = this.player.x - this.boss.x;
+        const dy = this.player.y - this.boss.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        this.enemyBullets.push({
+          x: this.boss.x,
+          y: this.boss.y + this.boss.size,
+          vx: (dx / distance) * 2,
+          vy: (dy / distance) * 2,
+          damage: 15,
+          size: 8,
+          color: '#00ffff',
+          guided: true,
+          target: { x: this.player.x, y: this.player.y }
+        });
+        break;
+        
+      case 'megaThunder':
+        // Lightning bolt (instant hit chance)
+        if (Math.random() < 0.3) {
+          this.health -= 5;
+          this.playSound('hit');
+          this.updateCallbacks();
+          // Visual lightning effect
+          this.explosions.push({ 
+            x: this.player.x, 
+            y: this.player.y, 
+            time: Date.now(), 
+            size: 30, 
+            isLightning: true 
+          });
+        }
+        break;
+        
+      case 'megaShadow':
+        // Shadow missiles from sides
+        this.enemyBullets.push({
+          x: 0,
+          y: this.boss.y,
+          vx: 3,
+          vy: 2,
+          damage: 9,
+          size: 6,
+          color: '#8b008b'
+        });
+        this.enemyBullets.push({
+          x: this.canvas.width,
+          y: this.boss.y,
+          vx: -3,
+          vy: 2,
+          damage: 9,
+          size: 6,
+          color: '#8b008b'
+        });
+        break;
+        
+      case 'megaGold':
+        // Gold rain
+        for (let i = 0; i < 8; i++) {
+          this.enemyBullets.push({
+            x: this.boss.x + (Math.random() - 0.5) * 100,
+            y: this.boss.y + this.boss.size,
+            vx: (Math.random() - 0.5) * 2,
+            vy: 3 + Math.random() * 2,
+            damage: 5,
+            size: 4,
+            color: '#ffd700'
+          });
+        }
+        break;
+        
+      case 'megaVoid':
+        // Void pull bullets
+        const angle = Math.atan2(this.player.y - this.boss.y, this.player.x - this.boss.x);
+        this.enemyBullets.push({
+          x: this.boss.x,
+          y: this.boss.y + this.boss.size,
+          vx: Math.cos(angle) * 4,
+          vy: Math.sin(angle) * 4,
+          damage: 12,
+          size: 10,
+          color: '#4b0082'
+        });
+        break;
+        
+      case 'megaFinal':
+        // Ultimate weapon - combination attack
+        // Laser
+        this.enemyBullets.push({
+          x: this.boss.x,
+          y: this.boss.y + this.boss.size,
+          vx: 0,
+          vy: 6,
+          damage: 15,
+          size: 8,
+          color: '#ff00ff'
+        });
+        // Side missiles
+        for (let side of [-1, 1]) {
+          this.enemyBullets.push({
+            x: this.boss.x + side * 50,
+            y: this.boss.y,
+            vx: side * 2,
+            vy: 3,
+            damage: 10,
+            size: 6,
+            color: '#ff00ff'
+          });
+        }
+        break;
+    }
+  }
+  
+  private bossSpecialAttack() {
+    if (!this.boss || this.boss.phase !== 'fighting') return;
+    
+    switch (this.boss.type) {
+      case 'megaSlime':
+        // Spawn slime minions
+        for (let i = 0; i < 3; i++) {
+          this.spawnEnemy();
+        }
+        break;
+        
+      case 'megaBubble':
+        // Dash attack
+        this.boss.vy = 5;
+        setTimeout(() => {
+          if (this.boss) this.boss.vy = 0;
+        }, 1000);
+        break;
+        
+      case 'megaCrystal':
+        // Crystal barrier
+        for (let i = 0; i < 6; i++) {
+          this.spawnObstacle();
+        }
+        break;
+        
+      case 'megaFire':
+        // Fire tornado
+        for (let i = 0; i < 20; i++) {
+          const angle = (i / 20) * Math.PI * 2;
+          this.enemyBullets.push({
+            x: this.boss.x,
+            y: this.boss.y,
+            vx: Math.cos(angle) * 4,
+            vy: Math.sin(angle) * 4,
+            damage: 8,
+            size: 6,
+            color: '#ff4500'
+          });
+        }
+        break;
+        
+      case 'megaIce':
+        // Freeze screen effect + ice missiles
+        for (let i = 0; i < 10; i++) {
+          this.enemyBullets.push({
+            x: Math.random() * this.canvas.width,
+            y: -50,
+            vx: 0,
+            vy: 6,
+            damage: 10,
+            size: 8,
+            color: '#00ffff'
+          });
+        }
+        break;
+        
+      case 'megaThunder':
+        // Lightning storm
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            if (Math.random() < 0.8) {
+              this.health -= 3;
+              this.playSound('hit');
+              this.updateCallbacks();
+            }
+          }, i * 200);
+        }
+        break;
+        
+      case 'megaShadow':
+        // Teleport and shadow clones
+        this.boss.x = Math.random() * (this.canvas.width - this.boss.size * 2) + this.boss.size;
+        for (let i = 0; i < 4; i++) {
+          this.enemyBullets.push({
+            x: this.boss.x + (Math.random() - 0.5) * 200,
+            y: this.boss.y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: 3,
+            damage: 8,
+            size: 8,
+            color: '#8b008b'
+          });
+        }
+        break;
+        
+      case 'megaGold':
+        // Gold shower
+        for (let i = 0; i < 15; i++) {
+          this.enemyBullets.push({
+            x: Math.random() * this.canvas.width,
+            y: -50,
+            vx: (Math.random() - 0.5) * 3,
+            vy: 2 + Math.random() * 3,
+            damage: 6,
+            size: 5,
+            color: '#ffd700'
+          });
+        }
+        break;
+        
+      case 'megaVoid':
+        // Void pull effect
+        const pullDx = this.boss.x - this.player.x;
+        const pullDy = this.boss.y - this.player.y;
+        this.player.x += pullDx * 0.05;
+        this.player.y += pullDy * 0.05;
+        // Keep player in bounds
+        this.player.x = Math.max(30, Math.min(this.canvas.width - 30, this.player.x));
+        this.player.y = Math.max(50, Math.min(this.canvas.height - 50, this.player.y));
+        break;
+        
+      case 'megaFinal':
+        // Ultimate combo attack
+        // Spawn enemies
+        for (let i = 0; i < 5; i++) {
+          this.spawnEnemy();
+        }
+        // Fire tornado
+        for (let i = 0; i < 12; i++) {
+          const angle = (i / 12) * Math.PI * 2;
+          this.enemyBullets.push({
+            x: this.boss.x,
+            y: this.boss.y,
+            vx: Math.cos(angle) * 5,
+            vy: Math.sin(angle) * 5,
+            damage: 12,
+            size: 8,
+            color: '#ff00ff'
+          });
+        }
+        break;
+    }
+  }
 
   private shoot() {
     if (Date.now() - this.lastShot < 250) return;
@@ -731,41 +1048,47 @@ class CosmicBlasterMock {
   }
 
   private spawnBoss() {
-    // Different boss types for each wave
+    // Different boss types for each wave - much stronger and slower
     const bossConfigs = [
-      { type: 'megaSlime', color: '#00ff00', baseHealth: 20, baseSize: 80, speed: 1 },
-      { type: 'megaBubble', color: '#00bfff', baseHealth: 25, baseSize: 90, speed: 1.2 },
-      { type: 'megaCrystal', color: '#ff69b4', baseHealth: 30, baseSize: 100, speed: 0.8 },
-      { type: 'megaFire', color: '#ff4500', baseHealth: 35, baseSize: 95, speed: 1.5 },
-      { type: 'megaIce', color: '#00ffff', baseHealth: 40, baseSize: 105, speed: 0.7 },
-      { type: 'megaThunder', color: '#ffff00', baseHealth: 45, baseSize: 110, speed: 1.3 },
-      { type: 'megaShadow', color: '#8b008b', baseHealth: 50, baseSize: 115, speed: 1.1 },
-      { type: 'megaGold', color: '#ffd700', baseHealth: 55, baseSize: 120, speed: 0.9 },
-      { type: 'megaVoid', color: '#4b0082', baseHealth: 60, baseSize: 125, speed: 1.4 },
-      { type: 'megaFinal', color: '#ff00ff', baseHealth: 100, baseSize: 150, speed: 1 }
+      { type: 'megaSlime', color: '#00ff00', baseHealth: 50, baseSize: 80, speed: 0.3 },
+      { type: 'megaBubble', color: '#00bfff', baseHealth: 60, baseSize: 90, speed: 0.4 },
+      { type: 'megaCrystal', color: '#ff69b4', baseHealth: 70, baseSize: 100, speed: 0.2 },
+      { type: 'megaFire', color: '#ff4500', baseHealth: 80, baseSize: 95, speed: 0.5 },
+      { type: 'megaIce', color: '#00ffff', baseHealth: 90, baseSize: 105, speed: 0.2 },
+      { type: 'megaThunder', color: '#ffff00', baseHealth: 100, baseSize: 110, speed: 0.4 },
+      { type: 'megaShadow', color: '#8b008b', baseHealth: 110, baseSize: 115, speed: 0.3 },
+      { type: 'megaGold', color: '#ffd700', baseHealth: 120, baseSize: 120, speed: 0.3 },
+      { type: 'megaVoid', color: '#4b0082', baseHealth: 130, baseSize: 125, speed: 0.4 },
+      { type: 'megaFinal', color: '#ff00ff', baseHealth: 200, baseSize: 150, speed: 0.2 }
     ];
     
     const config = bossConfigs[Math.min(this.wave - 1, bossConfigs.length - 1)];
     
     const boss = {
       x: this.canvas.width / 2,
-      y: -100,
-      vx: (Math.random() - 0.5) * 2,
+      y: -config.baseSize,
+      vx: (Math.random() - 0.5) * 1, // Slower horizontal movement
+      vy: config.speed, // Vertical speed for entry
       type: config.type,
       color: config.color,
       size: config.baseSize,
-      speed: config.speed * this.difficultyMultiplier,
-      health: config.baseHealth + this.wave * 5,
-      maxHealth: config.baseHealth + this.wave * 5,
+      baseSpeed: config.speed,
+      health: config.baseHealth + this.wave * 10, // More health scaling
+      maxHealth: config.baseHealth + this.wave * 10,
       canShoot: true,
       canAccelerate: true,
       lastShot: Date.now(),
-      specialAttackTimer: Date.now() + 5000,
+      specialAttackTimer: Date.now() + 3000, // Faster special attacks
       blinkTime: Date.now() + Math.random() * 1000,
-      wave: this.wave // Track which wave this boss belongs to
+      wave: this.wave,
+      phase: 'entering', // entering, fighting, retreating
+      targetY: 100, // Target position for fighting phase
+      retreatTimer: Date.now() + 30000, // Retreat after 30 seconds if not defeated
+      movementTimer: Date.now()
     };
     
     this.boss = boss;
+    this.playBossWarningSound();
   }
 
   private spawnObstacle() {
@@ -847,6 +1170,17 @@ class CosmicBlasterMock {
 
   private updateEnemyBullets() {
     this.enemyBullets = this.enemyBullets.filter(bullet => {
+      // Handle guided missiles
+      if (bullet.guided && bullet.target) {
+        const dx = this.player.x - bullet.x;
+        const dy = this.player.y - bullet.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 0) {
+          bullet.vx += (dx / distance) * 0.2; // Slight homing
+          bullet.vy += (dy / distance) * 0.2;
+        }
+      }
+      
       bullet.x += bullet.vx || 0;
       bullet.y += bullet.vy;
       return bullet.y < this.canvas.height + 50 && bullet.x > -50 && bullet.x < this.canvas.width + 50;
@@ -904,126 +1238,58 @@ class CosmicBlasterMock {
 
   private updateBoss() {
     if (this.boss) {
-      this.boss.x += this.boss.vx;
-      this.boss.y += this.boss.speed;
-      
-      if (this.boss.x < this.boss.size || this.boss.x > this.canvas.width - this.boss.size) {
-        this.boss.vx = -this.boss.vx;
+      // Boss movement phases
+      if (this.boss.phase === 'entering') {
+        // Move down to fighting position
+        this.boss.y += this.boss.vy;
+        if (this.boss.y >= this.boss.targetY) {
+          this.boss.phase = 'fighting';
+          this.boss.vy = 0;
+        }
+      } else if (this.boss.phase === 'fighting') {
+        // Complex movement pattern in fighting phase
+        const time = (Date.now() - this.boss.movementTimer) * 0.001;
+        
+        // Horizontal movement
+        this.boss.x += this.boss.vx;
+        if (this.boss.x < this.boss.size || this.boss.x > this.canvas.width - this.boss.size) {
+          this.boss.vx = -this.boss.vx;
+        }
+        
+        // Vertical oscillation
+        this.boss.y = this.boss.targetY + Math.sin(time * 2) * 20;
+        
+        // Occasionally move up and down more dramatically
+        if (Math.random() < 0.005) {
+          this.boss.targetY = 50 + Math.random() * 150;
+        }
+        
+        // Check retreat condition
+        if (Date.now() > this.boss.retreatTimer) {
+          this.boss.phase = 'retreating';
+          this.boss.vy = -2; // Move up to retreat
+        }
+      } else if (this.boss.phase === 'retreating') {
+        // Move up and away
+        this.boss.y += this.boss.vy;
+        if (this.boss.y < -this.boss.size * 2) {
+          // Boss escaped
+          this.health -= 20;
+          this.boss = null;
+          this.updateCallbacks();
+          return;
+        }
       }
       
-      if (Date.now() - this.boss.lastShot > 1000) {
-        this.enemyBullets.push({
-          x: this.boss.x,
-          y: this.boss.y + this.boss.size,
-          vx: 0,
-          vy: 5,
-          damage: 8, // Reduced boss bullet damage
-          size: 6,
-          color: '#ff0000'
-        });
+      // Boss shooting with unique weapons
+      if (Date.now() - this.boss.lastShot > 800) {
+        this.shootBossWeapon();
         this.boss.lastShot = Date.now();
       }
       
-      if (Date.now() - this.boss.specialAttackTimer > 5000) {
-        // Unique special attacks based on boss type
-        if (this.boss.type === 'megaSlime') {
-          // Spread shot
-          for (let i = -2; i <= 2; i++) {
-            this.enemyBullets.push({
-              x: this.boss.x,
-              y: this.boss.y + this.boss.size,
-              vx: i * 1.5,
-              vy: 5,
-              damage: 5,
-              size: 4,
-              color: '#00ff00'
-            });
-          }
-        } else if (this.boss.type === 'megaBubble') {
-          // Dash attack
-          this.boss.speed *= 3;
-          setTimeout(() => this.boss.speed = this.boss.speed / 3, 2000);
-        } else if (this.boss.type === 'megaCrystal') {
-          // Summon minions
-          for (let i = 0; i < 2; i++) {
-            this.spawnEnemy();
-          }
-        } else if (this.boss.type === 'megaFire') {
-          // Fireball barrage
-          for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            this.enemyBullets.push({
-              x: this.boss.x,
-              y: this.boss.y,
-              vx: Math.cos(angle) * 3,
-              vy: Math.sin(angle) * 3,
-              damage: 6,
-              size: 5,
-              color: '#ff4500'
-            });
-          }
-        } else if (this.boss.type === 'megaIce') {
-          // Ice shards
-          for (let i = -3; i <= 3; i++) {
-            this.enemyBullets.push({
-              x: this.boss.x + i * 20,
-              y: this.boss.y + this.boss.size,
-              vx: 0,
-              vy: 4,
-              damage: 4,
-              size: 6,
-              color: '#00ffff'
-            });
-          }
-        } else if (this.boss.type === 'megaThunder') {
-          // Lightning bolts (instant hits)
-          if (Math.random() > 0.7) {
-            this.health -= 8;
-            this.playSound('hit');
-            this.updateCallbacks();
-          }
-        } else if (this.boss.type === 'megaShadow') {
-          // Teleport
-          this.boss.x = Math.random() * (this.canvas.width - this.boss.size * 2) + this.boss.size;
-        } else if (this.boss.type === 'megaGold') {
-          // Money blast
-          for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2;
-            this.enemyBullets.push({
-              x: this.boss.x,
-              y: this.boss.y,
-              vx: Math.cos(angle) * 2,
-              vy: Math.sin(angle) * 2,
-              damage: 3,
-              size: 4,
-              color: '#ffd700'
-            });
-          }
-        } else if (this.boss.type === 'megaVoid') {
-          // Void pull (attracts player)
-          const dx = this.boss.x - this.player.x;
-          const dy = this.boss.y - this.player.y;
-          this.player.x += dx * 0.02;
-          this.player.y += dy * 0.02;
-        } else if (this.boss.type === 'megaFinal') {
-          // Ultimate attack - combines multiple abilities
-          for (let i = 0; i < 16; i++) {
-            const angle = (i / 16) * Math.PI * 2;
-            this.enemyBullets.push({
-              x: this.boss.x,
-              y: this.boss.y,
-              vx: Math.cos(angle) * 4,
-              vy: Math.sin(angle) * 4,
-              damage: 8,
-              size: 7,
-              color: '#ff00ff'
-            });
-          }
-          // Also spawn minions
-          for (let i = 0; i < 3; i++) {
-            this.spawnEnemy();
-          }
-        }
+      // Special attacks less frequently but more powerful
+      if (Date.now() - this.boss.specialAttackTimer > 8000) {
+        this.bossSpecialAttack();
         this.boss.specialAttackTimer = Date.now();
       }
       
@@ -1256,23 +1522,32 @@ class CosmicBlasterMock {
   }
   
   private completeWave() {
-    this.wave++;
-    this.waveEnemiesKilled = 0;
-    this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
+    // Play victory sound for boss defeat
+    this.playBossVictorySound();
     
-    this.enemySpawnRate = Math.max(1000, 2000 - this.wave * 80);
-    this.health = Math.min(150, this.health + 40);
+    // 2 seconds of peace - no enemy spawning
+    this.lastEnemySpawn = Date.now() + 2000;
+    this.lastObstacleSpawn = Date.now() + 2000;
     
-    if (this.wave > 10) {
-      this.gameState = 'victory';
-      this.callbacks.onStateChange(this.gameState);
-      this.callbacks.onGameComplete(this.score);
-    } else {
-      // Show wave transition
-      this.showWaveTransition();
-    }
-    
-    this.updateCallbacks();
+    setTimeout(() => {
+      this.wave++;
+      this.waveEnemiesKilled = 0;
+      this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
+      
+      this.enemySpawnRate = Math.max(1000, 2000 - this.wave * 80);
+      this.health = Math.min(150, this.health + 40);
+      
+      if (this.wave > 10) {
+        this.gameState = 'victory';
+        this.callbacks.onStateChange(this.gameState);
+        this.callbacks.onGameComplete(this.score);
+      } else {
+        // Show wave transition after peace period
+        this.showWaveTransition();
+      }
+      
+      this.updateCallbacks();
+    }, 2000);
   }
 
   private playSound(type: string) {
@@ -1375,6 +1650,75 @@ class CosmicBlasterMock {
           try { oscillator.stop(); } catch (e) { /* ignore */ }
         }, 100);
       }
+    } catch (error) {
+      // Silent fail
+    }
+  }
+  
+  private playBossWarningSound() {
+    try {
+      if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+      
+      // Dramatic warning sound
+      const oscillator1 = this.audioCtx.createOscillator();
+      const oscillator2 = this.audioCtx.createOscillator();
+      const gainNode = this.audioCtx.createGain();
+      
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(this.audioCtx.destination);
+      
+      oscillator1.type = 'sine';
+      oscillator2.type = 'triangle';
+      oscillator1.frequency.setValueAtTime(200, this.audioCtx.currentTime);
+      oscillator2.frequency.setValueAtTime(400, this.audioCtx.currentTime);
+      
+      // Dramatic rise
+      oscillator1.frequency.exponentialRampToValueAtTime(100, this.audioCtx.currentTime + 0.5);
+      oscillator2.frequency.exponentialRampToValueAtTime(200, this.audioCtx.currentTime + 0.5);
+      
+      gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 1);
+      
+      oscillator1.start();
+      oscillator2.start();
+      setTimeout(() => {
+        try { 
+          oscillator1.stop(); 
+          oscillator2.stop(); 
+        } catch (e) { /* ignore */ }
+      }, 1000);
+    } catch (error) {
+      // Silent fail
+    }
+  }
+  
+  private playBossVictorySound() {
+    try {
+      if (!this.audioCtx || this.audioCtx.state !== 'running') return;
+      
+      // Victory fanfare
+      const notes = [440, 554, 659, 880]; // A, C#, E, A octave
+      
+      notes.forEach((freq, index) => {
+        setTimeout(() => {
+          const oscillator = this.audioCtx.createOscillator();
+          const gainNode = this.audioCtx.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(this.audioCtx.destination);
+          
+          oscillator.type = 'triangle';
+          oscillator.frequency.value = freq;
+          gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.3);
+          
+          oscillator.start();
+          setTimeout(() => {
+            try { oscillator.stop(); } catch (e) { /* ignore */ }
+          }, 300);
+        }, index * 150);
+      });
     } catch (error) {
       // Silent fail
     }
@@ -1889,7 +2233,7 @@ class CosmicBlasterMock {
         if (this.health <= 0) {
           this.gameState = 'gameOver';
           this.callbacks.onStateChange(this.gameState);
-          this.callbacks.onGameComplete(this.score);
+          // Don't call onGameComplete here - let the game over modal handle restart
         }
       }
       
