@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -16,34 +17,29 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
   const [health, setHealth] = useState(100);
   const [wave, setWave] = useState(1);
 
+  // Add logging to React state changes
+  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver') => {
+    console.log('React: State change requested from', gameState, 'to', newState);
+    setGameState(newState);
+  };
+
   useEffect(() => {
     if (canvasRef.current && !gameRef.current) {
-      // Small delay to ensure DOM is ready and canvas has proper dimensions
-      const timer = setTimeout(() => {
-        try {
-          console.log('Creating CosmicBlasterMock instance...');
-          gameRef.current = new CosmicBlasterMock(canvasRef.current!, {
-            onStateChange: setGameState,
-            onScoreChange: setScore,
-            onHealthChange: setHealth,
-            onWaveChange: setWave,
-            onGameComplete: (finalScore: number) => {
-              onGameComplete(finalScore);
-            }
-          });
-          console.log('CosmicBlasterMock instance created successfully');
-        } catch (error) {
-          console.error('Game initialization error:', error);
-        }
-      }, 100);
-
-      return () => {
-        clearTimeout(timer);
-        if (gameRef.current) {
-          gameRef.current.destroy();
-          gameRef.current = null;
-        }
-      };
+      try {
+        console.log('Creating CosmicBlasterMock instance...');
+        gameRef.current = new CosmicBlasterMock(canvasRef.current!, {
+          onStateChange: handleStateChange,
+          onScoreChange: setScore,
+          onHealthChange: setHealth,
+          onWaveChange: setWave,
+          onGameComplete: (finalScore: number) => {
+            onGameComplete(finalScore);
+          }
+        });
+        console.log('CosmicBlasterMock instance created successfully');
+      } catch (error) {
+        console.error('Game initialization error:', error);
+      }
     }
 
     return () => {
@@ -56,6 +52,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
 
   const handleStartGame = () => {
     console.log('handleStartGame called, gameRef.current:', !!gameRef.current);
+    console.log('Current React gameState:', gameState);
     if (gameRef.current) {
       gameRef.current.startGame();
     } else {
@@ -432,7 +429,9 @@ class CosmicBlasterMock {
     this.resetGame();
     this.gameState = 'playing';
     console.log('Game state set to:', this.gameState);
+    console.log('Calling onStateChange callback...');
     this.callbacks.onStateChange(this.gameState);
+    console.log('onStateChange callback called');
     // Reset timers to allow immediate spawning
     this.lastAutoShot = Date.now() - this.autoShootRate; // Allow immediate shooting
     this.lastEnemySpawn = Date.now() - this.enemySpawnRate; // Allow immediate enemy spawn
@@ -502,6 +501,7 @@ class CosmicBlasterMock {
   }
 
   private updateCallbacks() {
+    console.log('Updating callbacks - gameState:', this.gameState, 'score:', this.score);
     this.callbacks.onScoreChange(this.score);
     this.callbacks.onHealthChange(this.health);
     this.callbacks.onWaveChange(this.wave);
@@ -634,6 +634,32 @@ class CosmicBlasterMock {
     };
     
     this.enemies.push(enemy);
+  }
+
+  private spawnObstacle() {
+    const types = ['wall', 'gate'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    const colors = {
+      wall: '#8B4513',
+      gate: '#FFD700'
+    };
+    
+    const lane = Math.floor(Math.random() * this.numLanes);
+    const obstacle = {
+      x: lane * this.laneWidth + this.laneWidth / 2,
+      y: -100,
+      type: type,
+      color: colors[type as keyof typeof colors],
+      width: this.laneWidth - 20,
+      height: 80,
+      speed: this.scrollSpeed * this.difficultyMultiplier,
+      lane: lane,
+      health: 5, // Example health
+      lastShot: Date.now()
+    };
+    
+    this.obstacles.push(obstacle);
   }
 
   private spawnPickup() {
@@ -1193,6 +1219,13 @@ class CosmicBlasterMock {
           console.log('Spawning enemy...');
           this.spawnEnemy();
           this.lastEnemySpawn = Date.now();
+        }
+        
+        // Spawn obstacles
+        if (Date.now() - this.lastObstacleSpawn > this.obstacleSpawnRate) {
+          console.log('Spawning obstacle...');
+          this.spawnObstacle();
+          this.lastObstacleSpawn = Date.now();
         }
         
         // Spawn pickups for automatic weapon upgrades
