@@ -20,6 +20,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const user = await storage.getOrCreateUser(userId);
           return res.json(user);
         }
+        if (parts[1] && parts[2] === 'ai-model' && req.method === 'POST') {
+          const userId = parseInt(parts[1]);
+          const { aiModel } = req.body;
+          
+          if (!aiModel) {
+            return res.status(400).json({ message: "aiModel é obrigatório" });
+          }
+          
+          const updatedUser = await storage.updateUserPreferences(userId, aiModel);
+          return res.json(updatedUser);
+        }
         break;
 
       case 'chat':

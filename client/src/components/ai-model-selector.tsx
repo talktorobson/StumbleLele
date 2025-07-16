@@ -3,14 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Brain, Sparkles, Zap } from "lucide-react";
+import { Brain, Sparkles, Zap, Gem } from "lucide-react";
 
 interface AIModelSelectorProps {
   userId: number;
   currentModel?: string;
 }
 
-export default function AIModelSelector({ userId, currentModel = "openai" }: AIModelSelectorProps) {
+export default function AIModelSelector({ userId, currentModel = "gemini" }: AIModelSelectorProps) {
   const [selectedModel, setSelectedModel] = useState(currentModel);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -54,6 +54,12 @@ export default function AIModelSelector({ userId, currentModel = "openai" }: AIM
           <SelectValue placeholder="Escolha o modelo de AI" />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="gemini">
+            <div className="flex items-center gap-2">
+              <Gem className="h-4 w-4" />
+              Google Gemini
+            </div>
+          </SelectItem>
           <SelectItem value="openai">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
@@ -76,7 +82,12 @@ export default function AIModelSelector({ userId, currentModel = "openai" }: AIM
       </Select>
       
       <div className="text-sm text-muted-foreground">
-        {selectedModel === "openai" ? (
+        {selectedModel === "gemini" ? (
+          <div className="flex items-center gap-2 p-2 bg-green-50 rounded-md">
+            <Gem className="h-4 w-4 text-green-600" />
+            <span className="text-xs">Google Gemini - Modelo rápido e inteligente (Recomendado)</span>
+          </div>
+        ) : selectedModel === "openai" ? (
           <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
             <Brain className="h-4 w-4 text-blue-600" />
             <span className="text-xs">OpenAI GPT-4o - Modelo conversacional avançado</span>
