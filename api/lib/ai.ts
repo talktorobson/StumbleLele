@@ -1,17 +1,23 @@
 import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
-// XAI client (primary)
+// XAI client
 const xai = new OpenAI({ 
   apiKey: process.env.XAI_API_KEY || "",
   baseURL: "https://api.x.ai/v1"
 });
 
-// OpenAI client (fallback)
+// OpenAI client
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || ""
 });
 
-export type AIModel = "openai" | "xai" | "anthropic";
+// Gemini client
+const gemini = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || ""
+});
+
+export type AIModel = "openai" | "xai" | "anthropic" | "gemini";
 
 export interface LeleResponse {
   response: string;
@@ -49,24 +55,41 @@ Responda SEMPRE em JSON com este formato:
 }`;
 
 export class LeleAI {
-  async generateResponse(message: string, context: string[] = [], aiModel: AIModel = "xai"): Promise<LeleResponse> {
+  async generateResponse(message: string, context: string[] = [], aiModel: AIModel = "gemini"): Promise<LeleResponse> {
     try {
-      const client = aiModel === "xai" ? xai : openai;
-      const model = aiModel === "xai" ? "grok-2-1212" : "gpt-4o";
-      
       const contextString = context.length > 0 ? `\n\nContexto das conversas anteriores:\n${context.join('\n')}` : '';
+      const fullPrompt = `${LELE_PROMPT}\n\nMensagem do usuário: ${message}${contextString}`;
       
-      const response = await client.chat.completions.create({
-        model,
-        messages: [
-          { role: "system", content: LELE_PROMPT },
-          { role: "user", content: `${message}${contextString}` }
-        ],
-        temperature: 0.8,
-        max_tokens: 200
-      });
+      let content = '';
 
-      const content = response.choices[0]?.message?.content || '';
+      if (aiModel === "gemini") {
+        // Use Gemini API
+        const response = await gemini.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: fullPrompt,
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 200
+          }
+        });
+        content = response.text || '';
+      } else {
+        // Use OpenAI-compatible APIs (XAI, OpenAI)
+        const client = aiModel === "xai" ? xai : openai;
+        const model = aiModel === "xai" ? "grok-2-1212" : "gpt-4o";
+        
+        const response = await client.chat.completions.create({
+          model,
+          messages: [
+            { role: "system", content: LELE_PROMPT },
+            { role: "user", content: `${message}${contextString}` }
+          ],
+          temperature: 0.8,
+          max_tokens: 200
+        });
+
+        content = response.choices[0]?.message?.content || '';
+      }
       
       try {
         return JSON.parse(content);
@@ -84,7 +107,7 @@ export class LeleAI {
         };
       }
     } catch (error) {
-      console.error("AI Error:", error);
+      console.error(`AI Error (${aiModel}):`, error);
       return {
         response: "Ops! Tive um probleminha, mas já estou melhor! Vamos conversar? 😊",
         emotion: "happy",

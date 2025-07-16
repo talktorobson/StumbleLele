@@ -20,7 +20,7 @@ class Storage {
       if (!user) {
         user = await this.createUser({
           name: `User${id}`,
-          preferredAI: "xai"
+          preferredAI: "gemini"
         });
       }
       return user;
@@ -30,7 +30,7 @@ class Storage {
       return {
         id,
         name: `User${id}`,
-        preferredAI: "xai",
+        preferredAI: "gemini",
         age: null,
         createdAt: new Date()
       };

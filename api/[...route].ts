@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
 
           const user = await storage.getOrCreateUser(userId);
-          const aiModel = (user?.preferredAI || "xai") as AIModel;
+          const aiModel = (user?.preferredAI || "gemini") as AIModel;
           const conversations = await storage.getConversations(userId);
           const context = conversations.slice(-5).map(c => `${c.message} -> ${c.response}`);
           
