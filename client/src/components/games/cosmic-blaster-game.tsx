@@ -101,15 +101,15 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
               🚀 Defesa Cósmica da Lele! 🚀
             </h2>
             <div className="text-left mb-6 space-y-2">
-              <p><strong>Como jogar:</strong></p>
+              <p><strong>Como jogar (estilo 1945 Air Force):</strong></p>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>📱 TOQUE na tela para atirar</li>
-                <li>👆 DESLIZE para mover horizontalmente</li>
-                <li>🎯 Evite obstáculos e inimigos</li>
-                <li>🌊 Sobreviva às ondas!</li>
+                <li>👆 ARRASTE o dedo na tela para mover a Lele</li>
+                <li>🎯 Tiros são AUTOMÁTICOS - apenas se mova!</li>
+                <li>💎 Colete power-ups para melhorar armas</li>
+                <li>🌊 Sobreviva às ondas de inimigos!</li>
               </ul>
               <p className="text-xs opacity-80 mt-4">
-                💻 Desktop: ← → para mover, ↑ para acelerar vertical, ESPAÇO para atirar
+                💻 Desktop: Clique e arraste o mouse para mover
               </p>
             </div>
             <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-bold">
@@ -179,10 +179,9 @@ class CosmicBlasterMock {
   private wave = 1;
   private waveProgress = 0;
   private waveEnemiesKilled = 0;
-  private currentWeapon = 'basic';
-  private tempWeapon: string | null = null;
-  private tempWeaponTimer = 0;
-  private tempWeaponDuration = 15000;
+  private weaponLevel = 1; // Auto-upgrade weapon system
+  private weaponUpgradeTimer = 0;
+  private weaponUpgradeDuration = 10000; // 10 seconds per upgrade
   private shieldActive = false;
   private shieldTimer = 0;
   private baseScrollSpeed = 3;
@@ -421,9 +420,8 @@ class CosmicBlasterMock {
     this.wave = 1;
     this.waveProgress = 0;
     this.waveEnemiesKilled = 0;
-    this.currentWeapon = 'basic';
-    this.tempWeapon = null;
-    this.tempWeaponTimer = 0;
+    this.weaponLevel = 1; // Start with basic auto-weapon
+    this.weaponUpgradeTimer = 0;
     this.shieldActive = false;
     this.shieldTimer = 0;
     this.scrollSpeed = this.baseScrollSpeed;
@@ -482,30 +480,79 @@ class CosmicBlasterMock {
     this.lastAutoShot = Date.now();
     this.playSound('shoot');
     
-    // Shoot multiple bullets for better visual effect
-    this.bullets.push({
-      x: this.player.x - 8,
-      y: this.player.y - 20,
-      vx: 0,
-      vy: -10,
-      damage: 1,
-      color: '#ffd700',
-      size: 3,
-      type: 'auto',
-      special: 'none'
-    });
-    
-    this.bullets.push({
-      x: this.player.x + 8,
-      y: this.player.y - 20,
-      vx: 0,
-      vy: -10,
-      damage: 1,
-      color: '#ffd700',
-      size: 3,
-      type: 'auto',
-      special: 'none'
-    });
+    // Automatic weapon progression based on weapon level
+    switch (this.weaponLevel) {
+      case 1: // Basic dual shots
+        this.bullets.push({
+          x: this.player.x - 8,
+          y: this.player.y - 20,
+          vx: 0,
+          vy: -10,
+          damage: 1,
+          color: '#ffd700',
+          size: 3,
+          type: 'auto',
+          special: 'none'
+        });
+        this.bullets.push({
+          x: this.player.x + 8,
+          y: this.player.y - 20,
+          vx: 0,
+          vy: -10,
+          damage: 1,
+          color: '#ffd700',
+          size: 3,
+          type: 'auto',
+          special: 'none'
+        });
+        break;
+        
+      case 2: // Triple shots
+        for (let i = -1; i <= 1; i++) {
+          this.bullets.push({
+            x: this.player.x + i * 12,
+            y: this.player.y - 20,
+            vx: i * 1,
+            vy: -10,
+            damage: 1,
+            color: '#00ff00',
+            size: 3,
+            type: 'auto',
+            special: 'spread'
+          });
+        }
+        break;
+        
+      case 3: // Rapid fire with spread
+        for (let i = -2; i <= 2; i++) {
+          this.bullets.push({
+            x: this.player.x + i * 8,
+            y: this.player.y - 20,
+            vx: i * 0.5,
+            vy: -12,
+            damage: 1,
+            color: '#ff6600',
+            size: 2,
+            type: 'auto',
+            special: 'rapid'
+          });
+        }
+        break;
+        
+      default: // Max level - powerful shots
+        this.bullets.push({
+          x: this.player.x,
+          y: this.player.y - 20,
+          vx: 0,
+          vy: -15,
+          damage: 3,
+          color: '#ff0099',
+          size: 6,
+          type: 'auto',
+          special: 'power'
+        });
+        break;
+    }
   }
 
   private spawnEnemy() {
@@ -532,6 +579,44 @@ class CosmicBlasterMock {
     };
     
     this.enemies.push(enemy);
+  }
+
+  private spawnPickup() {
+    const types = ['weapon', 'health', 'shield'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    const colors = {
+      weapon: '#ffd700',  // Gold for weapon upgrades
+      health: '#ff6b6b',  // Red for health
+      shield: '#4ecdc4'   // Cyan for shield
+    };
+    
+    const lane = Math.floor(Math.random() * this.numLanes);
+    const pickup = {
+      x: lane * this.laneWidth + this.laneWidth / 2,
+      y: -30,
+      type: type,
+      color: colors[type as keyof typeof colors],
+      size: 15,
+      speed: 2,
+      pulseTime: Date.now(),
+      lane: lane
+    };
+    
+    this.pickups.push(pickup);
+  }
+
+  private updatePickups() {
+    this.pickups = this.pickups.filter(pickup => {
+      pickup.y += pickup.speed;
+      
+      // Remove pickups that go off screen
+      if (pickup.y > this.canvas.height + 50) {
+        return false;
+      }
+      
+      return true;
+    });
   }
 
   private updatePlayer() {
@@ -605,6 +690,41 @@ class CosmicBlasterMock {
             this.checkWaveProgress();
             break; // Exit enemy loop since bullet is destroyed
           }
+        }
+      }
+
+      // Player vs Pickup collisions - automatic collection and weapon upgrade
+      for (let pickupIndex = this.pickups.length - 1; pickupIndex >= 0; pickupIndex--) {
+        const pickup = this.pickups[pickupIndex];
+        if (!pickup || !this.player) continue;
+        
+        const dx = this.player.x - pickup.x;
+        const dy = this.player.y - pickup.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < pickup.size + 20) {
+          // Automatic weapon upgrade on pickup collection
+          if (pickup.type === 'weapon' && this.weaponLevel < 6) {
+            this.weaponLevel++;
+            this.autoShootRate = Math.max(100, this.autoShootRate - 10); // Faster shooting
+          } else if (pickup.type === 'health') {
+            this.health = Math.min(100, this.health + 30);
+          } else if (pickup.type === 'shield') {
+            this.shieldActive = true;
+            this.shieldTimer = Date.now() + 5000; // 5 seconds shield
+          }
+          
+          this.pickups.splice(pickupIndex, 1);
+          this.explosions.push({
+            x: pickup.x,
+            y: pickup.y,
+            time: Date.now(),
+            size: 20,
+            color: pickup.type === 'weapon' ? '#ffd700' : pickup.type === 'health' ? '#ff6b6b' : '#4ecdc4'
+          });
+          this.playSound('pickup');
+          this.score += 50;
+          this.updateCallbacks();
         }
       }
 
@@ -693,6 +813,18 @@ class CosmicBlasterMock {
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
         oscillator.start();
         setTimeout(() => oscillator.stop(), 150);
+      } else if (type === 'pickup') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(660, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, this.audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+        oscillator.start();
+        setTimeout(() => oscillator.stop(), 200);
       }
     } catch (error) {
       // Audio context may not be available
@@ -879,6 +1011,57 @@ class CosmicBlasterMock {
         });
       }
       
+      // Draw pickups
+      if (this.pickups && this.pickups.length > 0) {
+        this.pickups.forEach(pickup => {
+          if (!pickup) return;
+          try {
+            const pulseEffect = 0.8 + Math.sin((Date.now() - pickup.pulseTime) * 0.01) * 0.2;
+            this.ctx.save();
+            this.ctx.globalAlpha = pulseEffect;
+            this.ctx.fillStyle = pickup.color || '#ffd700';
+            this.ctx.strokeStyle = '#ffffff';
+            this.ctx.lineWidth = 2;
+            
+            // Draw pickup with icon based on type
+            if (pickup.type === 'weapon') {
+              // Draw star shape for weapon upgrade
+              this.ctx.beginPath();
+              const centerX = pickup.x || 0;
+              const centerY = pickup.y || 0;
+              const radius = pickup.size || 15;
+              const spikes = 5;
+              for (let i = 0; i < spikes * 2; i++) {
+                const angle = (i * Math.PI) / spikes;
+                const r = i % 2 === 0 ? radius : radius * 0.5;
+                const x = centerX + Math.cos(angle) * r;
+                const y = centerY + Math.sin(angle) * r;
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+              }
+              this.ctx.closePath();
+              this.ctx.fill();
+              this.ctx.stroke();
+            } else if (pickup.type === 'health') {
+              // Draw cross for health
+              const size = pickup.size || 15;
+              this.ctx.fillRect(pickup.x - size/4, pickup.y - size, size/2, size*2);
+              this.ctx.fillRect(pickup.x - size, pickup.y - size/4, size*2, size/2);
+            } else if (pickup.type === 'shield') {
+              // Draw shield shape
+              this.ctx.beginPath();
+              this.ctx.arc(pickup.x || 0, pickup.y || 0, pickup.size || 15, 0, Math.PI * 2);
+              this.ctx.fill();
+              this.ctx.stroke();
+            }
+            
+            this.ctx.restore();
+          } catch (e) {
+            console.warn('Pickup drawing error:', e);
+          }
+        });
+      }
+      
       // Draw explosions
       if (this.explosions && this.explosions.length > 0) {
         this.explosions = this.explosions.filter(explosion => {
@@ -916,10 +1099,17 @@ class CosmicBlasterMock {
           this.lastEnemySpawn = Date.now();
         }
         
+        // Spawn pickups for automatic weapon upgrades
+        if (Date.now() - this.lastPickupSpawn > this.pickupSpawnRate) {
+          this.spawnPickup();
+          this.lastPickupSpawn = Date.now();
+        }
+        
         this.updatePlayer();
         this.autoShoot(); // Automatic shooting like 1945 Air Force
         this.updateBullets();
         this.updateEnemies();
+        this.updatePickups();
         this.checkCollisions();
         
         // Check game over
