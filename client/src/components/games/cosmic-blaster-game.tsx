@@ -297,6 +297,7 @@ class CosmicBlasterMock {
 
   // Background
   private backgroundY = 0;
+  private backgroundElements: { buildings: any[], clouds: any[] } = { buildings: [], clouds: [] };
 
   constructor(canvas: HTMLCanvasElement, callbacks: any) {
     console.log('=== COSMIC BLASTER CONSTRUCTOR ===');
@@ -342,6 +343,7 @@ class CosmicBlasterMock {
     this.initializeStars();
     this.initializeLanes();
     this.initializePlayer();
+    this.initializeBackground();
     this.bindEvents();
     console.log('Starting game loop...');
     // Initialize the animation frame ID to start the loop
@@ -404,6 +406,51 @@ class CosmicBlasterMock {
       speed: 12,
       wings: 0 // For extra wing power-up
     };
+  }
+  
+  private initializeBackground() {
+    this.backgroundElements.buildings = [];
+    this.backgroundElements.clouds = [];
+    
+    // Create stable buildings
+    const numBuildings = Math.ceil(this.canvas.width / 120);
+    for (let i = 0; i < numBuildings * 2; i++) { // Double for continuous scrolling
+      const width = 60 + Math.random() * 40;
+      const height = 100 + Math.random() * 150;
+      const windowsPerRow = Math.floor(width / 15);
+      const windowRows = Math.floor(height / 20);
+      const windows = [];
+      
+      // Pre-generate window positions
+      for (let row = 0; row < windowRows; row++) {
+        for (let col = 0; col < windowsPerRow; col++) {
+          if (Math.random() > 0.3) { // Some windows are lit
+            windows.push({ row, col });
+          }
+        }
+      }
+      
+      this.backgroundElements.buildings.push({
+        x: (i * 120) % this.canvas.width,
+        y: i < numBuildings ? 0 : -this.canvas.height, // Two sets for seamless scrolling
+        width,
+        height,
+        color: Math.random() > 0.5 ? '#4a90e2' : '#2a5298',
+        hasWindows: Math.random() > 0.3,
+        windows // Static window positions
+      });
+    }
+    
+    // Create stable clouds
+    const numClouds = Math.ceil(this.canvas.width / 200);
+    for (let i = 0; i < numClouds * 2; i++) { // Double for continuous scrolling
+      this.backgroundElements.clouds.push({
+        x: (i * 200 + Math.random() * 100) % this.canvas.width,
+        y: i < numClouds ? Math.random() * 200 : Math.random() * 200 - this.canvas.height,
+        size: 20 + Math.random() * 40,
+        opacity: 0.1 + Math.random() * 0.2
+      });
+    }
   }
 
   private bindEvents() {
@@ -486,6 +533,7 @@ class CosmicBlasterMock {
     window.addEventListener('resize', () => {
       this.resizeCanvas();
       this.initializeLanes();
+      this.initializeBackground();
     });
   }
 
@@ -1953,32 +2001,68 @@ class CosmicBlasterMock {
   }
 
   private drawBackground() {
-    // Simple city spatial background, now with lower opacity to stay in back
-    this.ctx.globalAlpha = 0.5; // Make background faint
+    // Solid background gradient
+    this.ctx.globalAlpha = 0.7;
     this.ctx.fillStyle = '#1e3c72';
-    this.ctx.fillRect(0, this.backgroundY, this.canvas.width, this.canvas.height);
-    this.ctx.fillRect(0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Draw buildings distributed across full width
-    const numBuildings = Math.ceil(this.canvas.width / 150);
-    for (let i = 0; i < numBuildings; i++) {
-      const x = (i * this.canvas.width) / numBuildings + Math.random() * 20;
-      const height = 150 + Math.random() * 100;
-      this.ctx.fillStyle = '#4a90e2';
-      this.ctx.fillRect(x, this.backgroundY + 300 - height, 80, height);
-      this.ctx.fillStyle = '#2a5298';
-      this.ctx.fillRect(x + 10, this.backgroundY + 320 - height, 60, height - 20);
-    }
+    // Draw stable buildings
+    this.backgroundElements.buildings.forEach(building => {
+      const drawY = building.y + this.backgroundY;
+      
+      // Only draw if visible on screen
+      if (drawY > -building.height && drawY < this.canvas.height + 100) {
+        this.ctx.fillStyle = building.color;
+        this.ctx.globalAlpha = 0.4;
+        
+        // Main building body
+        this.ctx.fillRect(
+          building.x, 
+          this.canvas.height - building.height + drawY, 
+          building.width, 
+          building.height
+        );
+        
+        // Windows if building has them
+        if (building.hasWindows && building.windows) {
+          this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+          
+          building.windows.forEach(window => {
+            this.ctx.fillRect(
+              building.x + window.col * 15 + 5,
+              this.canvas.height - building.height + drawY + window.row * 20 + 5,
+              8,
+              12
+            );
+          });
+        }
+      }
+      
+      // Reset position for continuous scrolling
+      if (drawY > this.canvas.height) {
+        building.y -= this.canvas.height * 2;
+      }
+    });
     
-    // Draw clouds distributed across full width
-    const numClouds = Math.ceil(this.canvas.width / 300);
-    for (let i = 0; i < numClouds; i++) {
-      const x = (i * this.canvas.width) / numClouds + Math.random() * 100;
-      this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      this.ctx.beginPath();
-      this.ctx.arc(x, this.backgroundY + 50 + Math.random() * 100, 30 + Math.random() * 30, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
+    // Draw stable clouds
+    this.backgroundElements.clouds.forEach(cloud => {
+      const drawY = cloud.y + this.backgroundY * 0.3; // Slower parallax for clouds
+      
+      // Only draw if visible on screen
+      if (drawY > -cloud.size && drawY < this.canvas.height + cloud.size) {
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${cloud.opacity})`;
+        this.ctx.globalAlpha = cloud.opacity;
+        this.ctx.beginPath();
+        this.ctx.arc(cloud.x, drawY, cloud.size, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+      
+      // Reset position for continuous scrolling
+      if (drawY > this.canvas.height + cloud.size) {
+        cloud.y -= this.canvas.height + cloud.size * 2;
+      }
+    });
+    
     this.ctx.globalAlpha = 1; // Reset opacity for front layer
   }
 
