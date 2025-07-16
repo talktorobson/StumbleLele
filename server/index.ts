@@ -63,9 +63,10 @@ app.use((req, res, next) => {
   // Serve the app on port 3000 (avoiding 5000 which conflicts with AirDrop on macOS)
   // this serves both the API and the client.
   const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+  const host = process.env.HOST || "0.0.0.0"; // Use 0.0.0.0 for Replit/cloud deployment
   server.listen({
     port,
-    host: "localhost",
+    host,
   }, () => {
     log(`serving on port ${port}`);
   });
