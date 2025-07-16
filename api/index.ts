@@ -1,66 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { pgTable, text, serial, integer, boolean, timestamp, json } from 'drizzle-orm/pg-core';
-import { eq } from 'drizzle-orm';
+import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
 
-// Database Schema (inline)
-const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  age: integer("age"),
-  preferredAI: text("preferred_ai").default("gemini").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// Supabase client connection
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+console.log('Supabase URL:', supabaseUrl);
+console.log('Service role key present:', !!supabaseKey);
 
-const conversations = pgTable("conversations", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  message: text("message").notNull(),
-  response: text("response").notNull(),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
-
-const memories = pgTable("memories", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  content: text("content").notNull(),
-  category: text("category").notNull(),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
-
-const friends = pgTable("friends", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  friendName: text("friend_name").notNull(),
-  status: text("status").default("online"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-const gameProgress = pgTable("game_progress", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  gameType: text("game_type").notNull(),
-  level: integer("level").default(1),
-  score: integer("score").default(0),
-  completedAt: timestamp("completed_at"),
-});
-
-const avatarState = pgTable("avatar_state", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  currentEmotion: text("current_emotion").default("happy"),
-  personality: json("personality").default({}),
-  lastInteraction: timestamp("last_interaction").defaultNow(),
-});
-
-// Database connection
-const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL!;
-console.log('Database URL being used:', databaseUrl?.split('@')[0] + '@***');
-const sql = neon(databaseUrl);
-const db = drizzle(sql);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // AI Clients (inline)
 const xai = new OpenAI({ 
@@ -165,11 +114,22 @@ async function generateResponse(message: string, context: string[] = [], aiModel
   }
 }
 
-// Storage Service (inline)
+// Storage Service (Supabase)
 class Storage {
   async getUser(id: number) {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in getUser:', error);
+      return null;
+    }
   }
 
   async getOrCreateUser(id: number) {
@@ -177,8 +137,9 @@ class Storage {
       let user = await this.getUser(id);
       if (!user) {
         user = await this.createUser({
+          id,
           name: `User${id}`,
-          preferredAI: "gemini"
+          preferred_ai: "gemini"
         });
       }
       return user;
@@ -187,26 +148,56 @@ class Storage {
       return {
         id,
         name: `User${id}`,
-        preferredAI: "gemini" as const,
+        preferred_ai: "gemini" as const,
         age: null,
-        createdAt: new Date()
+        created_at: new Date().toISOString()
       };
     }
   }
 
   async createUser(user: any) {
-    const result = await db.insert(users).values(user).returning();
-    return result[0];
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert(user)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in createUser:', error);
+      throw error;
+    }
   }
 
   async updateUserPreferences(userId: number, preferredAI: string) {
-    const result = await db.update(users).set({ preferredAI }).where(eq(users.id, userId)).returning();
-    return result[0];
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ preferred_ai: preferredAI })
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in updateUserPreferences:', error);
+      throw error;
+    }
   }
 
   async getConversations(userId: number) {
     try {
-      return await db.select().from(conversations).where(eq(conversations.userId, userId));
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Database error in getConversations:', error);
       return [];
@@ -214,13 +205,35 @@ class Storage {
   }
 
   async createConversation(conversation: any) {
-    const result = await db.insert(conversations).values(conversation).returning();
-    return result[0];
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: conversation.userId,
+          message: conversation.message,
+          response: conversation.response
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in createConversation:', error);
+      throw error;
+    }
   }
 
   async getMemories(userId: number) {
     try {
-      return await db.select().from(memories).where(eq(memories.userId, userId));
+      const { data, error } = await supabase
+        .from('memories')
+        .select('*')
+        .eq('user_id', userId)
+        .order('timestamp', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Database error in getMemories:', error);
       return [];
@@ -228,13 +241,34 @@ class Storage {
   }
 
   async createMemory(memory: any) {
-    const result = await db.insert(memories).values(memory).returning();
-    return result[0];
+    try {
+      const { data, error } = await supabase
+        .from('memories')
+        .insert({
+          user_id: memory.userId,
+          content: memory.content,
+          category: memory.category
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in createMemory:', error);
+      throw error;
+    }
   }
 
   async getFriends(userId: number) {
     try {
-      return await db.select().from(friends).where(eq(friends.userId, userId));
+      const { data, error } = await supabase
+        .from('friends')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Database error in getFriends:', error);
       return [];
@@ -243,7 +277,13 @@ class Storage {
 
   async getGameProgress(userId: number) {
     try {
-      return await db.select().from(gameProgress).where(eq(gameProgress.userId, userId));
+      const { data, error } = await supabase
+        .from('game_progress')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+      return data || [];
     } catch (error) {
       console.error('Database error in getGameProgress:', error);
       return [];
@@ -252,8 +292,14 @@ class Storage {
 
   async getAvatarState(userId: number) {
     try {
-      const result = await db.select().from(avatarState).where(eq(avatarState.userId, userId)).limit(1);
-      return result[0];
+      const { data, error } = await supabase
+        .from('avatar_state')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+      return data;
     } catch (error) {
       console.error('Database error in getAvatarState:', error);
       return undefined;
@@ -261,28 +307,41 @@ class Storage {
   }
 
   async updateAvatarState(userId: number, emotion: string, personality: any) {
-    const existingState = await this.getAvatarState(userId);
-    
-    if (existingState) {
-      const result = await db.update(avatarState)
-        .set({ 
-          currentEmotion: emotion, 
-          personality: JSON.stringify(personality),
-          lastInteraction: new Date().toISOString()
+    try {
+      // Try to update first
+      const { data, error } = await supabase
+        .from('avatar_state')
+        .update({
+          current_emotion: emotion,
+          personality: personality,
+          last_interaction: new Date().toISOString()
         })
-        .where(eq(avatarState.userId, userId))
-        .returning();
-      return result[0];
-    } else {
-      const result = await db.insert(avatarState)
-        .values({
-          userId,
-          currentEmotion: emotion,
-          personality: JSON.stringify(personality),
-          lastInteraction: new Date().toISOString()
-        })
-        .returning();
-      return result[0];
+        .eq('user_id', userId)
+        .select()
+        .single();
+      
+      if (error && error.code === 'PGRST116') {
+        // Record doesn't exist, create it
+        const { data: insertData, error: insertError } = await supabase
+          .from('avatar_state')
+          .insert({
+            user_id: userId,
+            current_emotion: emotion,
+            personality: personality,
+            last_interaction: new Date().toISOString()
+          })
+          .select()
+          .single();
+        
+        if (insertError) throw insertError;
+        return insertData;
+      }
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in updateAvatarState:', error);
+      throw error;
     }
   }
 }
@@ -336,7 +395,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
 
           const user = await storage.getOrCreateUser(userId);
-          const aiModel = (user?.preferredAI || "gemini") as AIModel;
+          const aiModel = (user?.preferred_ai || "gemini") as AIModel;
           const conversations = await storage.getConversations(userId);
           const context = conversations.slice(-5).map(c => `${c.message} -> ${c.response}`);
           
