@@ -713,62 +713,6 @@ class CosmicBlasterMock {
     this.boss = boss;
   }
 
-  private updateBoss() {
-    if (this.boss) {
-      this.boss.x += this.boss.vx;
-      this.boss.y += this.boss.speed;
-      
-      if (this.boss.x < this.boss.size || this.boss.x > this.canvas.width - this.boss.size) {
-        this.boss.vx = -this.boss.vx;
-      }
-      
-      if (Date.now() - this.boss.lastShot > 1000) {
-        this.enemyBullets.push({
-          x: this.boss.x,
-          y: this.boss.y + this.boss.size,
-          vy: 5,
-          damage: 15,
-          size: 6,
-          color: '#ff0000'
-        });
-        this.boss.lastShot = Date.now();
-      }
-      
-      if (Date.now() - this.boss.specialAttackTimer > 5000) {
-        // Special attack based on type
-        if (this.boss.type === 'megaSlime') {
-          // Shoot multiple bullets
-          for (let i = -2; i <= 2; i++) {
-            this.enemyBullets.push({
-              x: this.boss.x,
-              y: this.boss.y + this.boss.size,
-              vx: i * 1,
-              vy: 5,
-              damage: 10,
-              size: 4,
-              color: '#ff0000'
-            });
-          }
-        } else if (this.boss.type === 'megaBubble') {
-          // Accelerate and ram
-          this.boss.speed *= 2;
-          setTimeout(() => this.boss.speed /= 2, 2000);
-        } else if (this.boss.type === 'megaCrystal') {
-          // Summon minions
-          for (let i = 0; i < 3; i++) {
-            this.spawnEnemy();
-          }
-        }
-        this.boss.specialAttackTimer = Date.now();
-      }
-      
-      if (this.boss.y > this.canvas.height) {
-        this.health -= 50;
-        this.boss = null;
-      }
-    }
-  }
-
   private spawnObstacle() {
     const types = ['wall', 'gate', 'fence'];
     const type = types[Math.floor(Math.random() * types.length)];
@@ -794,6 +738,33 @@ class CosmicBlasterMock {
     };
     
     this.obstacles.push(obstacle);
+  }
+
+  private spawnPickup() {
+    const types = ['weapon', 'health', 'shield', 'helper', 'mine', 'wing'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    const colors = {
+      weapon: '#ffd700',
+      health: '#ff6b6b',
+      shield: '#4ecdc4',
+      helper: '#00ff00',
+      mine: '#ff0000',
+      wing: '#ffff00'
+    };
+    
+    const x = Math.random() * (this.canvas.width - 50) + 25;
+    const pickup = {
+      x: x,
+      y: -30,
+      type: type,
+      color: colors[type as keyof typeof colors],
+      size: 15,
+      speed: 2,
+      pulseTime: Date.now()
+    };
+    
+    this.pickups.push(pickup);
   }
 
   private updatePlayer() {
@@ -1105,11 +1076,171 @@ class CosmicBlasterMock {
   }
 
   private playSound(type: string) {
-    // Same as before, with added 'enemyShoot' if needed
+    try {
+      // Check if audio context is available and in a valid state
+      if (!this.audioCtx || this.audioCtx.state === 'closed') {
+        return; // Silently skip audio if context is not available
+      }
+
+      // Resume audio context if suspended (user interaction required)
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {
+          // Failed to resume, skip audio
+          return;
+        });
+        return; // Don't play sound this time, wait for context to resume
+      }
+
+      // Only play sound if context is running
+      if (this.audioCtx.state !== 'running') {
+        return;
+      }
+
+      if (type === 'shoot') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(880, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(440, this.audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 100);
+      } else if (type === 'explosion') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 150;
+        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 200);
+      } else if (type === 'hit') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 100;
+        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 150);
+      } else if (type === 'pickup') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(660, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, this.audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 200);
+      } else if (type === 'enemyShoot') {
+        const oscillator = this.audioCtx.createOscillator();
+        const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioCtx.destination);
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(440, this.audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(220, this.audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+        oscillator.start();
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 100);
+      }
+    } catch (error) {
+      // Silent fail
+    }
   }
 
   private drawPlayer() {
-    // Same as before
+    if (!this.player || !this.ctx) return;
+    
+    const px = this.player.x;
+    const py = this.player.y;
+    
+    // Draw spaceship body
+    this.ctx.fillStyle = '#0000ff'; // Blue body
+    this.ctx.beginPath();
+    this.ctx.moveTo(px, py - 30); // Top point
+    this.ctx.lineTo(px - 20, py + 20); // Left bottom
+    this.ctx.lineTo(px + 20, py + 20); // Right bottom
+    this.ctx.closePath();
+    this.ctx.fill();
+    
+    // Wings
+    this.ctx.fillStyle = '#00bfff'; // Light blue wings
+    this.ctx.beginPath();
+    this.ctx.moveTo(px - 10, py + 10);
+    this.ctx.lineTo(px - 30, py + 30);
+    this.ctx.lineTo(px - 15, py + 20);
+    this.ctx.fill();
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(px + 10, py + 10);
+    this.ctx.lineTo(px + 30, py + 30);
+    this.ctx.lineTo(px + 15, py + 20);
+    this.ctx.fill();
+    
+    // Cockpit
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.beginPath();
+    this.ctx.arc(px, py - 15, 8, 0, Math.PI * 2);
+    this.ctx.fill();
+    
+    // Draw shield if active
+    if (this.shieldActive) {
+      this.ctx.strokeStyle = '#00ffff';
+      this.ctx.lineWidth = 3;
+      this.ctx.beginPath();
+      this.ctx.arc(px, py, 40, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
+    
+    // Extra wings if active
+    if (this.player.wings > 0) {
+      this.ctx.fillStyle = '#ffff00';
+      for (let i = 1; i <= this.player.wings; i++) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(px - 20 - i * 10, py + 10);
+        this.ctx.lineTo(px - 40 - i * 10, py + 30);
+        this.ctx.lineTo(px - 25 - i * 10, py + 20);
+        this.ctx.fill();
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(px + 20 + i * 10, py + 10);
+        this.ctx.lineTo(px + 40 + i * 10, py + 30);
+        this.ctx.lineTo(px + 25 + i * 10, py + 20);
+        this.ctx.fill();
+      }
+    }
   }
 
   private drawEnemy(enemy: any) {
