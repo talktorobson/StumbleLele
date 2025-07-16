@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Gamepad2, Brain, Spade, Calculator, Star, Heart } from "lucide-react";
+import { Gamepad2, Brain, Spade, Calculator, Star, Heart, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import MemoryGame from "./games/memory-game";
@@ -89,11 +89,74 @@ export default function Games({ userId }: GamesProps) {
       gradient: "from-rose-400 to-pink-400",
       level: gameProgress.find((p: any) => p.gameType === "emotions")?.level || 1,
     },
+    {
+      id: "cosmic-blaster",
+      name: "Defesa Cósmica da Lele",
+      description: "Proteja a galáxia com a Lele!",
+      icon: Rocket,
+      gradient: "from-blue-400 to-purple-400",
+      level: gameProgress.find((p: any) => p.gameType === "cosmic-blaster")?.level || 1,
+      isExternal: true,
+    },
+    {
+      id: "coming-soon",
+      name: "Em Breve...",
+      description: "Mais diversão chegando!",
+      icon: Star,
+      gradient: "from-gray-300 to-gray-400",
+      level: 1,
+      isComingSoon: true,
+    },
   ];
 
   const handleGameStart = (gameType: string) => {
+    const game = games.find(g => g.id === gameType);
+    
+    // Handle coming soon games
+    if (game?.isComingSoon) {
+      toast({
+        title: "Em breve! 🚀",
+        description: "Este jogo incrível está chegando em breve!",
+      });
+      return;
+    }
+    
+    // Handle external games (like Cosmic Blaster)
+    if (game?.isExternal && gameType === "cosmic-blaster") {
+      // Open the cosmic blaster game in a new window with proper navigation
+      const gameWindow = window.open('/cosmic-blaster-mock.html', '_blank', 'width=800,height=600,scrollbars=no,resizable=yes');
+      
+      if (gameWindow) {
+        // Add a listener to detect when the game window is closed to save progress
+        const checkClosed = setInterval(() => {
+          if (gameWindow.closed) {
+            clearInterval(checkClosed);
+            toast({
+              title: "Bem-vinda de volta! 👋",
+              description: "A Lele espera que você tenha se divertido!",
+            });
+            // Refresh progress data
+            queryClient.invalidateQueries({ queryKey: ["/api/game/progress", userId] });
+          }
+        }, 1000);
+        
+        toast({
+          title: "Defesa Cósmica Iniciada! 🚀",
+          description: "Boa sorte protegendo a galáxia com a Lele!",
+        });
+      } else {
+        toast({
+          title: "Erro ao abrir jogo 😔",
+          description: "Verifique se pop-ups estão permitidos",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+    
+    // Handle internal games
     setSelectedGame(gameType);
-    setGameLevel(games.find(g => g.id === gameType)?.level || 1);
+    setGameLevel(game?.level || 1);
     toast({
       title: "Vamos jogar! 🎮",
       description: "A Lele está preparando o jogo para você!",
@@ -162,14 +225,14 @@ export default function Games({ userId }: GamesProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
           {games.map((game) => {
             const Icon = game.icon;
             
             return (
               <div
                 key={game.id}
-                className={`bg-gradient-to-br ${game.gradient} rounded-3xl p-4 sm:p-6 game-card-hover cursor-pointer shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 transform border-4 border-white relative overflow-hidden`}
+                className={`bg-gradient-to-br ${game.gradient} rounded-3xl p-4 sm:p-6 game-card-hover ${game.isComingSoon ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'} shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 transform border-4 border-white relative overflow-hidden`}
                 onClick={() => handleGameStart(game.id)}
               >
                 {/* Decorative elements */}

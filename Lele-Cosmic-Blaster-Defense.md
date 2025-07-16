@@ -5,10 +5,11 @@
 
 **Genre**: Tower Defense + Top-down Shooter  
 **Target Audience**: Children 6-12 years old  
-**Platform**: Web-based (React/TypeScript)  
+**Platform**: Web-based (React/TypeScript) - **Mobile-First Design**  
 **Theme**: Colorful space adventure with Lele defending her cosmic garden  
 **Inspiration**: Last Z: Survival Shooter mechanics adapted for children  
 **Visual Style**: Modern cartoon-style with vibrant colors and smooth animations  
+**Control System**: Touch-optimized with intuitive swipe and tap controls  
 
 ## 🚀 Core Gameplay Mechanics
 
@@ -142,11 +143,13 @@
 - **Color Gradients**: Dynamic sky colors that change with wave progression
 - **Particle Systems**: Cosmic dust, sparkles, energy wisps
 
-#### **Lane System Visual**
+#### **Lane System Visual (2-Lane Mobile-Optimized)**
+- **Simplified Layout**: 2 lanes for better mobile thumb navigation
 - **Holographic Borders**: Glowing neon lane dividers
 - **Animated Segments**: Pulsing energy dashes moving toward player
 - **Surface Texture**: Subtle grid pattern with sci-fi aesthetic
 - **Depth Illusion**: Perspective lines and lighting effects
+- **Touch-Friendly**: Wider lanes accommodate finger-based movement
 
 #### **Obstacles & Structures**
 - **Walls**: Metallic blocks with rivets and wear details
@@ -272,19 +275,25 @@
 - **Social Features**: Screenshot sharing with visual enhancements
 - **Advanced Analytics**: Visual heatmaps and player behavior tracking
 
-## 🎮 Controls
+## 🎮 Controls (Mobile-First Design)
 
-### Desktop
-- **Mouse**: Aim and shoot
-- **Click**: Fire weapon
-- **Drag**: Place/move turrets
-- **Keyboard**: Weapon switching (1-4 keys)
+### Primary Controls (Mobile)
+- **Touch Screen**: Tap anywhere to shoot
+- **Swipe Left/Right**: Move player horizontally between lanes
+- **Weapon Buttons**: Large, finger-friendly buttons for weapon selection
+- **Pickup Collection**: Automatic when player touches items
 
-### Mobile
-- **Touch**: Aim and shoot
-- **Tap**: Fire weapon
-- **Drag**: Place/move turrets
-- **Swipe**: Quick weapon switching
+### Secondary Controls (Desktop)
+- **Arrow Keys**: Move left/right between lanes
+- **Spacebar**: Fire weapon
+- **Number Keys**: Quick weapon switching (1-6)
+- **Mouse**: Click weapon buttons
+
+### Accessibility Features
+- **Large Touch Targets**: Minimum 44px touch areas
+- **Visual Feedback**: Button press animations and haptic feedback
+- **Orientation Support**: Automatic layout adjustment for portrait/landscape
+- **Screen Reader Support**: Proper ARIA labels and descriptions
 
 ## 🌟 Unique Features
 

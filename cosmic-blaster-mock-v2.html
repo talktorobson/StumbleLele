@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lele's Cosmic Blaster Defense - Super Atualizado</title>
+    <title>Lele's Cosmic Blaster Defense - Atualizado</title>
     <style>
         body {
             margin: 0;
@@ -178,7 +178,7 @@
             }
         }
         
-        #startBtn, #restartBtn, #restartBtnOver, #backBtn {
+        #startBtn, #restartBtn {
             background: #4CAF50;
             color: white;
             border: none;
@@ -186,24 +186,14 @@
             border-radius: 20px;
             font-size: 16px;
             cursor: pointer;
-            margin: 15px 10px;
+            margin-top: 15px;
             transition: all 0.3s ease;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
         
-        #backBtn {
-            background: #ff6b6b;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 300;
-            padding: 8px 16px;
-            margin: 0;
-        }
-        
         @media (min-width: 768px) {
-            #startBtn, #restartBtn, #restartBtnOver {
+            #startBtn, #restartBtn {
                 padding: 15px 30px;
                 border-radius: 25px;
                 font-size: 18px;
@@ -211,13 +201,8 @@
             }
         }
         
-        #startBtn:hover, #restartBtn:hover, #restartBtnOver:hover {
+        #startBtn:hover, #restartBtn:hover {
             background: #45a049;
-            transform: scale(1.05);
-        }
-        
-        #backBtn:hover {
-            background: #ff5252;
             transform: scale(1.05);
         }
         
@@ -252,7 +237,6 @@
 </head>
 <body>
     <div id="gameContainer">
-        <button id="backBtn">🏠 Voltar</button>
         <canvas id="gameCanvas"></canvas>
         
         <div id="ui">
@@ -282,7 +266,7 @@
                 <li>🌊 Sobreviva às ondas!</li>
             </ul>
             <p style="font-size: 12px; margin-top: 10px; opacity: 0.8;">
-                💻 Desktop: ← → para mover, ↑ para acelerar vertical, ESPAÇO para atirar
+                💻 Desktop: ← → para mover, ESPAÇO para atirar
             </p>
             <button id="startBtn">Começar Aventura! 🎮</button>
         </div>
@@ -336,8 +320,6 @@
                 this.tempWeaponDuration = 15000; // 15 seconds
                 this.shieldActive = false;
                 this.shieldTimer = 0;
-                this.baseScrollSpeed = 3;
-                this.scrollSpeed = this.baseScrollSpeed; // For vertical speed, boost with up key
                 
                 // Initialize arrays
                 this.bullets = [];
@@ -366,6 +348,7 @@
                 
                 // Initialize lane system
                 this.numLanes = 2;
+                this.scrollSpeed = 3;
                 
                 // Now resize canvas and calculate lane width
                 this.resizeCanvas();
@@ -376,7 +359,7 @@
                     y: this.canvas.height - 100,
                     width: 60,
                     height: 60,
-                    speed: 12 // Faster horizontal movement
+                    speed: 8
                 };
                 
                 this.weaponStats = {
@@ -461,22 +444,6 @@
                     });
                 });
                 
-                document.getElementById('backBtn').addEventListener('click', () => {
-                    // Check if opened in a popup window
-                    if (window.opener && !window.opener.closed) {
-                        // Close the popup and return to main app
-                        window.close();
-                    } else {
-                        // If not in popup, try to go back or redirect to main app
-                        if (document.referrer && document.referrer.includes('localhost')) {
-                            window.history.back();
-                        } else {
-                            // Fallback: redirect to main app
-                            window.location.href = '/';
-                        }
-                    }
-                });
-                
                 // Keyboard controls
                 document.addEventListener('keydown', (e) => {
                     this.keys[e.key] = true;
@@ -489,10 +456,6 @@
                 
                 document.addEventListener('keyup', (e) => {
                     this.keys[e.key] = false;
-                    
-                    if (e.key === 'ArrowUp') {
-                        this.scrollSpeed = this.baseScrollSpeed; // Back to normal vertical speed
-                    }
                 });
                 
                 // Touch controls for mobile
@@ -510,7 +473,7 @@
                     if (this.gameState === 'playing') {
                         this.shoot();
                     }
-                }, { passive: false });
+                });
                 
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
@@ -519,18 +482,18 @@
                     const touch = e.touches[0];
                     const deltaX = touch.clientX - this.touchStartX;
                     
-                    // Convert touch movement to player movement, faster
-                    if (Math.abs(deltaX) > 5) {
-                        const targetX = this.player.x + deltaX * 0.2; // Faster response
+                    // Convert touch movement to player movement
+                    if (Math.abs(deltaX) > 10) {
+                        const targetX = this.player.x + deltaX * 0.1;
                         this.player.x = Math.max(this.laneWidth/2, Math.min(this.canvas.width - this.laneWidth/2, targetX));
                         this.touchStartX = touch.clientX;
                     }
-                }, { passive: false });
+                });
                 
                 this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     this.isTouching = false;
-                }, { passive: false });
+                });
                 
                 // Prevent scrolling on mobile
                 document.addEventListener('touchmove', (e) => {
@@ -585,7 +548,7 @@
                     case 'basic':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20, // Adjusted for new player visual
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -600,7 +563,7 @@
                         for (let i = -1; i <= 1; i++) {
                             this.bullets.push({
                                 x: this.player.x + i * 15,
-                                y: this.player.y - 20,
+                                y: this.player.y,
                                 vx: i * 2,
                                 vy: -stats.speed,
                                 damage: stats.damage,
@@ -615,7 +578,7 @@
                     case 'pierce':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -630,7 +593,7 @@
                     case 'bounce':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -645,7 +608,7 @@
                     case 'rapid':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -659,7 +622,7 @@
                     case 'heavy':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -674,7 +637,7 @@
                     case 'laser':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -689,7 +652,7 @@
                     case 'missile':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -704,7 +667,7 @@
                     case 'freeze':
                         this.bullets.push({
                             x: this.player.x,
-                            y: this.player.y - 20,
+                            y: this.player.y,
                             vx: 0,
                             vy: -stats.speed,
                             damage: stats.damage,
@@ -720,7 +683,7 @@
                         for (let i = 0; i < 5; i++) {
                             this.bullets.push({
                                 x: this.player.x + (i - 2) * 10,
-                                y: this.player.y - 20,
+                                y: this.player.y,
                                 vx: (i - 2) * 1,
                                 vy: -stats.speed,
                                 damage: stats.damage,
@@ -915,17 +878,12 @@
             }
             
             updatePlayer() {
-                // Horizontal movement, faster
+                // Horizontal movement
                 if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
                     this.player.x -= this.player.speed;
                 }
                 if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
                     this.player.x += this.player.speed;
-                }
-                
-                // Vertical speed boost
-                if (this.keys['ArrowUp']) {
-                    this.scrollSpeed = this.baseScrollSpeed * 2; // Speed up vertically
                 }
                 
                 // Keep player within bounds
@@ -1064,18 +1022,9 @@
                     }
                 });
                 
-                // Update helpers - make them more active: bob up/down and slowly follow player
+                // Update helpers
                 this.helpers = this.helpers.filter(helper => {
                     helper.life -= 16;
-                    
-                    // Bob animation
-                    helper.y += Math.sin(Date.now() / 200) * 0.5;
-                    
-                    // Slowly move towards player if too far
-                    const dx = this.player.x - helper.x;
-                    if (Math.abs(dx) > 50) {
-                        helper.x += Math.sign(dx) * 1;
-                    }
                     
                     if (Date.now() - helper.lastShot > helper.shootRate && this.enemies.length > 0) {
                         const { target, distance } = this.findClosestEnemy(helper.x, helper.y);
@@ -1405,347 +1354,39 @@
             }
             
             playSound(type) {
+                const oscillator = this.audioCtx.createOscillator();
+                const gainNode = this.audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioCtx.destination);
+                
                 if (type === 'shoot') {
-                    // More real laser sound: frequency sweep
-                    const oscillator = this.audioCtx.createOscillator();
-                    const gainNode = this.audioCtx.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.audioCtx.destination);
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(880, this.audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(440, this.audioCtx.currentTime + 0.1);
-                    gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
+                    oscillator.frequency.value = 500;
+                    gainNode.gain.value = 0.1;
                     oscillator.start();
                     setTimeout(() => oscillator.stop(), 100);
                 } else if (type === 'explosion') {
-                    // More real explosion: white noise burst
-                    const bufferSize = this.audioCtx.sampleRate * 0.2;
-                    const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        data[i] = Math.random() * 2 - 1;
-                    }
-                    const noiseSource = this.audioCtx.createBufferSource();
-                    noiseSource.buffer = buffer;
-                    const gainNode = this.audioCtx.createGain();
-                    noiseSource.connect(gainNode);
-                    gainNode.connect(this.audioCtx.destination);
-                    gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
-                    noiseSource.start();
-                } else if (type === 'hit') {
-                    // Low thump
-                    const oscillator = this.audioCtx.createOscillator();
-                    const gainNode = this.audioCtx.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.audioCtx.destination);
-                    oscillator.type = 'sine';
+                    oscillator.type = 'square';
                     oscillator.frequency.value = 100;
-                    gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
+                    gainNode.gain.value = 0.2;
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), 200);
+                } else if (type === 'hit') {
+                    oscillator.frequency.value = 200;
+                    gainNode.gain.value = 0.15;
                     oscillator.start();
                     setTimeout(() => oscillator.stop(), 150);
                 } else if (type === 'pickup') {
-                    // Rising chime
-                    const oscillator = this.audioCtx.createOscillator();
-                    const gainNode = this.audioCtx.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.audioCtx.destination);
-                    oscillator.type = 'triangle';
-                    oscillator.frequency.setValueAtTime(440, this.audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(880, this.audioCtx.currentTime + 0.2);
-                    gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.value = 0.1;
                     oscillator.start();
-                    setTimeout(() => oscillator.stop(), 200);
+                    setTimeout(() => oscillator.stop(), 100);
                 } else if (type === 'enemyShoot') {
-                    // Sinister zap
-                    const oscillator = this.audioCtx.createOscillator();
-                    const gainNode = this.audioCtx.createGain();
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.audioCtx.destination);
-                    oscillator.type = 'square';
-                    oscillator.frequency.setValueAtTime(660, this.audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(330, this.audioCtx.currentTime + 0.12);
-                    gainNode.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.12);
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.value = 300;
+                    gainNode.gain.value = 0.1;
                     oscillator.start();
                     setTimeout(() => oscillator.stop(), 120);
                 }
-            }
-            
-            drawPlayer() {
-                // Draw Lele as a beautiful girl
-                const px = this.player.x;
-                const py = this.player.y;
-                
-                // Body with dress
-                this.ctx.fillStyle = '#ffb6c1'; // Skin
-                this.ctx.fillRect(px - 15, py - 20, 30, 20); // Upper body
-                
-                // Dress/skirt
-                this.ctx.fillStyle = '#ff69b4'; // Pink dress
-                this.ctx.beginPath();
-                this.ctx.moveTo(px - 15, py);
-                this.ctx.lineTo(px - 25, py + 30);
-                this.ctx.lineTo(px + 25, py + 30);
-                this.ctx.lineTo(px + 15, py);
-                this.ctx.fill();
-                
-                // Arms with wand
-                this.ctx.fillStyle = '#ffb6c1';
-                this.ctx.fillRect(px - 20, py - 10, 10, 20); // Left arm
-                this.ctx.fillRect(px + 10, py - 10, 10, 20); // Right arm
-                this.ctx.fillStyle = '#ffd700'; // Golden wand
-                this.ctx.fillRect(px + 15, py - 5, 15, 3); // Wand
-                
-                // Head
-                this.ctx.fillStyle = '#8b4513'; // Long hair
-                this.ctx.beginPath();
-                this.ctx.moveTo(px - 12, py - 30);
-                this.ctx.quadraticCurveTo(px, py - 40, px + 12, py - 30);
-                this.ctx.lineTo(px + 12, py - 10);
-                this.ctx.lineTo(px - 12, py - 10);
-                this.ctx.fill();
-                
-                this.ctx.fillStyle = '#ffb6c1'; // Face
-                this.ctx.beginPath();
-                this.ctx.arc(px, py - 25, 12, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                // Eyes
-                this.ctx.fillStyle = 'white';
-                this.ctx.beginPath();
-                this.ctx.arc(px - 5, py - 25, 3, 0, Math.PI * 2);
-                this.ctx.arc(px + 5, py - 25, 3, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                this.ctx.fillStyle = 'black';
-                this.ctx.beginPath();
-                this.ctx.arc(px - 5, py - 25, 1.5, 0, Math.PI * 2);
-                this.ctx.arc(px + 5, py - 25, 1.5, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                // Mouth smile
-                this.ctx.strokeStyle = 'black';
-                this.ctx.lineWidth = 2;
-                this.ctx.beginPath();
-                this.ctx.arc(px, py - 18, 4, 0, Math.PI);
-                this.ctx.stroke();
-                
-                // Draw shield if active
-                if (this.shieldActive) {
-                    this.ctx.strokeStyle = '#00ffff';
-                    this.ctx.lineWidth = 3;
-                    this.ctx.beginPath();
-                    this.ctx.arc(px, py, 40, 0, Math.PI * 2);
-                    this.ctx.stroke();
-                }
-            }
-            
-            drawEnemy(enemy) {
-                const ex = enemy.x;
-                const ey = enemy.y;
-                
-                // Base body
-                this.ctx.fillStyle = enemy.color;
-                this.ctx.beginPath();
-                this.ctx.ellipse(ex, ey, enemy.size * 1.2, enemy.size, 0, 0, Math.PI * 2); // Oval body
-                this.ctx.fill();
-                
-                // Special monster features
-                if (enemy.type === 'slime') {
-                    // Gooey tendrils
-                    this.ctx.fillStyle = '#00aa00';
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(ex, ey + enemy.size);
-                    this.ctx.quadraticCurveTo(ex - 10, ey + enemy.size + 10, ex - 20, ey + enemy.size);
-                    this.ctx.quadraticCurveTo(ex + 10, ey + enemy.size + 10, ex + 20, ey + enemy.size);
-                    this.ctx.fill();
-                } else if (enemy.type === 'bubble') {
-                    // Shiny bubble effect
-                    this.ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                    this.ctx.beginPath();
-                    this.ctx.arc(ex - 10, ey - 10, 10, 0, Math.PI * 2);
-                    this.ctx.fill();
-                } else if (enemy.type === 'crystal') {
-                    // Spiky crystals
-                    this.ctx.fillStyle = '#ff1493';
-                    for (let i = 0; i < 6; i++) {
-                        const angle = (i / 6) * Math.PI * 2;
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(ex, ey);
-                        this.ctx.lineTo(ex + Math.cos(angle) * enemy.size * 1.5, ey + Math.sin(angle) * enemy.size * 1.5);
-                        this.ctx.strokeStyle = '#ff69b4';
-                        this.ctx.lineWidth = 2;
-                        this.ctx.stroke();
-                    }
-                } else if (enemy.type === 'spike') {
-                    // Sharp spikes
-                    this.ctx.fillStyle = '#ff0000';
-                    for (let i = 0; i < 8; i++) {
-                        const angle = (i / 8) * Math.PI * 2;
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(ex, ey);
-                        this.ctx.lineTo(ex + Math.cos(angle) * enemy.size * 1.2, ey + Math.sin(angle) * enemy.size * 1.2);
-                        this.ctx.strokeStyle = '#ff4500';
-                        this.ctx.lineWidth = 3;
-                        this.ctx.stroke();
-                    }
-                } else if (enemy.type === 'ghost') {
-                    // Wavy ghost tail
-                    this.ctx.fillStyle = 'rgba(147,112,219,0.5)';
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(ex - enemy.size, ey);
-                    this.ctx.quadraticCurveTo(ex, ey + enemy.size * 2, ex + enemy.size, ey);
-                    this.ctx.fill();
-                } else if (enemy.type === 'boss') {
-                    // Big with horns
-                    this.ctx.fillStyle = '#ff0000';
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(ex - enemy.size, ey - enemy.size);
-                    this.ctx.lineTo(ex, ey - enemy.size * 1.5);
-                    this.ctx.lineTo(ex + enemy.size, ey - enemy.size);
-                    this.ctx.fill();
-                } else if (enemy.type === 'swarm') {
-                    // Small with wings
-                    this.ctx.fillStyle = '#ffd700';
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(ex - 10, ey);
-                    this.ctx.lineTo(ex, ey - 15);
-                    this.ctx.lineTo(ex + 10, ey);
-                    this.ctx.fill();
-                } else if (enemy.type === 'cloud') {
-                    // Fluffy with rain drops
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.beginPath();
-                    this.ctx.arc(ex - 15, ey, 20, 0, Math.PI * 2);
-                    this.ctx.arc(ex + 15, ey, 20, 0, Math.PI * 2);
-                    this.ctx.arc(ex, ey - 10, 25, 0, Math.PI * 2);
-                    this.ctx.fill();
-                    // Rain
-                    this.ctx.fillStyle = '#00bfff';
-                    this.ctx.fillRect(ex - 5, ey + 30, 2, 10);
-                    this.ctx.fillRect(ex + 5, ey + 30, 2, 10);
-                }
-                
-                // Eyes for most
-                if (enemy.type !== 'swarm' && enemy.type !== 'cloud') {
-                    this.ctx.fillStyle = 'white';
-                    this.ctx.beginPath();
-                    this.ctx.arc(ex - 8, ey - 5, 5, 0, Math.PI * 2);
-                    this.ctx.arc(ex + 8, ey - 5, 5, 0, Math.PI * 2);
-                    this.ctx.fill();
-                    
-                    this.ctx.fillStyle = 'red'; // Scary eyes
-                    this.ctx.beginPath();
-                    this.ctx.arc(ex - 8, ey - 5, 2, 0, Math.PI * 2);
-                    this.ctx.arc(ex + 8, ey - 5, 2, 0, Math.PI * 2);
-                    this.ctx.fill();
-                }
-                
-                // Health bar
-                const healthPercentage = enemy.health / enemy.maxHealth;
-                this.ctx.fillStyle = healthPercentage > 0.5 ? '#00ff00' : '#ff0000';
-                this.ctx.fillRect(ex - 20, ey - enemy.size - 10, 40 * healthPercentage, 5);
-            }
-            
-            drawObstacle(obstacle) {
-                const ox = obstacle.x - obstacle.width/2;
-                const oy = obstacle.y - obstacle.height/2;
-                
-                if (obstacle.type === 'wall') {
-                    // Brick wall
-                    this.ctx.fillStyle = '#8B4513';
-                    this.ctx.fillRect(ox, oy, obstacle.width, obstacle.height);
-                    this.ctx.strokeStyle = '#654321';
-                    this.ctx.lineWidth = 2;
-                    for (let i = 0; i < obstacle.height; i += 10) {
-                        for (let j = 0; j < obstacle.width; j += 20) {
-                            this.ctx.strokeRect(ox + j, oy + i, 20, 10);
-                        }
-                    }
-                } else if (obstacle.type === 'gate') {
-                    // Metal gate with bars
-                    this.ctx.fillStyle = '#FFD700';
-                    this.ctx.fillRect(ox, oy, obstacle.width, obstacle.height);
-                    this.ctx.fillStyle = '#C0C0C0';
-                    for (let i = 0; i < obstacle.width; i += 10) {
-                        this.ctx.fillRect(ox + i, oy, 5, obstacle.height);
-                    }
-                } else if (obstacle.type === 'spikes') {
-                    // Sharp spikes
-                    this.ctx.fillStyle = '#FF0000';
-                    for (let i = 0; i < 5; i++) {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(ox + i*20, oy + obstacle.height);
-                        this.ctx.lineTo(ox + i*20 + 10, oy);
-                        this.ctx.lineTo(ox + i*20 + 20, oy + obstacle.height);
-                        this.ctx.fill();
-                    }
-                } else {
-                    // Default
-                    this.ctx.fillStyle = obstacle.color;
-                    this.ctx.fillRect(ox, oy, obstacle.width, obstacle.height);
-                }
-                
-                // Health indicator
-                const healthPercentage = obstacle.health / (obstacle.type === 'wall' ? 5 : 3);
-                this.ctx.fillStyle = healthPercentage > 0.5 ? '#00ff00' : '#ff0000';
-                this.ctx.fillRect(obstacle.x - 30, obstacle.y - obstacle.height/2 - 15, 60 * healthPercentage, 5);
-            }
-            
-            drawTower(tower) {
-                // Improved tower: base, turret, barrel
-                const tx = tower.x;
-                const ty = tower.y;
-                
-                // Base
-                this.ctx.fillStyle = '#8B4513';
-                this.ctx.fillRect(tx - 20, ty, 40, 40);
-                
-                // Turret
-                this.ctx.fillStyle = '#654321';
-                this.ctx.beginPath();
-                this.ctx.arc(tx, ty - 10, 15, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                // Barrel
-                this.ctx.fillStyle = '#808080';
-                this.ctx.fillRect(tx, ty - 20, 5, 20);
-            }
-            
-            drawHelper(helper) {
-                // Improved helper: robot with antennas, glowing eyes
-                const hx = helper.x;
-                const hy = helper.y + Math.sin(Date.now() / 200) * 5; // More animation
-                
-                // Body
-                this.ctx.fillStyle = '#00ff00';
-                this.ctx.fillRect(hx - 10, hy - 10, 20, 20);
-                
-                // Head
-                this.ctx.beginPath();
-                this.ctx.arc(hx, hy - 15, 8, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                // Antennas
-                this.ctx.strokeStyle = '#00ff00';
-                this.ctx.lineWidth = 2;
-                this.ctx.beginPath();
-                this.ctx.moveTo(hx - 5, hy - 20);
-                this.ctx.lineTo(hx - 10, hy - 30);
-                this.ctx.moveTo(hx + 5, hy - 20);
-                this.ctx.lineTo(hx + 10, hy - 30);
-                this.ctx.stroke();
-                
-                // Eyes
-                this.ctx.fillStyle = '#ffff00'; // Glowing
-                this.ctx.beginPath();
-                this.ctx.arc(hx - 4, hy - 15, 2, 0, Math.PI * 2);
-                this.ctx.arc(hx + 4, hy - 15, 2, 0, Math.PI * 2);
-                this.ctx.fill();
             }
             
             draw() {
@@ -1763,7 +1404,7 @@
                     star.twinkle += 0.1;
                 });
                 
-                // Draw lanes
+                // Draw lanes (3 lanes only)
                 this.lanes.forEach((lane, index) => {
                     // Lane borders
                     this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
@@ -1792,8 +1433,38 @@
                 this.ctx.lineTo(this.canvas.width, this.canvas.height);
                 this.ctx.stroke();
                 
-                // Draw player improved
-                this.drawPlayer();
+                // Draw Lele (player)
+                this.ctx.fillStyle = '#ffb6c1';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, this.player.y, 25, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = '#8b4513';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x, this.player.y - 15, 18, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Player eyes
+                this.ctx.fillStyle = 'white';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - 8, this.player.y - 18, 4, 0, Math.PI * 2);
+                this.ctx.arc(this.player.x + 8, this.player.y - 18, 4, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = 'black';
+                this.ctx.beginPath();
+                this.ctx.arc(this.player.x - 8, this.player.y - 18, 2, 0, Math.PI * 2);
+                this.ctx.arc(this.player.x + 8, this.player.y - 18, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw shield if active
+                if (this.shieldActive) {
+                    this.ctx.strokeStyle = '#00ffff';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.player.x, this.player.y, 30, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
                 
                 // Draw bullets with different visuals
                 this.bullets.forEach(bullet => {
@@ -1844,11 +1515,105 @@
                     this.ctx.fill();
                 });
                 
-                // Draw obstacles improved
-                this.obstacles.forEach(obstacle => this.drawObstacle(obstacle));
+                // Draw obstacles
+                this.obstacles.forEach(obstacle => {
+                    this.ctx.fillStyle = obstacle.color;
+                    this.ctx.fillRect(
+                        obstacle.x - obstacle.width/2, 
+                        obstacle.y - obstacle.height/2, 
+                        obstacle.width, 
+                        obstacle.height
+                    );
+                    
+                    // Obstacle details
+                    if (obstacle.type === 'gate') {
+                        this.ctx.fillStyle = '#FFD700';
+                        this.ctx.fillRect(
+                            obstacle.x - obstacle.width/2 + 10, 
+                            obstacle.y - obstacle.height/2 + 10, 
+                            obstacle.width - 20, 
+                            obstacle.height - 20
+                        );
+                    } else if (obstacle.type === 'wall') {
+                        this.ctx.fillStyle = '#654321';
+                        for (let i = 0; i < 3; i++) {
+                            this.ctx.fillRect(
+                                obstacle.x - obstacle.width/2 + i * 25, 
+                                obstacle.y - obstacle.height/2 + 10, 
+                                20, 
+                                obstacle.height - 20
+                            );
+                        }
+                    }
+                    
+                    // Health indicator
+                    const healthPercentage = obstacle.health / (obstacle.type === 'wall' ? 5 : 3);
+                    this.ctx.fillStyle = healthPercentage > 0.5 ? '#00ff00' : '#ff0000';
+                    this.ctx.fillRect(obstacle.x - 30, obstacle.y - obstacle.height/2 - 15, 60 * healthPercentage, 5);
+                });
                 
-                // Draw enemies improved
-                this.enemies.forEach(enemy => this.drawEnemy(enemy));
+                // Draw enemies
+                this.enemies.forEach(enemy => {
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Special visual effects for different enemy types
+                    if (enemy.type === 'spike') {
+                        this.ctx.fillStyle = '#ff0000';
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (i / 8) * Math.PI * 2;
+                            const spikX = enemy.x + Math.cos(angle) * enemy.size;
+                            const spikY = enemy.y + Math.sin(angle) * enemy.size;
+                            this.ctx.beginPath();
+                            this.ctx.arc(spikX, spikY, 3, 0, Math.PI * 2);
+                            this.ctx.fill();
+                        }
+                    } else if (enemy.type === 'ghost') {
+                        this.ctx.save();
+                        this.ctx.globalAlpha = enemy.phasing ? 0.5 : 1;
+                        this.ctx.fillStyle = enemy.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.restore();
+                    } else if (enemy.type === 'boss') {
+                        this.ctx.strokeStyle = '#ff0000';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.beginPath();
+                        this.ctx.arc(enemy.x, enemy.y, enemy.size + 5, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    } else if (enemy.type === 'cloud') {
+                        // Draw fluffy cloud
+                        this.ctx.fillStyle = '#ffffff';
+                        this.ctx.beginPath();
+                        this.ctx.arc(enemy.x - 15, enemy.y, 20, 0, Math.PI * 2);
+                        this.ctx.arc(enemy.x + 15, enemy.y, 20, 0, Math.PI * 2);
+                        this.ctx.arc(enemy.x, enemy.y - 10, 25, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                    
+                    // Health bar
+                    const healthPercentage = enemy.health / enemy.maxHealth;
+                    this.ctx.fillStyle = healthPercentage > 0.5 ? '#00ff00' : '#ff0000';
+                    this.ctx.fillRect(enemy.x - 20, enemy.y - enemy.size - 10, 40 * healthPercentage, 5);
+                    
+                    // Eyes (except for swarm which is too small)
+                    if (enemy.type !== 'swarm' && enemy.type !== 'cloud') {
+                        this.ctx.fillStyle = 'white';
+                        this.ctx.beginPath();
+                        this.ctx.arc(enemy.x - 8, enemy.y - 5, 5, 0, Math.PI * 2);
+                        this.ctx.arc(enemy.x + 8, enemy.y - 5, 5, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        
+                        this.ctx.fillStyle = 'black';
+                        this.ctx.beginPath();
+                        this.ctx.arc(enemy.x - 8, enemy.y - 5, 2, 0, Math.PI * 2);
+                        this.ctx.arc(enemy.x + 8, enemy.y - 5, 2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                });
                 
                 // Draw pickups
                 this.pickups.forEach(pickup => {
@@ -1879,11 +1644,30 @@
                     this.ctx.restore();
                 });
                 
-                // Draw towers improved
-                this.towers.forEach(tower => this.drawTower(tower));
+                // Draw towers
+                this.towers.forEach(tower => {
+                    this.ctx.fillStyle = '#8B4513';
+                    this.ctx.fillRect(tower.x - 15, tower.y - 30, 30, 60);
+                    
+                    this.ctx.fillStyle = '#654321';
+                    this.ctx.beginPath();
+                    this.ctx.arc(tower.x, tower.y - 30, 12, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
                 
-                // Draw helpers improved
-                this.helpers.forEach(helper => this.drawHelper(helper));
+                // Draw helpers
+                this.helpers.forEach(helper => {
+                    this.ctx.fillStyle = '#00ff00';
+                    this.ctx.beginPath();
+                    this.ctx.arc(helper.x, helper.y, 15, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.beginPath();
+                    this.ctx.arc(helper.x - 5, helper.y - 3, 3, 0, Math.PI * 2);
+                    this.ctx.arc(helper.x + 5, helper.y - 3, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
                 
                 // Draw explosions
                 this.explosions = this.explosions.filter(explosion => {
