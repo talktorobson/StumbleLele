@@ -57,7 +57,9 @@ const avatarState = pgTable("avatar_state", {
 });
 
 // Database connection
-const sql = neon(process.env.DATABASE_URL!);
+const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL!;
+console.log('Database URL being used:', databaseUrl?.split('@')[0] + '@***');
+const sql = neon(databaseUrl);
 const db = drizzle(sql);
 
 // AI Clients (inline)
