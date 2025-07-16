@@ -11,14 +11,14 @@ interface CosmicBlasterGameProps {
 export default function CosmicBlasterGame({ onExit, onGameComplete, level }: CosmicBlasterGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<CosmicBlasterMock | null>(null);
-  const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver' | 'paused'>('menu');
+  const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement'>('menu');
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(150);
   const [wave, setWave] = useState(1);
   const [weaponLevel, setWeaponLevel] = useState(1);
 
   // Add logging to React state changes
-  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused') => {
+  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement') => {
     console.log('React: State change requested from', gameState, 'to', newState);
     setGameState(newState);
   };
@@ -191,15 +191,34 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-red-400">
-              Fim de Jogo! 😢
+              Fim de Jogo!
             </h2>
             <p className="mb-6 text-lg">Pontuação: <span className="text-yellow-400 font-bold">{score}</span></p>
-            <Button onClick={handleRestart} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-bold mr-4">
-              Tentar de Novo 🎮
+            <Button onClick={handleRestart} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-bold">
+              Jogar de Novo 🎮
             </Button>
-            <Button onClick={onExit} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold">
-              Sair
-            </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* Wave Transition Modal */}
+      {gameState === 'waveTransition' && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[1001]">
+          <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center">
+            <h2 className="text-4xl md:text-6xl font-bold text-yellow-400 animate-pulse">
+              Fase {wave}
+            </h2>
+          </div>
+        </div>
+      )}
+      
+      {/* Boss Announcement Modal */}
+      {gameState === 'bossAnnouncement' && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[1001]">
+          <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-red-500 animate-pulse">
+              Fase {wave} - BOSS!
+            </h2>
           </div>
         </div>
       )}
@@ -212,14 +231,14 @@ class CosmicBlasterMock {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private callbacks: {
-    onStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused') => void;
+    onStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement') => void;
     onScoreChange: (score: number) => void;
     onHealthChange: (health: number) => void;
     onWaveChange: (wave: number) => void;
     onWeaponLevelChange: (level: number) => void;
     onGameComplete: (score: number) => void;
   };
-  private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' = 'menu';
+  private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' | 'waveTransition' | 'bossAnnouncement' = 'menu';
   private animationFrameId: number | null = null;
   private audioCtx: AudioContext;
   
@@ -568,6 +587,28 @@ class CosmicBlasterMock {
     this.callbacks.onWaveChange(this.wave);
     this.callbacks.onWeaponLevelChange(this.weaponLevel);
   }
+  
+  private showBossAnnouncement() {
+    this.gameState = 'bossAnnouncement';
+    this.callbacks.onStateChange(this.gameState);
+    setTimeout(() => {
+      if (this.gameState === 'bossAnnouncement') {
+        this.gameState = 'playing';
+        this.callbacks.onStateChange(this.gameState);
+      }
+    }, 2000);
+  }
+  
+  private showWaveTransition() {
+    this.gameState = 'waveTransition';
+    this.callbacks.onStateChange(this.gameState);
+    setTimeout(() => {
+      if (this.gameState === 'waveTransition') {
+        this.gameState = 'playing';
+        this.callbacks.onStateChange(this.gameState);
+      }
+    }, 2000);
+  }
 
   private shoot() {
     if (Date.now() - this.lastShot < 250) return;
@@ -687,34 +728,38 @@ class CosmicBlasterMock {
   }
 
   private spawnBoss() {
-    const bossTypes = ['megaSlime', 'megaBubble', 'megaCrystal'];
-    const type = bossTypes[this.wave % bossTypes.length];
+    // Different boss types for each wave
+    const bossConfigs = [
+      { type: 'megaSlime', color: '#00ff00', baseHealth: 20, baseSize: 80, speed: 1 },
+      { type: 'megaBubble', color: '#00bfff', baseHealth: 25, baseSize: 90, speed: 1.2 },
+      { type: 'megaCrystal', color: '#ff69b4', baseHealth: 30, baseSize: 100, speed: 0.8 },
+      { type: 'megaFire', color: '#ff4500', baseHealth: 35, baseSize: 95, speed: 1.5 },
+      { type: 'megaIce', color: '#00ffff', baseHealth: 40, baseSize: 105, speed: 0.7 },
+      { type: 'megaThunder', color: '#ffff00', baseHealth: 45, baseSize: 110, speed: 1.3 },
+      { type: 'megaShadow', color: '#8b008b', baseHealth: 50, baseSize: 115, speed: 1.1 },
+      { type: 'megaGold', color: '#ffd700', baseHealth: 55, baseSize: 120, speed: 0.9 },
+      { type: 'megaVoid', color: '#4b0082', baseHealth: 60, baseSize: 125, speed: 1.4 },
+      { type: 'megaFinal', color: '#ff00ff', baseHealth: 100, baseSize: 150, speed: 1 }
+    ];
     
-    const colors = {
-      megaSlime: '#00ff00',
-      megaBubble: '#00bfff',
-      megaCrystal: '#ff69b4'
-    };
-    
-    const sizes = 80 + this.wave * 10;
-    
-    const healths = 20 + this.wave * 5;
+    const config = bossConfigs[Math.min(this.wave - 1, bossConfigs.length - 1)];
     
     const boss = {
       x: this.canvas.width / 2,
       y: -100,
       vx: (Math.random() - 0.5) * 2,
-      type: type,
-      color: colors[type as keyof typeof colors],
-      size: sizes,
-      speed: 1 * this.difficultyMultiplier,
-      health: healths,
-      maxHealth: healths,
+      type: config.type,
+      color: config.color,
+      size: config.baseSize,
+      speed: config.speed * this.difficultyMultiplier,
+      health: config.baseHealth + this.wave * 5,
+      maxHealth: config.baseHealth + this.wave * 5,
       canShoot: true,
       canAccelerate: true,
       lastShot: Date.now(),
-      specialAttackTimer: Date.now() + 5000, // Special attack every 5s
-      blinkTime: Date.now() + Math.random() * 1000
+      specialAttackTimer: Date.now() + 5000,
+      blinkTime: Date.now() + Math.random() * 1000,
+      wave: this.wave // Track which wave this boss belongs to
     };
     
     this.boss = boss;
@@ -799,8 +844,9 @@ class CosmicBlasterMock {
 
   private updateEnemyBullets() {
     this.enemyBullets = this.enemyBullets.filter(bullet => {
+      bullet.x += bullet.vx || 0;
       bullet.y += bullet.vy;
-      return bullet.y < this.canvas.height + 50;
+      return bullet.y < this.canvas.height + 50 && bullet.x > -50 && bullet.x < this.canvas.width + 50;
     });
   }
 
@@ -833,6 +879,7 @@ class CosmicBlasterMock {
         this.enemyBullets.push({
           x: enemy.x,
           y: enemy.y + enemy.size,
+          vx: 0,
           vy: 5,
           damage: 5, // Reduced enemy bullet damage
           size: 4,
@@ -865,6 +912,7 @@ class CosmicBlasterMock {
         this.enemyBullets.push({
           x: this.boss.x,
           y: this.boss.y + this.boss.size,
+          vx: 0,
           vy: 5,
           damage: 8, // Reduced boss bullet damage
           size: 6,
@@ -874,26 +922,101 @@ class CosmicBlasterMock {
       }
       
       if (Date.now() - this.boss.specialAttackTimer > 5000) {
-        // Special attack based on type
+        // Unique special attacks based on boss type
         if (this.boss.type === 'megaSlime') {
-          // Shoot multiple bullets
+          // Spread shot
           for (let i = -2; i <= 2; i++) {
             this.enemyBullets.push({
               x: this.boss.x,
               y: this.boss.y + this.boss.size,
-              vx: i * 1,
+              vx: i * 1.5,
               vy: 5,
-              damage: 5, // Reduced special attack damage
+              damage: 5,
               size: 4,
-              color: '#ff0000'
+              color: '#00ff00'
             });
           }
         } else if (this.boss.type === 'megaBubble') {
-          // Accelerate and ram
-          this.boss.speed *= 2;
-          setTimeout(() => this.boss.speed /= 2, 2000);
+          // Dash attack
+          this.boss.speed *= 3;
+          setTimeout(() => this.boss.speed = this.boss.speed / 3, 2000);
         } else if (this.boss.type === 'megaCrystal') {
           // Summon minions
+          for (let i = 0; i < 2; i++) {
+            this.spawnEnemy();
+          }
+        } else if (this.boss.type === 'megaFire') {
+          // Fireball barrage
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            this.enemyBullets.push({
+              x: this.boss.x,
+              y: this.boss.y,
+              vx: Math.cos(angle) * 3,
+              vy: Math.sin(angle) * 3,
+              damage: 6,
+              size: 5,
+              color: '#ff4500'
+            });
+          }
+        } else if (this.boss.type === 'megaIce') {
+          // Ice shards
+          for (let i = -3; i <= 3; i++) {
+            this.enemyBullets.push({
+              x: this.boss.x + i * 20,
+              y: this.boss.y + this.boss.size,
+              vx: 0,
+              vy: 4,
+              damage: 4,
+              size: 6,
+              color: '#00ffff'
+            });
+          }
+        } else if (this.boss.type === 'megaThunder') {
+          // Lightning bolts (instant hits)
+          if (Math.random() > 0.7) {
+            this.health -= 8;
+            this.playSound('hit');
+            this.updateCallbacks();
+          }
+        } else if (this.boss.type === 'megaShadow') {
+          // Teleport
+          this.boss.x = Math.random() * (this.canvas.width - this.boss.size * 2) + this.boss.size;
+        } else if (this.boss.type === 'megaGold') {
+          // Money blast
+          for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
+            this.enemyBullets.push({
+              x: this.boss.x,
+              y: this.boss.y,
+              vx: Math.cos(angle) * 2,
+              vy: Math.sin(angle) * 2,
+              damage: 3,
+              size: 4,
+              color: '#ffd700'
+            });
+          }
+        } else if (this.boss.type === 'megaVoid') {
+          // Void pull (attracts player)
+          const dx = this.boss.x - this.player.x;
+          const dy = this.boss.y - this.player.y;
+          this.player.x += dx * 0.02;
+          this.player.y += dy * 0.02;
+        } else if (this.boss.type === 'megaFinal') {
+          // Ultimate attack - combines multiple abilities
+          for (let i = 0; i < 16; i++) {
+            const angle = (i / 16) * Math.PI * 2;
+            this.enemyBullets.push({
+              x: this.boss.x,
+              y: this.boss.y,
+              vx: Math.cos(angle) * 4,
+              vy: Math.sin(angle) * 4,
+              damage: 8,
+              size: 7,
+              color: '#ff00ff'
+            });
+          }
+          // Also spawn minions
           for (let i = 0; i < 3; i++) {
             this.spawnEnemy();
           }
@@ -992,7 +1115,8 @@ class CosmicBlasterMock {
             this.playSound('explosion');
             this.score += 1000;
             this.boss = null;
-            this.checkWaveProgress();
+            // Complete the wave when boss is defeated
+            this.completeWave();
           }
           break;
         }
@@ -1119,25 +1243,33 @@ class CosmicBlasterMock {
 
   private checkWaveProgress() {
     const enemiesNeeded = Math.min(10 + this.wave * 2, 30);
-    if (this.waveEnemiesKilled >= enemiesNeeded && !this.boss) {
+    
+    // Spawn boss when enough enemies killed and no boss exists
+    if (this.waveEnemiesKilled >= enemiesNeeded && !this.boss && this.gameState === 'playing') {
       this.spawnBoss();
+      // Announce boss arrival
+      this.showBossAnnouncement();
     }
-    if (this.waveEnemiesKilled >= enemiesNeeded && !this.boss) {
-      this.wave++;
-      this.waveEnemiesKilled = 0;
-      this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
-      
-      this.enemySpawnRate = Math.max(1000, 2000 - this.wave * 80); // Slower spawn rate increase
-      this.health = Math.min(150, this.health + 40); // More health between waves
-      
-      if (this.wave > 10) {
-        this.gameState = 'victory';
-        this.callbacks.onStateChange(this.gameState);
-        this.callbacks.onGameComplete(this.score);
-      }
-      
-      this.updateCallbacks();
+  }
+  
+  private completeWave() {
+    this.wave++;
+    this.waveEnemiesKilled = 0;
+    this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
+    
+    this.enemySpawnRate = Math.max(1000, 2000 - this.wave * 80);
+    this.health = Math.min(150, this.health + 40);
+    
+    if (this.wave > 10) {
+      this.gameState = 'victory';
+      this.callbacks.onStateChange(this.gameState);
+      this.callbacks.onGameComplete(this.score);
+    } else {
+      // Show wave transition
+      this.showWaveTransition();
     }
+    
+    this.updateCallbacks();
   }
 
   private playSound(type: string) {
@@ -1418,19 +1550,24 @@ class CosmicBlasterMock {
     this.ctx.fillRect(0, this.backgroundY, this.canvas.width, this.canvas.height);
     this.ctx.fillRect(0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
     
-    // Draw buildings
-    for (let i = 0; i < 5; i++) {
+    // Draw buildings distributed across full width
+    const numBuildings = Math.ceil(this.canvas.width / 150);
+    for (let i = 0; i < numBuildings; i++) {
+      const x = (i * this.canvas.width) / numBuildings + Math.random() * 20;
+      const height = 150 + Math.random() * 100;
       this.ctx.fillStyle = '#4a90e2';
-      this.ctx.fillRect(i * 150 + 50, this.backgroundY + 100, 100, 200);
+      this.ctx.fillRect(x, this.backgroundY + 300 - height, 80, height);
       this.ctx.fillStyle = '#2a5298';
-      this.ctx.fillRect(i * 150 + 60, this.backgroundY + 120, 80, 180);
+      this.ctx.fillRect(x + 10, this.backgroundY + 320 - height, 60, height - 20);
     }
     
-    // Draw clouds
-    for (let i = 0; i < 3; i++) {
+    // Draw clouds distributed across full width
+    const numClouds = Math.ceil(this.canvas.width / 300);
+    for (let i = 0; i < numClouds; i++) {
+      const x = (i * this.canvas.width) / numClouds + Math.random() * 100;
       this.ctx.fillStyle = 'rgba(255,255,255,0.2)';
       this.ctx.beginPath();
-      this.ctx.arc(i * 200 + 100, this.backgroundY + 50, 50, 0, Math.PI * 2);
+      this.ctx.arc(x, this.backgroundY + 50 + Math.random() * 100, 30 + Math.random() * 30, 0, Math.PI * 2);
       this.ctx.fill();
     }
     this.ctx.globalAlpha = 1; // Reset opacity for front layer
@@ -1574,8 +1711,8 @@ class CosmicBlasterMock {
   }
 
   private gameLoop() {
-    if (this.gameState === 'paused') {
-      // Don't update game when paused
+    if (this.gameState === 'paused' || this.gameState === 'waveTransition' || this.gameState === 'bossAnnouncement') {
+      // Don't update game during transitions
       this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
       return;
     }
