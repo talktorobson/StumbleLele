@@ -232,19 +232,27 @@ class CosmicBlasterMock {
     }
     this.ctx = ctx;
     
-    // Initialize audio context with error handling
+    // Initialize audio context with error handling and proper state management
     try {
       this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Resume audio context if suspended (required for many browsers)
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(error => {
+          console.warn('Audio context resume failed:', error);
+        });
+      }
     } catch (error) {
       console.warn('Audio context initialization failed:', error);
       // Create a mock audio context to prevent errors
       this.audioCtx = {
-        createOscillator: () => null,
-        createGain: () => null,
-        destination: null,
+        createOscillator: () => ({ connect: () => {}, start: () => {}, stop: () => {} }),
+        createGain: () => ({ connect: () => {}, gain: { setValueAtTime: () => {}, exponentialRampToValueAtTime: () => {} } }),
+        destination: {},
         currentTime: 0,
         state: 'suspended',
-        close: () => Promise.resolve()
+        close: () => Promise.resolve(),
+        resume: () => Promise.resolve()
       } as any;
     }
     
@@ -397,6 +405,9 @@ class CosmicBlasterMock {
   }
 
   public startGame() {
+    // Initialize audio on first user interaction
+    this.initializeAudioOnUserInteraction();
+    
     this.resetGame();
     this.gameState = 'playing';
     this.callbacks.onStateChange(this.gameState);
@@ -406,12 +417,29 @@ class CosmicBlasterMock {
   }
 
   public restart() {
+    // Initialize audio on user interaction
+    this.initializeAudioOnUserInteraction();
+    
     this.resetGame();
     this.gameState = 'playing';
     this.callbacks.onStateChange(this.gameState);
     // Reset timers to ensure proper game restart
     this.lastAutoShot = Date.now();
     this.lastEnemySpawn = Date.now();
+  }
+
+  private initializeAudioOnUserInteraction() {
+    try {
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().then(() => {
+          console.log('Audio context resumed successfully');
+        }).catch(error => {
+          console.warn('Failed to resume audio context:', error);
+        });
+      }
+    } catch (error) {
+      console.warn('Audio initialization on user interaction failed:', error);
+    }
   }
 
   private resetGame() {
@@ -779,9 +807,30 @@ class CosmicBlasterMock {
 
   private playSound(type: string) {
     try {
+      // Check if audio context is available and in a valid state
+      if (!this.audioCtx || this.audioCtx.state === 'closed') {
+        return; // Silently skip audio if context is not available
+      }
+
+      // Resume audio context if suspended (user interaction required)
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {
+          // Failed to resume, skip audio
+          return;
+        });
+        return; // Don't play sound this time, wait for context to resume
+      }
+
+      // Only play sound if context is running
+      if (this.audioCtx.state !== 'running') {
+        return;
+      }
+
       if (type === 'shoot') {
         const oscillator = this.audioCtx.createOscillator();
         const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
         oscillator.connect(gainNode);
         gainNode.connect(this.audioCtx.destination);
         oscillator.type = 'sawtooth';
@@ -790,10 +839,14 @@ class CosmicBlasterMock {
         gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
         oscillator.start();
-        setTimeout(() => oscillator.stop(), 100);
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 100);
       } else if (type === 'explosion') {
         const oscillator = this.audioCtx.createOscillator();
         const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
         oscillator.connect(gainNode);
         gainNode.connect(this.audioCtx.destination);
         oscillator.type = 'sine';
@@ -801,10 +854,14 @@ class CosmicBlasterMock {
         gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
         oscillator.start();
-        setTimeout(() => oscillator.stop(), 200);
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 200);
       } else if (type === 'hit') {
         const oscillator = this.audioCtx.createOscillator();
         const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
         oscillator.connect(gainNode);
         gainNode.connect(this.audioCtx.destination);
         oscillator.type = 'sine';
@@ -812,10 +869,14 @@ class CosmicBlasterMock {
         gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
         oscillator.start();
-        setTimeout(() => oscillator.stop(), 150);
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 150);
       } else if (type === 'pickup') {
         const oscillator = this.audioCtx.createOscillator();
         const gainNode = this.audioCtx.createGain();
+        if (!oscillator || !gainNode) return;
+        
         oscillator.connect(gainNode);
         gainNode.connect(this.audioCtx.destination);
         oscillator.type = 'triangle';
@@ -824,11 +885,13 @@ class CosmicBlasterMock {
         gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
         oscillator.start();
-        setTimeout(() => oscillator.stop(), 200);
+        setTimeout(() => {
+          try { oscillator.stop(); } catch (e) { /* ignore */ }
+        }, 200);
       }
     } catch (error) {
-      // Audio context may not be available
-      console.warn('Audio playback failed:', error);
+      // Audio context may not be available - silently fail
+      // Don't log warnings as this is expected behavior in many cases
     }
   }
 
@@ -1136,11 +1199,18 @@ class CosmicBlasterMock {
   }
 
   public destroy() {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    if (this.audioCtx && this.audioCtx.state !== 'closed') {
-      this.audioCtx.close();
+    try {
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+      if (this.audioCtx && this.audioCtx.state !== 'closed') {
+        this.audioCtx.close().catch(() => {
+          // Ignore close errors
+        });
+      }
+    } catch (error) {
+      console.warn('Error during game destruction:', error);
     }
   }
 }
