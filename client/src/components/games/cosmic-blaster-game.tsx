@@ -680,6 +680,12 @@ class CosmicBlasterMock {
   private showBossAnnouncement() {
     this.gameState = 'bossAnnouncement';
     this.callbacks.onStateChange(this.gameState);
+    
+    // Announce the boss name with text-to-speech
+    if (this.boss && this.boss.friendName) {
+      this.speakBossAnnouncement(this.boss.friendName);
+    }
+    
     setTimeout(() => {
       if (this.gameState === 'bossAnnouncement') {
         this.gameState = 'playing';
@@ -1481,6 +1487,9 @@ class CosmicBlasterMock {
             this.gameState = 'bossDefeated';
             this.callbacks.onStateChange(this.gameState);
             
+            // Announce boss defeat with voice
+            this.speakBossDefeat(this.boss.friendName);
+            
             this.boss = null;
             // Complete the wave when boss is defeated (with delay for celebration)
             setTimeout(() => {
@@ -1820,6 +1829,159 @@ class CosmicBlasterMock {
         }, index * 150);
       });
     } catch (error) {
+      // Silent fail
+    }
+  }
+
+  private speakBossAnnouncement(friendName: string) {
+    try {
+      // Check if speech synthesis is supported
+      if (!window.speechSynthesis) {
+        console.log('Speech synthesis not supported');
+        return;
+      }
+
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+
+      // Create the announcement text in Portuguese
+      const announcements = [
+        `Chegou o Boss ${friendName}!`,
+        `Atenção Helena! Boss ${friendName} chegou!`,
+        `Prepare-se Helena! É o Boss ${friendName}!`,
+        `Boss ${friendName} desafia você!`
+      ];
+      
+      // Pick a random announcement for variety
+      const announcement = announcements[Math.floor(Math.random() * announcements.length)];
+      
+      // Function to speak with proper voice loading
+      const speakAnnouncement = () => {
+        const utterance = new SpeechSynthesisUtterance(announcement);
+        
+        // Configure speech for Portuguese Brazilian child voice
+        utterance.lang = 'pt-BR'; // Portuguese Brazilian
+        utterance.rate = 0.9; // Slightly slower for dramatic effect
+        utterance.pitch = 1.2; // Higher pitch for excitement
+        utterance.volume = 0.8; // Loud but not overwhelming
+        
+        // Try to find a suitable voice
+        const voices = window.speechSynthesis.getVoices();
+        const portugueseVoice = voices.find(voice => 
+          voice.lang.includes('pt') || voice.lang.includes('PT')
+        ) || voices.find(voice => 
+          voice.name.toLowerCase().includes('brasil') || 
+          voice.name.toLowerCase().includes('brazil')
+        );
+        
+        if (portugueseVoice) {
+          utterance.voice = portugueseVoice;
+          console.log('Using Portuguese voice:', portugueseVoice.name);
+        } else {
+          console.log('Portuguese voice not found, using default');
+        }
+        
+        // Add error handling
+        utterance.onerror = (event) => {
+          console.log('Speech synthesis error:', event.error);
+        };
+        
+        utterance.onend = () => {
+          console.log('Boss announcement speech completed');
+        };
+        
+        // Speak the announcement
+        window.speechSynthesis.speak(utterance);
+      };
+      
+      // Handle voice loading delay
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length === 0) {
+        // Voices not loaded yet, wait for voiceschanged event
+        window.speechSynthesis.addEventListener('voiceschanged', speakAnnouncement, { once: true });
+        // Also try after a short delay as backup
+        setTimeout(speakAnnouncement, 100);
+      } else {
+        speakAnnouncement();
+      }
+      
+    } catch (error) {
+      console.log('Text-to-speech error:', error);
+      // Silent fail - game continues without voice
+    }
+  }
+
+  private speakBossDefeat(friendName: string) {
+    try {
+      // Check if speech synthesis is supported
+      if (!window.speechSynthesis) {
+        return;
+      }
+
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+
+      // Create victory announcement in Portuguese
+      const victoryAnnouncements = [
+        `Parabéns Helena! Você venceu o Boss ${friendName}!`,
+        `Vitória! ${friendName} foi derrotado!`,
+        `Muito bem Helena! Boss ${friendName} derrotado!`,
+        `Incrível! Helena venceu ${friendName}!`
+      ];
+      
+      // Pick a random victory announcement
+      const announcement = victoryAnnouncements[Math.floor(Math.random() * victoryAnnouncements.length)];
+      
+      // Function to speak victory with proper voice loading
+      const speakVictory = () => {
+        const utterance = new SpeechSynthesisUtterance(announcement);
+        
+        // Configure speech for celebration
+        utterance.lang = 'pt-BR';
+        utterance.rate = 1.0; // Normal speed for celebration
+        utterance.pitch = 1.4; // Higher pitch for excitement
+        utterance.volume = 0.9; // Louder for celebration
+        
+        // Try to find a suitable voice
+        const voices = window.speechSynthesis.getVoices();
+        const portugueseVoice = voices.find(voice => 
+          voice.lang.includes('pt') || voice.lang.includes('PT')
+        ) || voices.find(voice => 
+          voice.name.toLowerCase().includes('brasil') || 
+          voice.name.toLowerCase().includes('brazil')
+        );
+        
+        if (portugueseVoice) {
+          utterance.voice = portugueseVoice;
+          console.log('Using Portuguese voice for victory:', portugueseVoice.name);
+        }
+        
+        // Add error handling
+        utterance.onerror = (event) => {
+          console.log('Speech synthesis error:', event.error);
+        };
+        
+        utterance.onend = () => {
+          console.log('Boss defeat speech completed');
+        };
+        
+        // Speak the victory announcement
+        window.speechSynthesis.speak(utterance);
+      };
+      
+      // Handle voice loading delay
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length === 0) {
+        // Voices not loaded yet, wait for voiceschanged event
+        window.speechSynthesis.addEventListener('voiceschanged', speakVictory, { once: true });
+        // Also try after a short delay as backup
+        setTimeout(speakVictory, 100);
+      } else {
+        speakVictory();
+      }
+      
+    } catch (error) {
+      console.log('Text-to-speech error:', error);
       // Silent fail
     }
   }
