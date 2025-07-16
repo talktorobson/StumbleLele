@@ -5,11 +5,22 @@ import { db } from './lib/db';
 import * as schema from '../shared/schema';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Handle CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   const { route } = req.query;
   const routePath = Array.isArray(route) ? route.join('/') : route || '';
 
   // Parse route and parameters
-  const parts = routePath.split('/');
+  const parts = routePath.split('/').filter(Boolean);
+  
+  console.log('API Route:', routePath, 'Parts:', parts, 'Method:', req.method);
   
   try {
     // Handle different routes
