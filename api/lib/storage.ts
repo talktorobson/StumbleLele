@@ -14,6 +14,18 @@ class Storage {
     return result[0];
   }
 
+  async getOrCreateUser(id: number): Promise<User> {
+    let user = await this.getUser(id);
+    if (!user) {
+      user = await this.createUser({
+        id,
+        name: `User${id}`,
+        preferredAI: "xai"
+      });
+    }
+    return user;
+  }
+
   async createUser(user: InsertUser): Promise<User> {
     const result = await db.insert(users).values(user).returning();
     return result[0];
@@ -41,6 +53,26 @@ class Storage {
 
   async createMemory(memory: InsertMemory): Promise<Memory> {
     const result = await db.insert(memories).values(memory).returning();
+    return result[0];
+  }
+
+  // Friend operations
+  async getFriends(userId: number): Promise<Friend[]> {
+    return await db.select().from(friends).where(eq(friends.userId, userId));
+  }
+
+  async createFriend(friend: InsertFriend): Promise<Friend> {
+    const result = await db.insert(friends).values(friend).returning();
+    return result[0];
+  }
+
+  // Game progress operations
+  async getGameProgress(userId: number): Promise<GameProgress[]> {
+    return await db.select().from(gameProgress).where(eq(gameProgress.userId, userId));
+  }
+
+  async createGameProgress(progress: InsertGameProgress): Promise<GameProgress> {
+    const result = await db.insert(gameProgress).values(progress).returning();
     return result[0];
   }
 

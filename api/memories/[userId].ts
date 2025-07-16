@@ -2,16 +2,16 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { storage } from '../lib/storage';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { id } = req.query;
-  const userId = parseInt(id as string);
+  const { userId } = req.query;
+  const userIdInt = parseInt(userId as string);
 
   if (req.method === 'GET') {
     try {
-      const user = await storage.getOrCreateUser(userId);
-      res.json(user);
+      const memories = await storage.getMemories(userIdInt);
+      res.json(memories);
     } catch (error) {
-      console.error('Error fetching user:', error);
-      res.status(500).json({ message: "Erro ao buscar usuário" });
+      console.error('Error fetching memories:', error);
+      res.status(500).json({ message: "Erro ao buscar memórias" });
     }
   } else {
     res.setHeader('Allow', ['GET']);

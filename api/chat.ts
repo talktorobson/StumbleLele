@@ -15,9 +15,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ message: "userId e message são obrigatórios" });
     }
 
-    // Get user preferences
-    const user = await storage.getUser(userId);
-    const aiModel = (user?.preferredAI || "openai") as AIModel;
+    // Get user preferences (create user if doesn't exist)
+    const user = await storage.getOrCreateUser(userId);
+    const aiModel = (user?.preferredAI || "xai") as AIModel;
 
     // Get conversation history for context
     const conversations = await storage.getConversations(userId);
