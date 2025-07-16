@@ -844,6 +844,62 @@ class CosmicBlasterMock {
     });
   }
 
+  private updateBoss() {
+    if (this.boss) {
+      this.boss.x += this.boss.vx;
+      this.boss.y += this.boss.speed;
+      
+      if (this.boss.x < this.boss.size || this.boss.x > this.canvas.width - this.boss.size) {
+        this.boss.vx = -this.boss.vx;
+      }
+      
+      if (Date.now() - this.boss.lastShot > 1000) {
+        this.enemyBullets.push({
+          x: this.boss.x,
+          y: this.boss.y + this.boss.size,
+          vy: 5,
+          damage: 15,
+          size: 6,
+          color: '#ff0000'
+        });
+        this.boss.lastShot = Date.now();
+      }
+      
+      if (Date.now() - this.boss.specialAttackTimer > 5000) {
+        // Special attack based on type
+        if (this.boss.type === 'megaSlime') {
+          // Shoot multiple bullets
+          for (let i = -2; i <= 2; i++) {
+            this.enemyBullets.push({
+              x: this.boss.x,
+              y: this.boss.y + this.boss.size,
+              vx: i * 1,
+              vy: 5,
+              damage: 10,
+              size: 4,
+              color: '#ff0000'
+            });
+          }
+        } else if (this.boss.type === 'megaBubble') {
+          // Accelerate and ram
+          this.boss.speed *= 2;
+          setTimeout(() => this.boss.speed /= 2, 2000);
+        } else if (this.boss.type === 'megaCrystal') {
+          // Summon minions
+          for (let i = 0; i < 3; i++) {
+            this.spawnEnemy();
+          }
+        }
+        this.boss.specialAttackTimer = Date.now();
+      }
+      
+      if (this.boss.y > this.canvas.height) {
+        this.health -= 50;
+        this.boss = null;
+      }
+    }
+  }
+
   private updateObstacles() {
     this.obstacles = this.obstacles.filter(obstacle => {
       obstacle.y += obstacle.speed;
@@ -1541,6 +1597,7 @@ class CosmicBlasterMock {
         
         // Spawn pickups
         if (Date.now() - this.lastPickupSpawn > this.pickupSpawnRate) {
+          console.log('Spawning pickup...');
           this.spawnPickup();
           this.lastPickupSpawn = Date.now();
         }
