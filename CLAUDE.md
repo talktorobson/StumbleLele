@@ -29,10 +29,10 @@ StumbleLele is an interactive AI companion application for children, featuring L
 
 ### 🔧 Technical Stack
 - Frontend: React + TypeScript + Vite + TailwindCSS + shadcn/ui
-- Backend: Express.js + TypeScript
+- Backend: Vercel Serverless Functions + TypeScript
 - AI: XAI Grok-3
 - Database: PostgreSQL with Drizzle ORM (Supabase transaction pooler)
-- Deployment: Configured for port 5000 (Replit/local development)
+- Deployment: Vercel (production) + port 5000 (local development)
 
 ## Development Guidelines
 
@@ -111,6 +111,14 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 
 ## Recent Updates (July 16, 2025)
 
+### Vercel Deployment Fixed v2.6
+- **Full-Stack Deployment**: Successfully deployed to Vercel with working backend
+- **File-Based API Routes**: Converted Express routes to Vercel serverless functions
+- **Frontend Build**: Static assets served from dist/public directory
+- **Backend API**: Serverless functions in /api directory with 30s timeout
+- **Database Integration**: Supabase PostgreSQL working in production environment
+- **Deployment Strategy**: Staged approach (static first, then API) resolved complex issues
+
 ### Database Configuration Fixed v2.5
 - **Supabase Integration**: Successfully configured PostgreSQL connection
 - **Transaction Pooler**: Using sa-east-1 region pooler for optimal performance
@@ -132,6 +140,35 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
   - Visual indicator in HUD
 - **Campaign Extension**: Game continues to wave 10 before victory
 - **Shield Mechanics**: Fixed timer implementation for proper protection
+
+## Deployment Architecture
+
+### Production Deployment (Vercel)
+```bash
+# Frontend Build
+npm run vercel-build  # Builds React app to dist/public
+
+# API Structure
+/api
+├── chat.ts                    # AI conversation endpoint
+├── user/[id].ts              # User management
+├── conversations/[userId].ts   # Conversation history
+└── avatar/[userId].ts         # Avatar state management
+
+# Configuration
+vercel.json                    # Deployment settings
+```
+
+### Local Development
+```bash
+npm run dev                    # Starts Express server on port 5000
+npm run build                  # Full build (frontend + backend)
+npm run db:push               # Push database schema
+```
+
+### Environment Variables
+- **Production**: Set in Vercel dashboard
+- **Local**: Use .env file in project root
 
 ## Future Enhancements
 1. **Additional Games**: Implement memory, word, and math games
