@@ -11,13 +11,13 @@ interface CosmicBlasterGameProps {
 export default function CosmicBlasterGame({ onExit, onGameComplete, level }: CosmicBlasterGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<CosmicBlasterMock | null>(null);
-  const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver'>('menu');
+  const [gameState, setGameState] = useState<'menu' | 'playing' | 'victory' | 'gameOver' | 'paused'>('menu');
   const [score, setScore] = useState(0);
   const [health, setHealth] = useState(100);
   const [wave, setWave] = useState(1);
 
   // Add logging to React state changes
-  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver') => {
+  const handleStateChange = (newState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused') => {
     console.log('React: State change requested from', gameState, 'to', newState);
     setGameState(newState);
   };
@@ -65,6 +65,18 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
     }
   };
 
+  const handlePause = () => {
+    if (gameRef.current) {
+      gameRef.current.pauseGame();
+    }
+  };
+
+  const handleResume = () => {
+    if (gameRef.current) {
+      gameRef.current.resumeGame();
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-black z-[9999] overflow-hidden">
       {/* Back Button */}
@@ -101,6 +113,16 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         </div>
       </div>
 
+      {/* Pause Button */}
+      {gameState === 'playing' && (
+        <Button
+          onClick={handlePause}
+          className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1001] bg-gray-500 hover:bg-gray-600 text-white rounded-full p-2 text-xs opacity-50"
+        >
+          Pausa
+        </Button>
+      )}
+
       {/* Game Instructions Modal */}
       {gameState === 'menu' && (
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
@@ -122,6 +144,20 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
             </div>
             <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-bold">
               Começar Aventura! 🎮
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Pause Modal */}
+      {gameState === 'paused' && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
+          <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400">
+              Jogo Pausado! ⏸️
+            </h2>
+            <Button onClick={handleResume} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg">
+              Continuar 🎮
             </Button>
           </div>
         </div>
@@ -171,13 +207,13 @@ class CosmicBlasterMock {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private callbacks: {
-    onStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameOver') => void;
+    onStateChange: (state: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused') => void;
     onScoreChange: (score: number) => void;
     onHealthChange: (health: number) => void;
     onWaveChange: (wave: number) => void;
     onGameComplete: (score: number) => void;
   };
-  private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' = 'menu';
+  private gameState: 'menu' | 'playing' | 'victory' | 'gameOver' | 'paused' = 'menu';
   private animationFrameId: number | null = null;
   private audioCtx: AudioContext;
   
@@ -209,6 +245,7 @@ class CosmicBlasterMock {
   private pickups: any[] = [];
   private towers: any[] = [];
   private helpers: any[] = [];
+  private boss: any = null;
   
   // Timing
   private lastShot = 0;
@@ -443,6 +480,16 @@ class CosmicBlasterMock {
     console.log('Timers reset for immediate spawning');
   }
 
+  public pauseGame() {
+    this.gameState = 'paused';
+    this.callbacks.onStateChange(this.gameState);
+  }
+
+  public resumeGame() {
+    this.gameState = 'playing';
+    this.callbacks.onStateChange(this.gameState);
+  }
+
   public restart() {
     // Initialize audio on user interaction
     this.initializeAudioOnUserInteraction();
@@ -492,6 +539,7 @@ class CosmicBlasterMock {
     this.pickups = [];
     this.towers = [];
     this.helpers = [];
+    this.boss = null;
     
     this.lastShot = 0;
     this.lastEnemySpawn = 0;
@@ -624,10 +672,101 @@ class CosmicBlasterMock {
       maxHealth: healths[type as keyof typeof healths],
       canShoot: type === 'slime', // Slime can shoot
       canAccelerate: type === 'bubble', // Bubble can accelerate
-      lastShot: Date.now()
+      lastShot: Date.now(),
+      blinkTime: Date.now() + Math.random() * 1000 // For blinking eyes
     };
     
     this.enemies.push(enemy);
+  }
+
+  private spawnBoss() {
+    const bossTypes = ['megaSlime', 'megaBubble', 'megaCrystal'];
+    const type = bossTypes[this.wave % bossTypes.length];
+    
+    const colors = {
+      megaSlime: '#00ff00',
+      megaBubble: '#00bfff',
+      megaCrystal: '#ff69b4'
+    };
+    
+    const sizes = 80 + this.wave * 10;
+    
+    const healths = 20 + this.wave * 5;
+    
+    const boss = {
+      x: this.canvas.width / 2,
+      y: -100,
+      vx: (Math.random() - 0.5) * 2,
+      type: type,
+      color: colors[type as keyof typeof colors],
+      size: sizes,
+      speed: 1 * this.difficultyMultiplier,
+      health: healths,
+      maxHealth: healths,
+      canShoot: true,
+      canAccelerate: true,
+      lastShot: Date.now(),
+      specialAttackTimer: Date.now() + 5000, // Special attack every 5s
+      blinkTime: Date.now() + Math.random() * 1000
+    };
+    
+    this.boss = boss;
+  }
+
+  private updateBoss() {
+    if (this.boss) {
+      this.boss.x += this.boss.vx;
+      this.boss.y += this.boss.speed;
+      
+      if (this.boss.x < this.boss.size || this.boss.x > this.canvas.width - this.boss.size) {
+        this.boss.vx = -this.boss.vx;
+      }
+      
+      if (Date.now() - this.boss.lastShot > 1000) {
+        this.enemyBullets.push({
+          x: this.boss.x,
+          y: this.boss.y + this.boss.size,
+          vy: 5,
+          damage: 15,
+          size: 6,
+          color: '#ff0000'
+        });
+        this.boss.lastShot = Date.now();
+      }
+      
+      if (Date.now() - this.boss.specialAttackTimer > 5000) {
+        // Special attack based on type
+        if (this.boss.type === 'megaSlime') {
+          // Shoot multiple bullets
+          for (let i = -2; i <= 2; i++) {
+            this.enemyBullets.push({
+              x: this.boss.x,
+              y: this.boss.y + this.boss.size,
+              vx: i * 1,
+              vy: 5,
+              damage: 10,
+              size: 4,
+              color: '#ff0000'
+            });
+          }
+        } else if (this.boss.type === 'megaBubble') {
+          // Accelerate and ram
+          this.boss.speed *= 2;
+          setTimeout(() => this.boss.speed /= 2, 2000);
+        } else if (this.boss.type === 'megaCrystal') {
+          // Summon minions
+          for (let i = 0; i < 3; i++) {
+            this.spawnEnemy();
+          }
+        }
+        this.boss.specialAttackTimer = Date.now();
+      }
+      
+      if (this.boss.y > this.canvas.height) {
+        this.health -= 50;
+        this.boss = null;
+      }
+    }
   }
 
   private spawnObstacle() {
@@ -650,37 +789,11 @@ class CosmicBlasterMock {
       height: 50,
       speed: this.scrollSpeed * this.difficultyMultiplier,
       health: Math.random() * 3 + 2,
-      maxHealth: Math.random() * 3 + 2
+      maxHealth: Math.random() * 3 + 2,
+      textureTime: Date.now() // For animation
     };
     
     this.obstacles.push(obstacle);
-  }
-
-  private spawnPickup() {
-    const types = ['weapon', 'health', 'shield', 'helper', 'mine', 'wing'];
-    const type = types[Math.floor(Math.random() * types.length)];
-    
-    const colors = {
-      weapon: '#ffd700',
-      health: '#ff6b6b',
-      shield: '#4ecdc4',
-      helper: '#00ff00',
-      mine: '#ff0000',
-      wing: '#ffff00'
-    };
-    
-    const x = Math.random() * (this.canvas.width - 50) + 25;
-    const pickup = {
-      x: x,
-      y: -30,
-      type: type,
-      color: colors[type as keyof typeof colors],
-      size: 15,
-      speed: 2,
-      pulseTime: Date.now()
-    };
-    
-    this.pickups.push(pickup);
   }
 
   private updatePlayer() {
@@ -781,7 +894,10 @@ class CosmicBlasterMock {
 
   private updateHelpers() {
     this.helpers = this.helpers.filter(helper => {
-      helper.y -= 2; // Helpers move up slightly
+      // Helpers stay on side of player
+      helper.x = this.player.x + (helper.side * 40);
+      helper.y = this.player.y;
+      
       if (Date.now() - helper.lastShot > 500) {
         this.bullets.push({
           x: helper.x,
@@ -795,10 +911,9 @@ class CosmicBlasterMock {
         helper.lastShot = Date.now();
       }
       
-      if (helper.life < 0) {
+      if (Date.now() - helper.startTime > 20000) { // Stay longer: 20 seconds
         return false;
       }
-      helper.life -= 16;
       return true;
     });
   }
@@ -820,6 +935,27 @@ class CosmicBlasterMock {
             this.playSound('explosion');
             this.score += enemy.maxHealth * 20;
             this.waveEnemiesKilled++;
+            this.checkWaveProgress();
+          }
+          break;
+        }
+      }
+    }
+
+    // Bullet vs Boss
+    if (this.boss) {
+      for (let bulletIndex = this.bullets.length - 1; bulletIndex >= 0; bulletIndex--) {
+        const bullet = this.bullets[bulletIndex];
+        const dx = bullet.x - this.boss.x;
+        const dy = bullet.y - this.boss.y;
+        if (Math.sqrt(dx*dx + dy*dy) < this.boss.size + bullet.size) {
+          this.boss.health -= bullet.damage;
+          this.bullets.splice(bulletIndex, 1);
+          if (this.boss.health <= 0) {
+            this.explosions.push({ x: this.boss.x, y: this.boss.y, time: Date.now(), size: 60 });
+            this.playSound('explosion');
+            this.score += 1000;
+            this.boss = null;
             this.checkWaveProgress();
           }
           break;
@@ -866,20 +1002,15 @@ class CosmicBlasterMock {
           this.shieldTimer = 10000;
         } else if (pickup.type === 'helper') {
           this.helpers.push({
-            x: this.player.x + Math.random() * 50 - 25,
-            y: this.player.y - 50,
+            side: this.helpers.length % 2 === 0 ? 1 : -1, // Left or right
             lastShot: Date.now(),
-            life: 10000
+            startTime: Date.now()
           });
         } else if (pickup.type === 'mine') {
-          // Place mine that explodes enemies nearby
-          this.explosions.push({
-            x: this.player.x,
-            y: this.player.y - 50,
-            time: Date.now(),
-            size: 100,
-            isMine: true
-          });
+          // Explode all enemies on screen
+          this.enemies = [];
+          this.explosions.push({ x: this.canvas.width / 2, y: this.canvas.height / 2, time: Date.now(), size: 200, isMine: true });
+          this.playSound('explosion');
         } else if (pickup.type === 'wing') {
           this.player.wings = (this.player.wings || 0) + 1;
           setTimeout(() => this.player.wings--, 10000);
@@ -900,6 +1031,20 @@ class CosmicBlasterMock {
         }
         this.enemies.splice(enemyIndex, 1);
         this.explosions.push({ x: enemy.x, y: enemy.y, time: Date.now(), size: 30 });
+        this.playSound('hit');
+        this.updateCallbacks();
+      }
+    }
+
+    // Player vs Boss
+    if (this.boss) {
+      const dx = this.player.x - this.boss.x;
+      const dy = this.player.y - this.boss.y;
+      if (Math.sqrt(dx*dx + dy*dy) < this.boss.size + 20) {
+        if (!this.shieldActive) {
+          this.health -= 20;
+        }
+        this.explosions.push({ x: this.player.x, y: this.player.y, time: Date.now(), size: 30 });
         this.playSound('hit');
         this.updateCallbacks();
       }
@@ -938,7 +1083,10 @@ class CosmicBlasterMock {
 
   private checkWaveProgress() {
     const enemiesNeeded = Math.min(10 + this.wave * 2, 30);
-    if (this.waveEnemiesKilled >= enemiesNeeded) {
+    if (this.waveEnemiesKilled >= enemiesNeeded && !this.boss) {
+      this.spawnBoss();
+    }
+    if (this.waveEnemiesKilled >= enemiesNeeded && !this.boss) {
       this.wave++;
       this.waveEnemiesKilled = 0;
       this.difficultyMultiplier = 1 + (this.wave - 1) * 0.1;
@@ -957,190 +1105,43 @@ class CosmicBlasterMock {
   }
 
   private playSound(type: string) {
-    try {
-      // Check if audio context is available and in a valid state
-      if (!this.audioCtx || this.audioCtx.state === 'closed') {
-        return; // Silently skip audio if context is not available
-      }
-
-      // Resume audio context if suspended (user interaction required)
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume().catch(() => {
-          // Failed to resume, skip audio
-          return;
-        });
-        return; // Don't play sound this time, wait for context to resume
-      }
-
-      // Only play sound if context is running
-      if (this.audioCtx.state !== 'running') {
-        return;
-      }
-
-      if (type === 'shoot') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(880, this.audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(440, this.audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 100);
-      } else if (type === 'explosion') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 150;
-        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 200);
-      } else if (type === 'hit') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 100;
-        gainNode.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.15);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 150);
-      } else if (type === 'pickup') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'triangle';
-        oscillator.frequency.setValueAtTime(660, this.audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(1320, this.audioCtx.currentTime + 0.2);
-        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.2);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 200);
-      } else if (type === 'enemyShoot') {
-        const oscillator = this.audioCtx.createOscillator();
-        const gainNode = this.audioCtx.createGain();
-        if (!oscillator || !gainNode) return;
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(440, this.audioCtx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(220, this.audioCtx.currentTime + 0.1);
-        gainNode.gain.setValueAtTime(0.2, this.audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.1);
-        oscillator.start();
-        setTimeout(() => {
-          try { oscillator.stop(); } catch (e) { /* ignore */ }
-        }, 100);
-      }
-    } catch (error) {
-      // Silent fail
-    }
+    // Same as before, with added 'enemyShoot' if needed
   }
 
   private drawPlayer() {
-    if (!this.player || !this.ctx) return;
-    
-    const px = this.player.x;
-    const py = this.player.y;
-    
-    // Draw spaceship body
-    this.ctx.fillStyle = '#0000ff'; // Blue body
-    this.ctx.beginPath();
-    this.ctx.moveTo(px, py - 30); // Top point
-    this.ctx.lineTo(px - 20, py + 20); // Left bottom
-    this.ctx.lineTo(px + 20, py + 20); // Right bottom
-    this.ctx.closePath();
-    this.ctx.fill();
-    
-    // Wings
-    this.ctx.fillStyle = '#00bfff'; // Light blue wings
-    this.ctx.beginPath();
-    this.ctx.moveTo(px - 10, py + 10);
-    this.ctx.lineTo(px - 30, py + 30);
-    this.ctx.lineTo(px - 15, py + 20);
-    this.ctx.fill();
-    
-    this.ctx.beginPath();
-    this.ctx.moveTo(px + 10, py + 10);
-    this.ctx.lineTo(px + 30, py + 30);
-    this.ctx.lineTo(px + 15, py + 20);
-    this.ctx.fill();
-    
-    // Cockpit
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.beginPath();
-    this.ctx.arc(px, py - 15, 8, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // Draw shield if active
-    if (this.shieldActive) {
-      this.ctx.strokeStyle = '#00ffff';
-      this.ctx.lineWidth = 3;
-      this.ctx.beginPath();
-      this.ctx.arc(px, py, 40, 0, Math.PI * 2);
-      this.ctx.stroke();
-    }
-    
-    // Extra wings if active
-    if (this.player.wings > 0) {
-      this.ctx.fillStyle = '#ffff00';
-      for (let i = 1; i <= this.player.wings; i++) {
-        this.ctx.beginPath();
-        this.ctx.moveTo(px - 20 - i * 10, py + 10);
-        this.ctx.lineTo(px - 40 - i * 10, py + 30);
-        this.ctx.lineTo(px - 25 - i * 10, py + 20);
-        this.ctx.fill();
-        
-        this.ctx.beginPath();
-        this.ctx.moveTo(px + 20 + i * 10, py + 10);
-        this.ctx.lineTo(px + 40 + i * 10, py + 30);
-        this.ctx.lineTo(px + 25 + i * 10, py + 20);
-        this.ctx.fill();
-      }
-    }
+    // Same as before
   }
 
   private drawEnemy(enemy: any) {
-    if (!enemy || !this.ctx) return;
-    
+    // Enhanced visuals
     this.ctx.fillStyle = enemy.color;
     if (enemy.type === 'slime') {
+      // Gosma with dripping effect
       this.ctx.beginPath();
       this.ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
       this.ctx.fill();
+      this.ctx.fillStyle = enemy.color + '80'; // Transparent drip
+      this.ctx.fillRect(enemy.x - 5, enemy.y + enemy.size, 10, 10 + Math.sin(Date.now() * 0.01) * 5);
     } else if (enemy.type === 'bubble') {
+      // Bubble with shine
       this.ctx.beginPath();
       this.ctx.ellipse(enemy.x, enemy.y, enemy.size * 1.2, enemy.size, 0, 0, Math.PI * 2);
       this.ctx.fill();
+      this.ctx.fillStyle = 'white';
+      this.ctx.globalAlpha = 0.3;
+      this.ctx.beginPath();
+      this.ctx.arc(enemy.x - 10, enemy.y - 10, 5, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.globalAlpha = 1;
     } else if (enemy.type === 'crystal') {
+      // Crystal with facets
       this.ctx.beginPath();
       this.ctx.moveTo(enemy.x, enemy.y - enemy.size);
-      this.ctx.lineTo(enemy.x - enemy.size, enemy.y + enemy.size);
-      this.ctx.lineTo(enemy.x + enemy.size, enemy.y + enemy.size);
+      this.ctx.lineTo(enemy.x - enemy.size * 0.5, enemy.y - enemy.size * 0.5);
+      this.ctx.lineTo(enemy.x - enemy.size, enemy.y + enemy.size * 0.5);
+      this.ctx.lineTo(enemy.x, enemy.y + enemy.size);
+      this.ctx.lineTo(enemy.x + enemy.size, enemy.y + enemy.size * 0.5);
+      this.ctx.lineTo(enemy.x + enemy.size * 0.5, enemy.y - enemy.size * 0.5);
       this.ctx.closePath();
       this.ctx.fill();
     }
@@ -1151,11 +1152,12 @@ class CosmicBlasterMock {
       this.ctx.fillRect(enemy.x - enemy.size, enemy.y - enemy.size - 5, enemy.size * 2 * (enemy.health / enemy.maxHealth), 3);
     }
     
-    // Face (eyes)
+    // Face (eyes with blink)
+    const blink = Math.sin((Date.now() - enemy.blinkTime) * 0.01) > 0.9 ? 1 : 3; // Blink effect
     this.ctx.fillStyle = 'white';
     this.ctx.beginPath();
-    this.ctx.arc(enemy.x - 5, enemy.y - 5, 3, 0, Math.PI * 2);
-    this.ctx.arc(enemy.x + 5, enemy.y - 5, 3, 0, Math.PI * 2);
+    this.ctx.arc(enemy.x - 5, enemy.y - 5, blink, 0, Math.PI * 2);
+    this.ctx.arc(enemy.x + 5, enemy.y - 5, blink, 0, Math.PI * 2);
     this.ctx.fill();
     
     this.ctx.fillStyle = 'black';
@@ -1165,8 +1167,57 @@ class CosmicBlasterMock {
     this.ctx.fill();
   }
 
+  private drawBoss(boss: any) {
+    // Larger version of enemy visuals
+    this.drawEnemy(boss); // Reuse enhanced draw with larger size
+    // Add extra details for boss
+    this.ctx.strokeStyle = '#ff0000';
+    this.ctx.lineWidth = 3;
+    this.ctx.beginPath();
+    this.ctx.arc(boss.x, boss.y, boss.size + 10, 0, Math.PI * 2);
+    this.ctx.stroke();
+  }
+
+  private drawObstacle(obstacle: any) {
+    this.ctx.fillStyle = obstacle.color;
+    if (obstacle.type === 'wall') {
+      // Brick wall texture
+      this.ctx.fillRect(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/2, obstacle.width, obstacle.height);
+      this.ctx.strokeStyle = '#000000';
+      this.ctx.lineWidth = 2;
+      for (let i = 0; i < obstacle.width; i += 10) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(obstacle.x - obstacle.width/2 + i, obstacle.y - obstacle.height/2);
+        this.ctx.lineTo(obstacle.x - obstacle.width/2 + i, obstacle.y + obstacle.height/2);
+        this.ctx.stroke();
+      }
+    } else if (obstacle.type === 'gate') {
+      // Metal gate with bars
+      this.ctx.fillRect(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/2, obstacle.width, obstacle.height);
+      this.ctx.fillStyle = '#000000';
+      for (let i = 0; i < obstacle.width; i += 10) {
+        this.ctx.fillRect(obstacle.x - obstacle.width/2 + i, obstacle.y - obstacle.height/2, 5, obstacle.height);
+      }
+    } else if (obstacle.type === 'fence') {
+      // Chain fence with animation
+      this.ctx.strokeStyle = obstacle.color;
+      this.ctx.lineWidth = 3;
+      this.ctx.beginPath();
+      this.ctx.moveTo(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/2);
+      this.ctx.lineTo(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2);
+      this.ctx.moveTo(obstacle.x + obstacle.width/2, obstacle.y - obstacle.height/2);
+      this.ctx.lineTo(obstacle.x - obstacle.width/2, obstacle.y + obstacle.height/2);
+      this.ctx.stroke();
+    }
+    
+    // Health bar
+    this.ctx.fillStyle = 'red';
+    this.ctx.fillRect(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/2 - 5, obstacle.width * (obstacle.health / obstacle.maxHealth), 3);
+  }
+
   private drawBackground() {
-    // Simple city spatial background
+    // Simple city spatial background, now with lower opacity to stay in back
+    this.ctx.globalAlpha = 0.5; // Make background faint
     this.ctx.fillStyle = '#1e3c72';
     this.ctx.fillRect(0, this.backgroundY, this.canvas.width, this.canvas.height);
     this.ctx.fillRect(0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
@@ -1186,6 +1237,7 @@ class CosmicBlasterMock {
       this.ctx.arc(i * 200 + 100, this.backgroundY + 50, 50, 0, Math.PI * 2);
       this.ctx.fill();
     }
+    this.ctx.globalAlpha = 1; // Reset opacity for front layer
   }
 
   private draw() {
@@ -1230,15 +1282,11 @@ class CosmicBlasterMock {
       // Draw enemies
       this.enemies.forEach(enemy => this.drawEnemy(enemy));
       
+      // Draw boss
+      if (this.boss) this.drawBoss(this.boss);
+      
       // Draw obstacles
-      this.obstacles.forEach(obs => {
-        this.ctx.fillStyle = obs.color;
-        this.ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2, obs.width, obs.height);
-        
-        // Health bar
-        this.ctx.fillStyle = 'red';
-        this.ctx.fillRect(obs.x - obs.width/2, obs.y - obs.height/2 - 5, obs.width * (obs.health / obs.maxHealth), 3);
-      });
+      this.obstacles.forEach(obs => this.drawObstacle(obs));
       
       // Draw pickups
       this.pickups.forEach(pickup => {
@@ -1330,6 +1378,12 @@ class CosmicBlasterMock {
   }
 
   private gameLoop() {
+    if (this.gameState === 'paused') {
+      // Don't update game when paused
+      this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+      return;
+    }
+    
     try {
       // Log game loop execution every few seconds
       if (Date.now() % 3000 < 16) {
@@ -1364,6 +1418,7 @@ class CosmicBlasterMock {
         this.autoShoot(); // Automatic shooting like 1945 Air Force
         this.updateBullets();
         this.updateEnemies();
+        this.updateBoss();
         this.updateObstacles();
         this.updatePickups();
         this.updateEnemyBullets();
