@@ -108,13 +108,13 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
           ⭐ Pontuação: {score}
         </div>
         <div className="bg-red-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
-          ❤️ Health: {health}/150
+          ❤️ Vida: {health}/150
         </div>
         <div className="bg-green-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
           🌊 Fase: {wave}
         </div>
         <div className="bg-yellow-500/30 backdrop-blur-sm px-3 py-2 rounded-lg">
-          🔫 Arma: Nível {weaponLevel}
+          🚀 Arma: Nível {weaponLevel}
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
           onClick={handlePause}
           className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1001] bg-gray-500 hover:bg-gray-600 text-white rounded-full p-2 text-xs opacity-50"
         >
-          Pausa
+          ⏸️ Pausa
         </Button>
       )}
 
@@ -136,19 +136,22 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
               🚀 Defesa Cósmica da Lele! 🚀
             </h2>
             <div className="text-left mb-6 space-y-2">
-              <p><strong>Como jogar (estilo 1945 Air Force):</strong></p>
+              <p><strong>🎮 Como jogar (estilo 1945 Air Force):</strong></p>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>👆 ARRASTE o dedo na tela para mover a Lele</li>
                 <li>🎯 Tiros são AUTOMÁTICOS - apenas se mova!</li>
-                <li>💎 Colete power-ups para melhorar armas</li>
+                <li>🔫 Colete power-ups para melhorar armas</li>
+                <li>❤️ Pegue corações para recuperar vida</li>
+                <li>🛡️ Escudos te protegem temporariamente</li>
                 <li>🌊 Sobreviva às ondas de inimigos!</li>
+                <li>👹 Derrote o BOSS no final de cada fase!</li>
               </ul>
               <p className="text-xs opacity-80 mt-4">
                 💻 Desktop: Clique e arraste o mouse para mover
               </p>
             </div>
             <Button onClick={handleStartGame} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full text-lg font-bold">
-              Começar Aventura! 🎮
+              🚀 Começar Aventura! 🎮
             </Button>
           </div>
         </div>
@@ -159,10 +162,10 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400">
-              Jogo Pausado! ⏸️
+              ⏸️ Jogo Pausado! ⏸️
             </h2>
             <Button onClick={handleResume} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg">
-              Continuar 🎮
+              ▶️ Continuar 🎮
             </Button>
           </div>
         </div>
@@ -173,14 +176,14 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400">
-              Você Venceu! 🚀⭐
+              🎉 Você Venceu! 🏆⭐
             </h2>
-            <p className="mb-6 text-lg">Pontuação Final: <span className="text-yellow-400 font-bold">{score}</span></p>
+            <p className="mb-6 text-lg">✨ Pontuação Final: <span className="text-yellow-400 font-bold">{score}</span> ✨</p>
             <Button onClick={handleRestart} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-bold mr-4">
-              Jogar Novamente 🎮
+              🎮 Jogar Novamente
             </Button>
             <Button onClick={onExit} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-bold">
-              Sair
+              🚪 Sair
             </Button>
           </div>
         </div>
@@ -191,11 +194,11 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
             <h2 className="text-2xl md:text-3xl font-bold mb-4 text-red-400">
-              Fim de Jogo!
+              💥 Fim de Jogo! 😵
             </h2>
-            <p className="mb-6 text-lg">Pontuação: <span className="text-yellow-400 font-bold">{score}</span></p>
+            <p className="mb-6 text-lg">⭐ Pontuação: <span className="text-yellow-400 font-bold">{score}</span> ⭐</p>
             <Button onClick={handleRestart} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-bold">
-              Jogar de Novo 🎮
+              🎮 Jogar de Novo
             </Button>
           </div>
         </div>
@@ -206,7 +209,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center">
             <h2 className="text-4xl md:text-6xl font-bold text-yellow-400 animate-pulse">
-              Fase {wave}
+              🌊 Fase {wave} 🌊
             </h2>
           </div>
         </div>
@@ -217,7 +220,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center">
             <h2 className="text-3xl md:text-5xl font-bold text-red-500 animate-pulse">
-              Fase {wave} - BOSS!
+              🔥 Fase {wave} - BOSS! 👹
             </h2>
           </div>
         </div>
@@ -1412,6 +1415,12 @@ class CosmicBlasterMock {
     this.ctx.arc(px, py - 15, 8, 0, Math.PI * 2);
     this.ctx.fill();
     
+    // Add Lele emoji in cockpit
+    this.ctx.font = '12px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillText('👧', px, py - 15);
+    
     // Draw shield if active
     if (this.shieldActive) {
       this.ctx.strokeStyle = '#00ffff';
@@ -1480,6 +1489,20 @@ class CosmicBlasterMock {
       this.ctx.fillRect(enemy.x - enemy.size, enemy.y - enemy.size - 5, enemy.size * 2 * (enemy.health / enemy.maxHealth), 3);
     }
     
+    // Add emoji on top of enemy
+    this.ctx.font = '16px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    
+    let emoji = '';
+    switch (enemy.type) {
+      case 'slime': emoji = '🟢'; break;
+      case 'bubble': emoji = '🫧'; break;
+      case 'crystal': emoji = '💎'; break;
+    }
+    
+    this.ctx.fillText(emoji, enemy.x, enemy.y - enemy.size/2);
+    
     // Face (eyes with blink)
     const blink = Math.sin((Date.now() - enemy.blinkTime) * 0.01) > 0.9 ? 1 : 3; // Blink effect
     this.ctx.fillStyle = 'white';
@@ -1496,14 +1519,56 @@ class CosmicBlasterMock {
   }
 
   private drawBoss(boss: any) {
-    // Larger version of enemy visuals
-    this.drawEnemy(boss); // Reuse enhanced draw with larger size
-    // Add extra details for boss
+    // Draw boss body first
+    this.ctx.fillStyle = boss.color;
+    this.ctx.beginPath();
+    this.ctx.arc(boss.x, boss.y, boss.size, 0, Math.PI * 2);
+    this.ctx.fill();
+    
+    // Add menacing border
     this.ctx.strokeStyle = '#ff0000';
     this.ctx.lineWidth = 3;
     this.ctx.beginPath();
     this.ctx.arc(boss.x, boss.y, boss.size + 10, 0, Math.PI * 2);
     this.ctx.stroke();
+    
+    // Health bar
+    if (boss.maxHealth > 1) {
+      this.ctx.fillStyle = 'red';
+      this.ctx.fillRect(boss.x - boss.size, boss.y - boss.size - 15, boss.size * 2 * (boss.health / boss.maxHealth), 5);
+      this.ctx.strokeStyle = 'white';
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeRect(boss.x - boss.size, boss.y - boss.size - 15, boss.size * 2, 5);
+    }
+    
+    // Add boss-specific emoji
+    this.ctx.font = '32px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    
+    let emoji = '';
+    switch (boss.type) {
+      case 'megaSlime': emoji = '👾'; break;
+      case 'megaBubble': emoji = '🌀'; break;
+      case 'megaCrystal': emoji = '💎'; break;
+      case 'megaFire': emoji = '🔥'; break;
+      case 'megaIce': emoji = '❄️'; break;
+      case 'megaThunder': emoji = '⚡'; break;
+      case 'megaShadow': emoji = '👤'; break;
+      case 'megaGold': emoji = '👑'; break;
+      case 'megaVoid': emoji = '🕳️'; break;
+      case 'megaFinal': emoji = '💀'; break;
+    }
+    
+    this.ctx.fillText(emoji, boss.x, boss.y);
+    
+    // Boss eyes (menacing)
+    const blink = Math.sin((Date.now() - boss.blinkTime) * 0.01) > 0.9 ? 1 : 4;
+    this.ctx.fillStyle = 'red';
+    this.ctx.beginPath();
+    this.ctx.arc(boss.x - 10, boss.y - 10, blink, 0, Math.PI * 2);
+    this.ctx.arc(boss.x + 10, boss.y - 10, blink, 0, Math.PI * 2);
+    this.ctx.fill();
   }
 
   private drawObstacle(obstacle: any) {
@@ -1621,16 +1686,19 @@ class CosmicBlasterMock {
       // Draw obstacles
       this.obstacles.forEach(obs => this.drawObstacle(obs));
       
-      // Draw pickups
+      // Draw pickups with emojis
       this.pickups.forEach(pickup => {
         const pulseEffect = 0.8 + Math.sin((Date.now() - pickup.pulseTime) * 0.01) * 0.2;
         this.ctx.save();
         this.ctx.globalAlpha = pulseEffect;
+        
+        // Draw background shape first
         this.ctx.fillStyle = pickup.color;
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 2;
         
         if (pickup.type === 'weapon') {
+          // Star shape for weapon
           const centerX = pickup.x;
           const centerY = pickup.y;
           const radius = pickup.size;
@@ -1648,15 +1716,18 @@ class CosmicBlasterMock {
           this.ctx.fill();
           this.ctx.stroke();
         } else if (pickup.type === 'health') {
+          // Cross shape for health
           const size = pickup.size;
           this.ctx.fillRect(pickup.x - size/4, pickup.y - size, size/2, size*2);
           this.ctx.fillRect(pickup.x - size, pickup.y - size/4, size*2, size/2);
         } else if (pickup.type === 'shield') {
+          // Circle for shield
           this.ctx.beginPath();
           this.ctx.arc(pickup.x, pickup.y, pickup.size, 0, Math.PI * 2);
           this.ctx.fill();
           this.ctx.stroke();
         } else if (pickup.type === 'helper') {
+          // Triangle for helper
           this.ctx.beginPath();
           this.ctx.moveTo(pickup.x, pickup.y - 10);
           this.ctx.lineTo(pickup.x - 10, pickup.y + 10);
@@ -1664,11 +1735,13 @@ class CosmicBlasterMock {
           this.ctx.closePath();
           this.ctx.fill();
         } else if (pickup.type === 'mine') {
+          // Circle with fuse for mine
           this.ctx.beginPath();
           this.ctx.arc(pickup.x, pickup.y, 10, 0, Math.PI * 2);
           this.ctx.fill();
           this.ctx.fillRect(pickup.x - 2, pickup.y - 15, 4, 5);
         } else if (pickup.type === 'wing') {
+          // Wing shape
           this.ctx.beginPath();
           this.ctx.moveTo(pickup.x - 10, pickup.y);
           this.ctx.lineTo(pickup.x, pickup.y - 10);
@@ -1676,10 +1749,28 @@ class CosmicBlasterMock {
           this.ctx.fill();
         }
         
+        // Draw emoji on top
+        this.ctx.globalAlpha = 1;
+        this.ctx.font = '20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        let emoji = '';
+        switch (pickup.type) {
+          case 'weapon': emoji = '🔫'; break;
+          case 'health': emoji = '❤️'; break;
+          case 'shield': emoji = '🛡️'; break;
+          case 'helper': emoji = '🤖'; break;
+          case 'mine': emoji = '💣'; break;
+          case 'wing': emoji = '✈️'; break;
+        }
+        
+        this.ctx.fillText(emoji, pickup.x, pickup.y);
+        
         this.ctx.restore();
       });
       
-      // Draw helpers
+      // Draw helpers with emojis
       this.helpers.forEach(helper => {
         this.ctx.fillStyle = '#00ff00';
         this.ctx.beginPath();
@@ -1688,18 +1779,37 @@ class CosmicBlasterMock {
         this.ctx.lineTo(helper.x + 8, helper.y + 10);
         this.ctx.closePath();
         this.ctx.fill();
+        
+        // Add helper emoji
+        this.ctx.font = '16px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('🤖', helper.x, helper.y);
       });
       
-      // Draw explosions
+      // Draw explosions with emojis
       this.explosions = this.explosions.filter(explosion => {
         const age = Date.now() - explosion.time;
         if (age < 500) {
           this.ctx.save();
           this.ctx.globalAlpha = 1 - (age / 500);
+          
+          // Draw explosion circle
           this.ctx.fillStyle = '#ffff00';
           this.ctx.beginPath();
           this.ctx.arc(explosion.x, explosion.y, age / 10, 0, Math.PI * 2);
           this.ctx.fill();
+          
+          // Add explosion emoji in center
+          this.ctx.globalAlpha = 1 - (age / 300); // Fade faster
+          this.ctx.font = '24px Arial';
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          
+          const explosionEmojis = ['💥', '✨', '⭐', '🌟'];
+          const emoji = explosionEmojis[Math.floor(explosion.x + explosion.y) % explosionEmojis.length];
+          this.ctx.fillText(emoji, explosion.x, explosion.y);
+          
           this.ctx.restore();
           return true;
         }
