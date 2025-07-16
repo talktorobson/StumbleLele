@@ -10,6 +10,7 @@ import MemoryGame from "./games/memory-game";
 import WordsGame from "./games/words-game";
 import MathGame from "./games/math-game";
 import EmotionGame from "./games/emotion-game";
+import CosmicBlasterGame from "./games/cosmic-blaster-game";
 
 interface GamesProps {
   userId: number;
@@ -96,7 +97,6 @@ export default function Games({ userId }: GamesProps) {
       icon: Rocket,
       gradient: "from-blue-400 to-purple-400",
       level: gameProgress.find((p: any) => p.gameType === "cosmic-blaster")?.level || 1,
-      isExternal: true,
     },
     {
       id: "coming-soon",
@@ -121,40 +121,7 @@ export default function Games({ userId }: GamesProps) {
       return;
     }
     
-    // Handle external games (like Cosmic Blaster)
-    if (game?.isExternal && gameType === "cosmic-blaster") {
-      // Open the cosmic blaster game in a new window with proper navigation
-      const gameWindow = window.open('/cosmic-blaster-mock.html', '_blank', 'width=800,height=600,scrollbars=no,resizable=yes');
-      
-      if (gameWindow) {
-        // Add a listener to detect when the game window is closed to save progress
-        const checkClosed = setInterval(() => {
-          if (gameWindow.closed) {
-            clearInterval(checkClosed);
-            toast({
-              title: "Bem-vinda de volta! 👋",
-              description: "A Lele espera que você tenha se divertido!",
-            });
-            // Refresh progress data
-            queryClient.invalidateQueries({ queryKey: ["/api/game/progress", userId] });
-          }
-        }, 1000);
-        
-        toast({
-          title: "Defesa Cósmica Iniciada! 🚀",
-          description: "Boa sorte protegendo a galáxia com a Lele!",
-        });
-      } else {
-        toast({
-          title: "Erro ao abrir jogo 😔",
-          description: "Verifique se pop-ups estão permitidos",
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-    
-    // Handle internal games
+    // Handle all games (including cosmic blaster) as internal games
     setSelectedGame(gameType);
     setGameLevel(game?.level || 1);
     toast({
@@ -193,6 +160,8 @@ export default function Games({ userId }: GamesProps) {
         return <MathGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
       case "emotions":
         return <EmotionGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
+      case "cosmic-blaster":
+        return <CosmicBlasterGame level={gameLevel} onGameComplete={handleGameComplete} onExit={handleGameExit} />;
       default:
         setSelectedGame(null);
         return null;
