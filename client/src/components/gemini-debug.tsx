@@ -53,18 +53,61 @@ export default function GeminiDebug() {
         ws.send(JSON.stringify(setupMessage));
       };
 
-      ws.onmessage = (event) => {
-        addLog(`📨 Received: ${event.data}`);
-        try {
-          const data = JSON.parse(event.data);
-          if (data.serverContent) {
-            addLog('✅ Server content received');
+      ws.onmessage = async (event) => {
+        if (event.data instanceof Blob) {
+          addLog(`📨 Received Blob: ${event.data.size} bytes, type: ${event.data.type}`);
+          
+          // Try to read as text first
+          try {
+            const text = await event.data.text();
+            addLog(`📝 Blob text content: ${text}`);
+            
+            // Try to parse as JSON
+            try {
+              const jsonData = JSON.parse(text);
+              addLog(`✅ JSON parsed successfully`);
+              if (jsonData.serverContent) {
+                addLog('✅ Server content received');
+              }
+              if (jsonData.setupComplete) {
+                addLog('✅ Setup complete');
+              }
+            } catch (e) {
+              addLog('❌ Not valid JSON');
+            }
+          } catch (e) {
+            addLog('❌ Failed to read blob as text');
+            
+            // Try to read as ArrayBuffer (for audio)
+            try {
+              const arrayBuffer = await event.data.arrayBuffer();
+              addLog(`🎵 Audio data: ${arrayBuffer.byteLength} bytes`);
+              
+              // Try to play the audio
+              const audioContext = new AudioContext();
+              const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+              const source = audioContext.createBufferSource();
+              source.buffer = audioBuffer;
+              source.connect(audioContext.destination);
+              source.start();
+              addLog('🔊 Playing audio response');
+            } catch (e) {
+              addLog('❌ Failed to decode as audio');
+            }
           }
-          if (data.setupComplete) {
-            addLog('✅ Setup complete');
+        } else {
+          addLog(`📨 Received text: ${event.data}`);
+          try {
+            const data = JSON.parse(event.data);
+            if (data.serverContent) {
+              addLog('✅ Server content received');
+            }
+            if (data.setupComplete) {
+              addLog('✅ Setup complete');
+            }
+          } catch (e) {
+            addLog('❌ Failed to parse message');
           }
-        } catch (e) {
-          addLog('❌ Failed to parse message');
         }
       };
 
