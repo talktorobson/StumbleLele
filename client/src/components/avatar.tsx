@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAvatar } from "@/hooks/use-avatar";
 import { useGeminiLive } from "@/hooks/use-gemini-live";
+import { useSpeech } from "@/hooks/use-speech";
 import { motion } from "framer-motion";
 
 interface AvatarProps {
@@ -23,6 +24,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
   const queryClient = useQueryClient();
   const { currentEmotion, setEmotion, getEmotionIcon } = useAvatar(avatarState?.currentEmotion);
   const { sendTextMessage, connect, isConnected } = useGeminiLive(userId);
+  const { speak } = useSpeech();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const tellJokeMutation = useMutation({
@@ -37,19 +39,12 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       
       console.log('Joke received:', data.joke);
       
-      // Connect to Gemini Live if not connected, then tell the joke
-      if (!isConnected) {
-        console.log('Connecting to Gemini Live...');
-        await connect();
-        // Wait a bit for connection to establish
-        setTimeout(() => {
-          console.log('Sending joke to Gemini Live...');
-          sendTextMessage(`Conte esta piada com voz animada e divertida: ${data.joke}`);
-        }, 1000);
-      } else {
-        console.log('Already connected, sending joke...');
-        sendTextMessage(`Conte esta piada com voz animada e divertida: ${data.joke}`);
-      }
+      // For now, let's use regular TTS since Gemini Live is having issues
+      // TODO: Fix Gemini Live configuration and re-enable
+      console.log('Using TTS fallback for joke delivery');
+      
+      // Use speech synthesis for voice delivery
+      speak(`Olá! Aqui está uma piada para você: ${data.joke}`, 'playful');
     },
     onError: () => {
       toast({

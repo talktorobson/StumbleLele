@@ -34,7 +34,7 @@ export function useGeminiLive(userId: number = 1) {
   const { toast } = useToast();
 
   const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  const GEMINI_MODEL = 'gemini-2.5-flash-preview-native-audio-dialog';
+  const GEMINI_MODEL = 'gemini-2.0-flash-exp';
 
   // Configuration for Lele personality
   const config: GeminiLiveConfig = {
@@ -89,8 +89,7 @@ export function useGeminiLive(userId: number = 1) {
         // Send initial configuration with audio response
         const setupMessage = {
           setup: {
-            model: `models/${GEMINI_MODEL}`,
-            response_modalities: ['AUDIO']
+            model: `models/${GEMINI_MODEL}`
           }
         };
         console.log('Sending setup:', setupMessage);
