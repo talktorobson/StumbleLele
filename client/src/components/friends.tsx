@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Users, Plus, User, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import FriendChat from "@/components/friend-chat";
 
 interface FriendsProps {
   userId: number;
@@ -16,6 +17,7 @@ interface FriendsProps {
 export default function Friends({ userId }: FriendsProps) {
   const [newFriendName, setNewFriendName] = useState("");
   const [isAddingFriend, setIsAddingFriend] = useState(false);
+  const [activeChatFriend, setActiveChatFriend] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -186,10 +188,7 @@ export default function Friends({ userId }: FriendsProps) {
                   size="sm"
                   className="w-full bg-green-400 hover:bg-green-500 text-white text-xs px-2 py-1"
                   onClick={() => {
-                    toast({
-                      title: `💬 Conversando com ${friend.friend_name}`,
-                      description: "A Lele está ajudando vocês a conversar!",
-                    });
+                    setActiveChatFriend(friend);
                   }}
                 >
                   <MessageCircle className="mr-1 h-2 w-2 sm:h-3 sm:w-3" />
@@ -234,6 +233,16 @@ export default function Friends({ userId }: FriendsProps) {
           </div>
         )}
       </CardContent>
+      
+      {/* Friend Chat Modal */}
+      {activeChatFriend && (
+        <FriendChat
+          friend={activeChatFriend}
+          isOpen={!!activeChatFriend}
+          onClose={() => setActiveChatFriend(null)}
+          userId={userId}
+        />
+      )}
     </Card>
   );
 }
