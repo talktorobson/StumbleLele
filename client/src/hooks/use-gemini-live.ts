@@ -17,6 +17,7 @@ interface GeminiLiveConfig {
     };
     language_code?: string;
   };
+  media_resolution?: string;
 }
 
 export function useGeminiLive(userId: number = 1) {
@@ -61,7 +62,8 @@ export function useGeminiLive(userId: number = 1) {
         }
       },
       language_code: 'pt-BR'
-    }
+    },
+    media_resolution: 'MEDIA_RESOLUTION_LOW'
   };
 
   // Connect to Gemini Live API
@@ -88,7 +90,7 @@ export function useGeminiLive(userId: number = 1) {
         const setupMessage = {
           setup: {
             model: `models/${GEMINI_MODEL}`,
-            ...config
+            config: config
           }
         };
         console.log('Sending setup:', setupMessage);
