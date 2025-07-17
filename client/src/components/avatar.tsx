@@ -204,18 +204,6 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
-                className="px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-teal-400 to-teal-500 hover:from-teal-500 hover:to-teal-600 text-white rounded-2xl font-bold transition-all shadow-xl text-base sm:text-lg border-2 border-white"
-                onClick={() => {
-                  setEmotion("excited");
-                  document.querySelector('[data-section="games"]')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                🎮 Jogar
-              </Button>
-            </motion.div>
-            
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button 
                 className="px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-800 rounded-2xl font-bold transition-all shadow-xl text-base sm:text-lg border-2 border-white"
                 onClick={handleJokeClick}
                 disabled={tellJokeMutation.isPending}
