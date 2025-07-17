@@ -63,25 +63,33 @@
   * {
     @apply border-border;
   }
+  
+  /* Reset html and body for proper scrolling */
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  html {
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
 
   body {
     @apply font-sans antialiased;
     font-family: 'Nunito', sans-serif;
     background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 25%, #e8f5e8 50%, #e1f5fe 75%, #fff3e0 100%);
-    -webkit-overflow-scrolling: touch;
+    background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
   }
   
-  /* iOS specific fixes */
-  html {
-    height: auto;
-  }
-  
-  body {
-    min-height: 100vh;
-    height: auto;
+  #root {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   
   /* Fix for iOS Safari viewport */

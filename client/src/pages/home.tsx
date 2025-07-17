@@ -56,7 +56,7 @@ export default function Home() {
 
 
   return (
-    <div className="bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-200 rounded-full opacity-50 animate-pulse"></div>
@@ -103,7 +103,7 @@ export default function Home() {
       </header>
 
       {/* Main Content - Full scroll capability */}
-      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-4xl pb-40">
+      <main className="flex-1 container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-4xl w-full mb-32">
         <div className="space-y-8">
           {renderCurrentSection()}
         </div>
