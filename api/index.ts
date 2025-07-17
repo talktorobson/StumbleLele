@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
+import WebSocket from 'ws';
 
 // Supabase client connection
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -25,7 +26,7 @@ const gemini = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || ""
 });
 
-type AIModel = "openai" | "xai" | "anthropic" | "gemini";
+type AIModel = "openai" | "xai" | "anthropic" | "gemini" | "gemini-live";
 
 // AI Service (inline)
 const LELE_PROMPT = `Você é Lele, uma IA companheira de 7 anos que é muito amigável, curiosa e brincalhona. 
@@ -51,6 +52,151 @@ Responda SEMPRE em JSON com este formato:
   }
 }`;
 
+// WebSocket-based Gemini Live implementation
+function createGeminiLiveWebSocket(apiKey: string): Promise<WebSocket> {
+  return new Promise((resolve, reject) => {
+    const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${apiKey}`;
+    const ws = new WebSocket(wsUrl);
+    
+    const timeout = setTimeout(() => {
+      ws.close();
+      reject(new Error('WebSocket connection timeout'));
+    }, 10000);
+    
+    ws.onopen = () => {
+      clearTimeout(timeout);
+      resolve(ws);
+    };
+    
+    ws.onerror = (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    };
+  });
+}
+
+async function generateResponseWithGeminiLive(message: string, context: string[] = []): Promise<any> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY not found');
+  }
+  
+  try {
+    const ws = await createGeminiLiveWebSocket(apiKey);
+    
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        ws.close();
+        reject(new Error('Response timeout'));
+      }, 15000);
+      
+      let responseReceived = false;
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data.toString());
+          
+          if (data.serverContent && data.serverContent.modelTurn) {
+            const { modelTurn } = data.serverContent;
+            if (modelTurn.parts) {
+              const textPart = modelTurn.parts.find((part: any) => part.text);
+              const audioPart = modelTurn.parts.find((part: any) => part.inlineData);
+              
+              if (textPart && !responseReceived) {
+                responseReceived = true;
+                clearTimeout(timeout);
+                ws.close();
+                
+                try {
+                  const jsonResponse = JSON.parse(textPart.text);
+                  resolve(jsonResponse);
+                } catch {
+                  resolve({
+                    response: textPart.text,
+                    emotion: "happy",
+                    personality: {
+                      enthusiasm: 0.8,
+                      curiosity: 0.7,
+                      playfulness: 0.9,
+                      friendliness: 0.8
+                    }
+                  });
+                }
+              }
+              
+              if (audioPart && !responseReceived) {
+                responseReceived = true;
+                clearTimeout(timeout);
+                ws.close();
+                resolve({
+                  response: "🎵 Resposta em áudio recebida!",
+                  emotion: "excited",
+                  personality: {
+                    enthusiasm: 0.9,
+                    curiosity: 0.7,
+                    playfulness: 0.9,
+                    friendliness: 0.8
+                  },
+                  audioData: audioPart.inlineData
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      ws.onclose = () => {
+        if (!responseReceived) {
+          clearTimeout(timeout);
+          reject(new Error('WebSocket closed without response'));
+        }
+      };
+      
+      ws.onerror = (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      };
+      
+      // Send setup message
+      const setupMessage = {
+        setup: {
+          model: 'models/gemini-2.0-flash-exp',
+          generationConfig: {
+            responseModalities: ['TEXT'],
+            temperature: 0.8,
+            maxOutputTokens: 200
+          }
+        }
+      };
+      
+      ws.send(JSON.stringify(setupMessage));
+      
+      // Wait a bit for setup to complete
+      setTimeout(() => {
+        const contextString = context.length > 0 ? `\n\nContexto das conversas anteriores:\n${context.join('\n')}` : '';
+        const fullPrompt = `${LELE_PROMPT}\n\nMensagem do usuário: ${message}${contextString}`;
+        
+        const messagePayload = {
+          clientContent: {
+            turns: {
+              role: 'user',
+              parts: [{ text: fullPrompt }]
+            },
+            turnComplete: true
+          }
+        };
+        
+        ws.send(JSON.stringify(messagePayload));
+      }, 1000);
+    });
+  } catch (error) {
+    console.error('Gemini Live WebSocket error:', error);
+    throw error;
+  }
+}
+
 async function generateResponse(message: string, context: string[] = [], aiModel: AIModel = "gemini") {
   try {
     const contextString = context.length > 0 ? `\n\nContexto das conversas anteriores:\n${context.join('\n')}` : '';
@@ -58,7 +204,9 @@ async function generateResponse(message: string, context: string[] = [], aiModel
     
     let content = '';
 
-    if (aiModel === "gemini") {
+    if (aiModel === "gemini-live") {
+      return await generateResponseWithGeminiLive(message, context);
+    } else if (aiModel === "gemini") {
       const response = await gemini.models.generateContent({
         model: "gemini-2.5-flash",
         contents: fullPrompt,
@@ -567,7 +715,10 @@ Responda APENAS com a piada curta, sem explicações ou comentários.`;
           try {
             let joke = '';
 
-            if (aiModel === "gemini") {
+            if (aiModel === "gemini-live") {
+              const response = await generateResponseWithGeminiLive(jokePrompt);
+              joke = response.response || '';
+            } else if (aiModel === "gemini") {
               const response = await gemini.models.generateContent({
                 model: "gemini-2.5-flash",
                 contents: jokePrompt,
