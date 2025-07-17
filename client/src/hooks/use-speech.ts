@@ -150,25 +150,26 @@ export function useSpeech() {
   };
 
   const getEmotionSettings = (emotion: VoiceEmotion): Partial<VoiceSettings> => {
+    // Slower speeds optimized for children's comprehension (5-10 years old)
     switch (emotion) {
       case 'happy':
-        return { speed: 1.1, pitch: 1.8, volume: 0.9 };
+        return { speed: 0.8, pitch: 1.6, volume: 0.9 };
       case 'excited':
-        return { speed: 1.3, pitch: 2.0, volume: 1.0 };
+        return { speed: 0.9, pitch: 1.8, volume: 1.0 };
       case 'sad':
-        return { speed: 0.8, pitch: 1.2, volume: 0.7 };
+        return { speed: 0.7, pitch: 1.2, volume: 0.7 };
       case 'calm':
-        return { speed: 0.9, pitch: 1.5, volume: 0.8 };
+        return { speed: 0.7, pitch: 1.4, volume: 0.8 };
       case 'surprised':
-        return { speed: 1.2, pitch: 2.2, volume: 0.9 };
+        return { speed: 0.8, pitch: 1.9, volume: 0.9 };
       case 'loving':
-        return { speed: 0.9, pitch: 1.6, volume: 0.8 };
+        return { speed: 0.7, pitch: 1.5, volume: 0.8 };
       case 'playful':
-        return { speed: 1.2, pitch: 1.9, volume: 0.9 };
+        return { speed: 0.8, pitch: 1.7, volume: 0.9 };
       case 'encouraging':
-        return { speed: 1.0, pitch: 1.7, volume: 0.9 };
+        return { speed: 0.8, pitch: 1.6, volume: 0.9 };
       default:
-        return { speed: 1.1, pitch: 1.8, volume: 0.9 };
+        return { speed: 0.8, pitch: 1.6, volume: 0.9 };
     }
   };
 
@@ -272,8 +273,8 @@ export function useSpeech() {
         setTimeout(() => {
           const simpleUtterance = new SpeechSynthesisUtterance(text);
           simpleUtterance.lang = 'pt-BR';
-          simpleUtterance.rate = 1.0;
-          simpleUtterance.pitch = 1.0;
+          simpleUtterance.rate = 0.8; // Slower for kids
+          simpleUtterance.pitch = 1.4; // Slightly higher pitch for kids
           simpleUtterance.volume = 0.8;
           synthesis.speak(simpleUtterance);
         }, 100);
@@ -286,8 +287,11 @@ export function useSpeech() {
         synthesis.speak(utterance);
       } catch (error) {
         console.error('Speech synthesis error:', error);
-        // Final fallback for iOS
+        // Final fallback for iOS - slower for kids
         const fallbackUtterance = new SpeechSynthesisUtterance(text);
+        fallbackUtterance.rate = 0.8; // Slower for kids
+        fallbackUtterance.pitch = 1.4; // Kid-friendly pitch
+        fallbackUtterance.volume = 0.8;
         synthesis.speak(fallbackUtterance);
       }
     }, 50);
