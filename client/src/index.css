@@ -1,9 +1,9 @@
+/* Import kids theme */
+@import './styles/kids-theme.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import kids theme */
-@import './styles/kids-theme.css';
 
 :root {
   --background: hsl(0, 0%, 100%);
