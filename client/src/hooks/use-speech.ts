@@ -271,22 +271,7 @@ export function useSpeech() {
     });
   }, []);
 
-  const speakJoke = useCallback((text: string) => {
-    // Play drum sound before the joke
-    playDrumSound();
-    
-    // Wait a moment then speak the joke
-    setTimeout(() => {
-      speak(text, 'playful');
-    }, 200);
-    
-    // Play laugh sound after the joke (estimated timing)
-    const jokeLength = text.length;
-    const estimatedDuration = (jokeLength / 10) * 1000; // Rough estimate
-    setTimeout(() => {
-      playLaughSound();
-    }, estimatedDuration + 500);
-  }, [speak, playDrumSound, playLaughSound]);
+  // Note: speakJoke will be defined after speak function to avoid circular dependency
 
   const speak = useCallback((text: string, emotion: VoiceEmotion = 'happy') => {
     if (!synthesis) {
@@ -429,6 +414,23 @@ export function useSpeech() {
 
     synthesis.speak(utterance);
   }, [synthesis, toast, selectedVoice]);
+
+  const speakJoke = useCallback((text: string) => {
+    // Play drum sound before the joke
+    playDrumSound();
+    
+    // Wait a moment then speak the joke
+    setTimeout(() => {
+      speak(text, 'playful');
+    }, 200);
+    
+    // Play laugh sound after the joke (estimated timing)
+    const jokeLength = text.length;
+    const estimatedDuration = (jokeLength / 10) * 1000; // Rough estimate
+    setTimeout(() => {
+      playLaughSound();
+    }, estimatedDuration + 500);
+  }, [speak, playDrumSound, playLaughSound]);
 
   return {
     isListening,
