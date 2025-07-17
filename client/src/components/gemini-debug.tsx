@@ -66,11 +66,31 @@ export default function GeminiDebug() {
             try {
               const jsonData = JSON.parse(text);
               addLog(`✅ JSON parsed successfully`);
+              
+              // Check for server content and response types
               if (jsonData.serverContent) {
                 addLog('✅ Server content received');
+                const { modelTurn } = jsonData.serverContent;
+                if (modelTurn && modelTurn.parts) {
+                  const textPart = modelTurn.parts.find((part: any) => part.text);
+                  const audioPart = modelTurn.parts.find((part: any) => part.inlineData);
+                  
+                  if (textPart) {
+                    addLog(`💬 TEXT response: ${textPart.text.substring(0, 50)}...`);
+                  }
+                  if (audioPart) {
+                    addLog(`🔊 AUDIO response detected! MIME: ${audioPart.inlineData.mimeType}`);
+                  }
+                }
               }
+              
               if (jsonData.setupComplete) {
                 addLog('✅ Setup complete');
+              }
+              
+              // Check for error messages
+              if (jsonData.error) {
+                addLog(`❌ Error: ${jsonData.error.message || jsonData.error}`);
               }
             } catch (e) {
               addLog('❌ Not valid JSON');
@@ -99,11 +119,31 @@ export default function GeminiDebug() {
           addLog(`📨 Received text: ${event.data}`);
           try {
             const data = JSON.parse(event.data);
+            
+            // Check for server content and response types
             if (data.serverContent) {
               addLog('✅ Server content received');
+              const { modelTurn } = data.serverContent;
+              if (modelTurn && modelTurn.parts) {
+                const textPart = modelTurn.parts.find((part: any) => part.text);
+                const audioPart = modelTurn.parts.find((part: any) => part.inlineData);
+                
+                if (textPart) {
+                  addLog(`💬 TEXT response: ${textPart.text.substring(0, 50)}...`);
+                }
+                if (audioPart) {
+                  addLog(`🔊 AUDIO response detected! MIME: ${audioPart.inlineData.mimeType}`);
+                }
+              }
             }
+            
             if (data.setupComplete) {
               addLog('✅ Setup complete');
+            }
+            
+            // Check for error messages
+            if (data.error) {
+              addLog(`❌ Error: ${data.error.message || data.error}`);
             }
           } catch (e) {
             addLog('❌ Failed to parse message');
@@ -146,6 +186,112 @@ export default function GeminiDebug() {
     addLog(`Sending message: ${JSON.stringify(messagePayload, null, 2)}`);
     websocketRef.current.send(JSON.stringify(messagePayload));
   }, [addLog]);
+
+  const runAllTests = useCallback(async () => {
+    clearLogs();
+    addLog('🚀 Running all tests systematically...');
+    
+    const testConfigs = [
+      {
+        name: 'Test 1: Minimal Setup',
+        setup: {
+          setup: {
+            model: 'models/gemini-2.0-flash-exp'
+          }
+        }
+      },
+      {
+        name: 'Test 2: With Generation Config',
+        setup: {
+          setup: {
+            model: 'models/gemini-2.0-flash-exp',
+            generationConfig: {
+              responseModalities: ['TEXT']
+            }
+          }
+        }
+      },
+      {
+        name: 'Test 3: Audio Model',
+        setup: {
+          setup: {
+            model: 'models/gemini-2.5-flash-exp'
+          }
+        }
+      },
+      {
+        name: 'Test 4: Audio Config',
+        setup: {
+          setup: {
+            model: 'models/gemini-2.5-flash-exp',
+            generationConfig: {
+              responseModalities: ['AUDIO']
+            }
+          }
+        }
+      },
+      {
+        name: 'Test 5: Native Audio Model',
+        setup: {
+          setup: {
+            model: 'models/gemini-2.5-flash-preview-native-audio-dialog'
+          }
+        }
+      },
+      {
+        name: 'Test 6: Live Model',
+        setup: {
+          setup: {
+            model: 'models/gemini-live-2.5-flash-preview'
+          }
+        }
+      },
+      {
+        name: 'Test 7: Gemini 2.0 Audio',
+        setup: {
+          setup: {
+            model: 'models/gemini-2.0-flash-exp',
+            generationConfig: {
+              responseModalities: ['AUDIO']
+            }
+          }
+        }
+      },
+      {
+        name: 'Test 8: Gemini Live',
+        setup: {
+          setup: {
+            model: 'models/gemini-live',
+            generationConfig: {
+              responseModalities: ['AUDIO']
+            }
+          }
+        }
+      }
+    ];
+    
+    for (let i = 0; i < testConfigs.length; i++) {
+      const test = testConfigs[i];
+      addLog(`\n=== Starting ${test.name} ===`);
+      
+      // Test connection
+      await testConnection(test.name, test.setup);
+      
+      // Wait for connection to establish
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Send test message if connected
+      if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
+        sendTestMessage('Teste de áudio');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      disconnect();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    addLog('\n🏁 All tests completed!');
+  }, [clearLogs, addLog, testConnection, sendTestMessage, disconnect]);
 
   const tests = [
     {
@@ -201,6 +347,28 @@ export default function GeminiDebug() {
           model: 'models/gemini-live-2.5-flash-preview'
         }
       }
+    },
+    {
+      name: 'Test 7: Gemini 2.0 Audio',
+      setup: {
+        setup: {
+          model: 'models/gemini-2.0-flash-exp',
+          generationConfig: {
+            responseModalities: ['AUDIO']
+          }
+        }
+      }
+    },
+    {
+      name: 'Test 8: Gemini Live',
+      setup: {
+        setup: {
+          model: 'models/gemini-live',
+          generationConfig: {
+            responseModalities: ['AUDIO']
+          }
+        }
+      }
     }
   ];
 
@@ -213,6 +381,9 @@ export default function GeminiDebug() {
             <Button size="sm" onClick={clearLogs}>Clear</Button>
             <Button size="sm" onClick={disconnect} disabled={!isConnected}>
               Disconnect
+            </Button>
+            <Button size="sm" onClick={runAllTests} disabled={isConnected}>
+              Run All
             </Button>
           </div>
         </CardHeader>
