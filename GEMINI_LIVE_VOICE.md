@@ -55,7 +55,9 @@ StumbleLele now uses **Google Gemini Live Voice API** instead of traditional Tex
 
 ### **Environment Variables**
 ```bash
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+# Uses existing GEMINI_API_KEY from .env
+GEMINI_API_KEY=your_gemini_api_key_here
+VITE_GEMINI_API_KEY=your_gemini_api_key_here  # For client-side access
 ```
 
 ### **Lele Personality Configuration**
