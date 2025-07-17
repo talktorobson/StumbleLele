@@ -50,21 +50,15 @@ export default function Home() {
     switch (currentSection) {
       case "games":
         return <Games userId={userId} />;
-      case "memories":
-        return <Memories userId={userId} />;
       case "friends":
         return <Friends userId={userId} />;
       case "progress":
         return <Progress userId={userId} />;
       default:
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <Avatar userId={userId} avatarState={avatarState} />
             <Chat userId={userId} />
-            <Games userId={userId} />
-            <Friends userId={userId} />
-            <Memories userId={userId} />
-            <Progress userId={userId} />
           </div>
         );
     }
@@ -129,88 +123,83 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-4xl pb-24">
+      {/* Main Content - More space for bigger navigation */}
+      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-4xl pb-32">
         {renderCurrentSection()}
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - Bigger buttons for kids */}
       <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 backdrop-blur-sm border-t-4 border-white shadow-2xl z-50">
-        <div className="container mx-auto px-2 py-3 sm:px-4 sm:py-4">
+        <div className="container mx-auto px-2 py-4 sm:px-4 sm:py-5">
           <div className="flex justify-around items-center">
             <Button
               variant="ghost"
-              size="sm"
-              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+              size="lg"
+              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
                 currentSection === "home" 
-                  ? "bg-gradient-to-br from-pink-400 to-purple-400 text-white shadow-lg" 
+                  ? "bg-gradient-to-br from-pink-400 to-purple-400 text-white shadow-lg scale-105" 
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("home")}
             >
-              <span className="text-xs font-semibold">🏠 Início</span>
+              <span className="text-2xl">🏠</span>
+              <span className="text-sm font-bold">Início</span>
             </Button>
             <Button
               variant="ghost"
-              size="sm"
-              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+              size="lg"
+              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
                 currentSection === "games" 
-                  ? "bg-gradient-to-br from-green-400 to-blue-400 text-white shadow-lg" 
+                  ? "bg-gradient-to-br from-green-400 to-blue-400 text-white shadow-lg scale-105" 
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("games")}
             >
-              <span className="text-xs font-semibold">🎮 Jogos</span>
+              <span className="text-2xl">🎮</span>
+              <span className="text-sm font-bold">Jogos</span>
             </Button>
             <Button
               variant="ghost"
-              size="sm"
-              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
-                currentSection === "memories" 
-                  ? "bg-gradient-to-br from-yellow-400 to-orange-400 text-white shadow-lg" 
-                  : "text-purple-600 hover:bg-white/50"
-              }`}
-              onClick={() => setCurrentSection("memories")}
-            >
-              <span className="text-xs font-semibold">💝 Memórias</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+              size="lg"
+              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
                 currentSection === "friends" 
-                  ? "bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg" 
+                  ? "bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg scale-105" 
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("friends")}
             >
-              <span className="text-xs font-semibold">👥 Amigos</span>
+              <span className="text-2xl">👥</span>
+              <span className="text-sm font-bold">Amigos</span>
             </Button>
             <Button
               variant="ghost"
-              size="sm"
-              className={`flex flex-col items-center space-y-1 px-3 py-3 sm:px-4 sm:py-3 rounded-2xl transform hover:scale-110 transition-all ${
+              size="lg"
+              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
                 currentSection === "progress" 
-                  ? "bg-gradient-to-br from-gray-400 to-gray-600 text-white shadow-lg" 
+                  ? "bg-gradient-to-br from-orange-400 to-red-400 text-white shadow-lg scale-105" 
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("progress")}
             >
-              <span className="text-xs font-semibold">⚙️ Config</span>
+              <span className="text-2xl">⚙️</span>
+              <span className="text-sm font-bold">Config</span>
             </Button>
           </div>
         </div>
       </nav>
 
-      {/* Floating Voice Button */}
+      {/* Floating Voice Button - Bigger for kids */}
       <Button
         size="lg"
-        className={`fixed bottom-24 left-4 w-16 h-16 sm:left-6 sm:w-18 sm:h-18 bg-gradient-to-br from-red-400 to-pink-500 rounded-full shadow-2xl hover:scale-110 transition-all z-40 border-4 border-white ${
+        className={`fixed bottom-32 left-4 w-20 h-20 sm:left-6 sm:w-24 sm:h-24 bg-gradient-to-br from-red-400 to-pink-500 rounded-full shadow-2xl hover:scale-110 transition-all z-40 border-4 border-white ${
           isVoiceActive ? "animate-pulse from-green-400 to-blue-500" : ""
         }`}
         onClick={() => setIsVoiceActive(!isVoiceActive)}
       >
-        <Mic className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+        <div className="flex flex-col items-center">
+          <Mic className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+          <span className="text-xs text-white font-bold mt-1">Falar</span>
+        </div>
       </Button>
 
       {/* Voice Input Component */}

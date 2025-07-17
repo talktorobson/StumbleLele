@@ -1,18 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Mobile App Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="theme-color" content="#fbbf24" />
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/favicon.ico" />
-    <title>StumbleLele - AI Companion</title>
+    <meta name="apple-mobile-web-app-title" content="StumbleLele" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Theme and Colors -->
+    <meta name="theme-color" content="#e91e63" />
+    <meta name="msapplication-navbutton-color" content="#e91e63" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#e91e63" />
+    
+    <!-- SEO and Description -->
+    <meta name="description" content="Lele é sua amiga AI que adora conversar, brincar e contar piadas! Perfeita para crianças de 6 a 9 anos." />
+    <meta name="keywords" content="criança, AI, amiga virtual, jogos, piadas, educação, diversão" />
+    
+    <!-- Icons -->
+    <link rel="icon" href="/lele-main.png" />
+    <link rel="apple-touch-icon" href="/lele-main.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/lele-main.png" />
+    
+    <!-- Prevent zoom on iOS -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <title>StumbleLele - Sua Amiga Lele!</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+    
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>

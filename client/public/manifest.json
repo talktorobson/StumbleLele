@@ -1,0 +1,60 @@
+{
+  "name": "StumbleLele - Companheira da Helena",
+  "short_name": "StumbleLele",
+  "description": "Lele é sua amiga AI que adora conversar, brincar e contar piadas!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fce4ec",
+  "theme_color": "#e91e63",
+  "orientation": "portrait-primary",
+  "categories": ["education", "kids", "entertainment"],
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/lele-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lele-icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "375x667",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Conversar com Lele",
+      "short_name": "Chat",
+      "description": "Fale com sua amiga Lele",
+      "url": "/#chat",
+      "icons": [
+        {
+          "src": "/chat-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Jogar Games",
+      "short_name": "Games",
+      "description": "Jogue games divertidos",
+      "url": "/#games",
+      "icons": [
+        {
+          "src": "/games-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
