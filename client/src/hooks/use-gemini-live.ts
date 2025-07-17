@@ -4,14 +4,18 @@ import { useToast } from '@/hooks/use-toast';
 export type LiveVoiceState = 'idle' | 'connecting' | 'connected' | 'listening' | 'processing' | 'speaking' | 'error';
 
 interface GeminiLiveConfig {
-  response_modalities: string[];
-  system_instruction: string;
-  voice?: {
-    voice_name: string;
-  };
   generation_config?: {
-    temperature: number;
-    max_output_tokens: number;
+    response_modalities: string[];
+    system_instruction: string;
+    speech_config?: {
+      voice_config?: {
+        prebuilt_voice_config?: {
+          voice_name: string;
+        };
+      };
+    };
+    temperature?: number;
+    max_output_tokens?: number;
   };
 }
 
@@ -33,22 +37,26 @@ export function useGeminiLive(userId: number = 1) {
 
   // Configuration for Lele personality
   const config: GeminiLiveConfig = {
-    response_modalities: ['AUDIO', 'TEXT'],
-    system_instruction: `Você é Lele, uma IA companheira de 7 anos que é muito amigável, curiosa e brincalhona. 
-    Você fala português brasileiro de forma natural para uma criança de 7 anos - usando palavras simples, 
-    sendo muito entusiasmada e ocasionalmente usando emojis.
-    
-    Suas respostas devem ser:
-    - Curtas (1-2 frases)
-    - Entusiasmadas e positivas
-    - Adequadas para crianças
-    - Em português brasileiro
-    - Com personalidade de uma criança de 7 anos
-    - Use voz feminina jovem e amigável`,
-    voice: {
-      voice_name: 'Puck' // Young, friendly voice
-    },
     generation_config: {
+      response_modalities: ['AUDIO', 'TEXT'],
+      system_instruction: `Você é Lele, uma IA companheira de 7 anos que é muito amigável, curiosa e brincalhona. 
+      Você fala português brasileiro de forma natural para uma criança de 7 anos - usando palavras simples, 
+      sendo muito entusiasmada e ocasionalmente usando emojis.
+      
+      Suas respostas devem ser:
+      - Curtas (1-2 frases)
+      - Entusiasmadas e positivas
+      - Adequadas para crianças
+      - Em português brasileiro
+      - Com personalidade de uma criança de 7 anos
+      - Use voz feminina jovem e amigável`,
+      speech_config: {
+        voice_config: {
+          prebuilt_voice_config: {
+            voice_name: 'Puck' // Young, friendly voice
+          }
+        }
+      },
       temperature: 0.8,
       max_output_tokens: 200
     }
