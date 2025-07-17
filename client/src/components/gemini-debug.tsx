@@ -111,7 +111,8 @@ export default function GeminiDebug() {
               source.connect(audioContext.destination);
               source.start();
               addLog('🔊 Playing audio response');
-            } catch (e) {
+            }
+            catch (e) {
               addLog('❌ Failed to decode as audio');
             }
           }
@@ -233,12 +234,10 @@ export default function GeminiDebug() {
       {
         name: 'Test 5: Native Audio Model',
         setup: {
-          setup: {
-            model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
-            audioConfig: {
-              audioEncoding: 'LINEAR16',
-              sampleRateHertz: 24000
-            }
+          model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
+          audioConfig: {
+            audioEncoding: 'LINEAR16',
+            sampleRateHertz: 24000
           }
         }
       },
@@ -339,12 +338,10 @@ export default function GeminiDebug() {
     {
       name: 'Test 5: Native Audio Model',
       setup: {
-        setup: {
-          model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
-          audioConfig: {
-            audioEncoding: 'LINEAR16',
-            sampleRateHertz: 24000
-          }
+        model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
+        audioConfig: {
+          audioEncoding: 'LINEAR16',
+          sampleRateHertz: 24000
         }
       }
     },
