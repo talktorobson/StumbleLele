@@ -52,7 +52,7 @@ export default function Friends({ userId }: FriendsProps) {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ friendName, status }: { friendName: string; status: string }) => {
-      const response = await apiRequest("PATCH", `/api/friends/${userId}/${friendName}`, {
+      const response = await apiRequest("PATCH", `/api/friends/${userId}/${encodeURIComponent(friendName)}`, {
         status,
       });
       return response.json();
@@ -146,8 +146,24 @@ export default function Friends({ userId }: FriendsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {friends.map((friend: any) => (
+        {friends.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-purple-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <Users className="h-12 w-12 text-purple-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Nenhum amigo ainda</h3>
+            <p className="text-gray-500 mb-4">Adicione seus primeiros amigos para começar a se divertir juntos!</p>
+            <Button
+              onClick={() => setIsAddingFriend(true)}
+              className="bg-pink-400 hover:bg-pink-500 text-white px-6 py-2"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Primeiro Amigo
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {friends.map((friend: any) => (
             <div
               key={friend.id}
               className="bg-gradient-to-br from-pink-100 to-purple-100 rounded-2xl p-3 sm:p-4 text-center game-card-hover cursor-pointer"
@@ -155,24 +171,46 @@ export default function Friends({ userId }: FriendsProps) {
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-teal-400 rounded-full mx-auto mb-2 sm:mb-3 flex items-center justify-center">
                 <User className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h4 className="font-semibold text-gray-800 text-xs sm:text-sm mb-1 truncate">{friend.friendName}</h4>
-              <Badge className={`${getStatusColor(friend.status)} text-white text-xs mb-2 px-2 py-1`}>
-                {getStatusText(friend.status)}
-              </Badge>
-              <Button
-                size="sm"
-                className="w-full bg-white/80 hover:bg-white text-gray-700 text-xs px-2 py-1"
+              <h4 className="font-semibold text-gray-800 text-xs sm:text-sm mb-1 truncate">{friend.friend_name}</h4>
+              <Badge 
+                className={`${getStatusColor(friend.status)} text-white text-xs mb-2 px-2 py-1 cursor-pointer hover:opacity-80`}
                 onClick={() => {
-                  toast({
-                    title: `Conversando com ${friend.friendName}`,
-                    description: "A Lele está ajudando vocês a conversar!",
-                  });
+                  const newStatus = friend.status === 'online' ? 'offline' : 'online';
+                  updateStatusMutation.mutate({ friendName: friend.friend_name, status: newStatus });
                 }}
               >
-                <MessageCircle className="mr-1 h-2 w-2 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">Conversar</span>
-                <span className="sm:hidden">Chat</span>
-              </Button>
+                {getStatusText(friend.status)}
+              </Badge>
+              <div className="space-y-1">
+                <Button
+                  size="sm"
+                  className="w-full bg-green-400 hover:bg-green-500 text-white text-xs px-2 py-1"
+                  onClick={() => {
+                    toast({
+                      title: `💬 Conversando com ${friend.friend_name}`,
+                      description: "A Lele está ajudando vocês a conversar!",
+                    });
+                  }}
+                >
+                  <MessageCircle className="mr-1 h-2 w-2 sm:h-3 sm:w-3" />
+                  <span className="hidden sm:inline">Conversar</span>
+                  <span className="sm:hidden">Chat</span>
+                </Button>
+                <Button
+                  size="sm"
+                  className="w-full bg-blue-400 hover:bg-blue-500 text-white text-xs px-2 py-1"
+                  onClick={() => {
+                    updateStatusMutation.mutate({ friendName: friend.friend_name, status: 'playing' });
+                    toast({
+                      title: `🎮 Jogando com ${friend.friend_name}`,
+                      description: "Vamos jogar juntos!",
+                    });
+                  }}
+                >
+                  <span className="hidden sm:inline">Jogar</span>
+                  <span className="sm:hidden">▶️</span>
+                </Button>
+              </div>
             </div>
           ))}
           
@@ -193,7 +231,8 @@ export default function Friends({ userId }: FriendsProps) {
               Convidar
             </Button>
           </div>
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

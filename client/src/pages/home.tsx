@@ -8,7 +8,6 @@ import Memories from "@/components/memories";
 import Progress from "@/components/progress";
 import VoiceInput from "@/components/voice-input";
 import LeleAvatar from "@/components/lele-avatar";
-import FloatingLele from "@/components/floating-lele";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,7 +24,6 @@ import {
 export default function Home() {
   const [currentSection, setCurrentSection] = useState("home");
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [floatingMessage, setFloatingMessage] = useState("");
   
   const userId = 1; // Default user Helena
 
@@ -64,20 +62,9 @@ export default function Home() {
     }
   };
 
-  // Handle floating Lele interactions
-  const handleFloatingLeleClick = () => {
-    const messages = [
-      "Oi! Vamos brincar juntos! 🎮",
-      "Que tal jogar um jogo? 🌟",
-      "Estou aqui para te ajudar! 💖",
-      "Vamos aprender algo novo? 📚",
-      "Você é incrível! ✨"
-    ];
-    setFloatingMessage(messages[Math.floor(Math.random() * messages.length)]);
-  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 relative">
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 w-20 h-20 bg-yellow-200 rounded-full opacity-50 animate-pulse"></div>
@@ -253,13 +240,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Floating Lele - Always visible */}
-      <FloatingLele
-        isVisible={true}
-        emotion={currentEmotion}
-        message={floatingMessage}
-        onInteraction={handleFloatingLeleClick}
-      />
     </div>
   );
 }
