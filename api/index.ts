@@ -91,6 +91,7 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
       }, 15000);
       
       let responseReceived = false;
+      let accumulatedResponse = '';
       
       ws.onmessage = (event) => {
         try {
@@ -102,26 +103,8 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
               const textPart = modelTurn.parts.find((part: any) => part.text);
               const audioPart = modelTurn.parts.find((part: any) => part.inlineData);
               
-              if (textPart && !responseReceived) {
-                responseReceived = true;
-                clearTimeout(timeout);
-                ws.close();
-                
-                try {
-                  const jsonResponse = JSON.parse(textPart.text);
-                  resolve(jsonResponse);
-                } catch {
-                  resolve({
-                    response: textPart.text,
-                    emotion: "happy",
-                    personality: {
-                      enthusiasm: 0.8,
-                      curiosity: 0.7,
-                      playfulness: 0.9,
-                      friendliness: 0.8
-                    }
-                  });
-                }
+              if (textPart) {
+                accumulatedResponse += textPart.text;
               }
               
               if (audioPart && !responseReceived) {
@@ -140,6 +123,35 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
                   audioData: audioPart.inlineData
                 });
               }
+            }
+          }
+          
+          // Check if the turn is complete
+          if (data.serverContent && data.serverContent.turnComplete && !responseReceived) {
+            responseReceived = true;
+            clearTimeout(timeout);
+            ws.close();
+            
+            // Clean up the accumulated response
+            let cleanResponse = accumulatedResponse.trim();
+            
+            // Remove markdown code blocks if present
+            cleanResponse = cleanResponse.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+            
+            try {
+              const jsonResponse = JSON.parse(cleanResponse);
+              resolve(jsonResponse);
+            } catch {
+              resolve({
+                response: cleanResponse || "Oi! Não consegui processar a resposta, mas estou aqui! 😊",
+                emotion: "happy",
+                personality: {
+                  enthusiasm: 0.8,
+                  curiosity: 0.7,
+                  playfulness: 0.9,
+                  friendliness: 0.8
+                }
+              });
             }
           }
         } catch (error) {
