@@ -68,6 +68,45 @@
     @apply font-sans antialiased min-h-screen;
     font-family: 'Nunito', sans-serif;
     background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 25%, #e8f5e8 50%, #e1f5fe 75%, #fff3e0 100%);
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+  
+  /* iOS specific fixes */
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix for iOS Safari viewport */
+  @supports (padding: max(0px)) {
+    .fixed {
+      padding-left: max(0px, env(safe-area-inset-left));
+      padding-right: max(0px, env(safe-area-inset-right));
+    }
+    
+    .bottom-0 {
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+    }
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  /* Fix iOS audio button styles */
+  button {
+    -webkit-tap-highlight-color: transparent;
   }
 
   .lele-pink {

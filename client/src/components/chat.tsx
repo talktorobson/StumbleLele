@@ -81,7 +81,11 @@ export default function Chat({ userId }: ChatProps) {
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Auto-scroll to bottom when new messages arrive
+    const scrollArea = document.querySelector('.chat-messages .scroll-area-viewport');
+    if (scrollArea) {
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
   }, [conversations]);
 
   return (
@@ -100,9 +104,9 @@ export default function Chat({ userId }: ChatProps) {
       </CardHeader>
       <CardContent>
         {/* Chat Messages */}
-        <ScrollArea className="h-48 sm:h-64 mb-4 sm:mb-6 chat-messages">
-          <div className="space-y-3 sm:space-y-4">
-            {conversations.map((conv: any) => (
+        <ScrollArea className="h-48 sm:h-64 mb-4 sm:mb-6 chat-messages flex flex-col-reverse">
+          <div className="space-y-3 sm:space-y-4 flex flex-col-reverse">
+            {conversations.slice().reverse().map((conv: any) => (
               <div key={conv.id} className="space-y-2">
                 {/* User Message */}
                 <div className="flex items-start space-x-2 sm:space-x-3 justify-end">

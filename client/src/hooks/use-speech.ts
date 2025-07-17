@@ -16,6 +16,7 @@ export function useSpeech() {
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [isAudioInitialized, setIsAudioInitialized] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -40,9 +41,13 @@ export function useSpeech() {
         const voices = window.speechSynthesis.getVoices();
         setAvailableVoices(voices);
         
+        // Log available voices for debugging on iOS
+        console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+        
         // Find the best voice for Lele (young, female, Portuguese)
         const bestVoice = findBestVoice(voices);
         if (bestVoice) {
+          console.log('Selected voice:', bestVoice.name, bestVoice.lang);
           setSelectedVoice(bestVoice);
         }
       };
@@ -54,43 +59,83 @@ export function useSpeech() {
         // Wait for voices to load
         window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
       }
+      
+      // iOS audio initialization - requires user interaction
+      const initializeAudio = () => {
+        if (!isAudioInitialized) {
+          const utterance = new SpeechSynthesisUtterance('');
+          utterance.volume = 0;
+          window.speechSynthesis.speak(utterance);
+          setIsAudioInitialized(true);
+        }
+      };
+      
+      // Listen for first user interaction to initialize audio
+      const events = ['touchstart', 'click', 'mousedown'];
+      events.forEach(event => {
+        document.addEventListener(event, initializeAudio, { once: true });
+      });
+      
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, initializeAudio);
+        });
+      };
     }
-  }, []);
+  }, [isAudioInitialized]);
 
   const findBestVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
     // Priority order for finding the best voice for Lele
     const voicePriority = [
-      // Priority 1: Brazilian Portuguese female voices
+      // Priority 1: Brazilian Portuguese female voices (iOS specific names)
       (voice: SpeechSynthesisVoice) => 
         voice.lang === 'pt-BR' && 
-        (voice.name.toLowerCase().includes('female') || 
+        (voice.name.toLowerCase().includes('luciana') || 
+         voice.name.toLowerCase().includes('alice') ||
+         voice.name.toLowerCase().includes('helena') ||
+         voice.name.toLowerCase().includes('female') || 
          voice.name.toLowerCase().includes('mulher') ||
          voice.name.toLowerCase().includes('woman')),
       
-      // Priority 2: Brazilian Portuguese voices with child-like names
+      // Priority 2: Brazilian Portuguese voices with child-like or female names
       (voice: SpeechSynthesisVoice) => 
         voice.lang === 'pt-BR' && 
         (voice.name.toLowerCase().includes('maria') || 
          voice.name.toLowerCase().includes('lucia') ||
          voice.name.toLowerCase().includes('ana') ||
-         voice.name.toLowerCase().includes('clara')),
+         voice.name.toLowerCase().includes('clara') ||
+         voice.name.toLowerCase().includes('sara') ||
+         voice.name.toLowerCase().includes('vitoria')),
       
-      // Priority 3: Any Brazilian Portuguese voice
-      (voice: SpeechSynthesisVoice) => voice.lang === 'pt-BR',
+      // Priority 3: Any Brazilian Portuguese voice that's not explicitly male
+      (voice: SpeechSynthesisVoice) => 
+        voice.lang === 'pt-BR' && 
+        !voice.name.toLowerCase().includes('diego') &&
+        !voice.name.toLowerCase().includes('felipe') &&
+        !voice.name.toLowerCase().includes('ricardo') &&
+        !voice.name.toLowerCase().includes('daniel'),
       
       // Priority 4: Portuguese female voices
       (voice: SpeechSynthesisVoice) => 
         voice.lang.includes('pt') && 
         (voice.name.toLowerCase().includes('female') || 
-         voice.name.toLowerCase().includes('mulher')),
+         voice.name.toLowerCase().includes('mulher') ||
+         voice.name.toLowerCase().includes('catarina') ||
+         voice.name.toLowerCase().includes('joana')),
       
-      // Priority 5: Any Portuguese voice
-      (voice: SpeechSynthesisVoice) => voice.lang.includes('pt'),
+      // Priority 5: Any Portuguese voice that's not male
+      (voice: SpeechSynthesisVoice) => 
+        voice.lang.includes('pt') &&
+        !voice.name.toLowerCase().includes('male') &&
+        !voice.name.toLowerCase().includes('homem'),
       
-      // Priority 6: English female voices as fallback
+      // Priority 6: English female voices as fallback (iOS specific)
       (voice: SpeechSynthesisVoice) => 
         voice.lang.includes('en') && 
-        (voice.name.toLowerCase().includes('female') || 
+        (voice.name.toLowerCase().includes('samantha') ||
+         voice.name.toLowerCase().includes('victoria') ||
+         voice.name.toLowerCase().includes('siri') ||
+         voice.name.toLowerCase().includes('female') || 
          voice.name.toLowerCase().includes('woman')),
     ];
 
@@ -176,6 +221,11 @@ export function useSpeech() {
       return;
     }
 
+    // iOS fix: Ensure speech synthesis is properly initialized
+    if (synthesis.paused) {
+      synthesis.resume();
+    }
+
     // Cancel any ongoing speech
     synthesis.cancel();
 
@@ -188,15 +238,18 @@ export function useSpeech() {
     utterance.pitch = emotionSettings.pitch || 1.8;
     utterance.volume = emotionSettings.volume || 0.9;
 
-    // Use the selected voice if available
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    } else {
-      // Fallback to finding the best voice
-      const voices = synthesis.getVoices();
-      const bestVoice = findBestVoice(voices);
-      if (bestVoice) {
-        utterance.voice = bestVoice;
+    // iOS fix: Always load voices fresh for each utterance
+    const currentVoices = synthesis.getVoices();
+    if (currentVoices.length > 0) {
+      if (selectedVoice && currentVoices.includes(selectedVoice)) {
+        utterance.voice = selectedVoice;
+      } else {
+        // Find the best voice again
+        const bestVoice = findBestVoice(currentVoices);
+        if (bestVoice) {
+          utterance.voice = bestVoice;
+          console.log('Using voice for iOS:', bestVoice.name);
+        }
       }
     }
 
@@ -204,15 +257,40 @@ export function useSpeech() {
     const emotionalText = addEmotionalInflection(text, emotion);
     utterance.text = emotionalText;
 
+    utterance.onstart = () => {
+      console.log(`Speech started with emotion: ${emotion}, voice: ${utterance.voice?.name || 'default'}`);
+    };
+
     utterance.onend = () => {
       console.log(`Speech finished with emotion: ${emotion}`);
     };
 
     utterance.onerror = (event) => {
       console.error("Speech error:", event.error);
+      // iOS fallback: Try again with simpler settings
+      if (event.error === 'not-allowed' || event.error === 'synthesis-unavailable') {
+        setTimeout(() => {
+          const simpleUtterance = new SpeechSynthesisUtterance(text);
+          simpleUtterance.lang = 'pt-BR';
+          simpleUtterance.rate = 1.0;
+          simpleUtterance.pitch = 1.0;
+          simpleUtterance.volume = 0.8;
+          synthesis.speak(simpleUtterance);
+        }, 100);
+      }
     };
 
-    synthesis.speak(utterance);
+    // iOS fix: Add delay before speaking to ensure proper initialization
+    setTimeout(() => {
+      try {
+        synthesis.speak(utterance);
+      } catch (error) {
+        console.error('Speech synthesis error:', error);
+        // Final fallback for iOS
+        const fallbackUtterance = new SpeechSynthesisUtterance(text);
+        synthesis.speak(fallbackUtterance);
+      }
+    }, 50);
   }, [synthesis, toast, selectedVoice]);
 
   const addEmotionalInflection = (text: string, emotion: VoiceEmotion): string => {
@@ -279,5 +357,6 @@ export function useSpeech() {
     availableVoices,
     selectedVoice,
     isSupported: !!recognition && !!synthesis,
+    isAudioInitialized,
   };
 }
