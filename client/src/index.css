@@ -65,7 +65,7 @@
   }
 
   body {
-    @apply font-sans antialiased min-h-screen;
+    @apply font-sans antialiased;
     font-family: 'Nunito', sans-serif;
     background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 25%, #e8f5e8 50%, #e1f5fe 75%, #fff3e0 100%);
     -webkit-overflow-scrolling: touch;
@@ -76,12 +76,12 @@
   
   /* iOS specific fixes */
   html {
-    height: -webkit-fill-available;
+    height: auto;
   }
   
   body {
     min-height: 100vh;
-    min-height: -webkit-fill-available;
+    height: auto;
   }
   
   /* Fix for iOS Safari viewport */
