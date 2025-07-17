@@ -476,6 +476,75 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return res.json(progressions || []);
         }
         break;
+
+      case 'joke':
+        if (req.method === 'POST') {
+          const { userId } = req.body;
+          
+          if (!userId) {
+            return res.status(400).json({ message: "userId é obrigatório" });
+          }
+
+          const user = await storage.getOrCreateUser(userId);
+          const aiModel = (user?.preferred_ai || "gemini") as AIModel;
+          
+          const jokePrompt = `Você é Lele, uma IA companheira de 7 anos. Conte uma piada divertida e apropriada para crianças em português brasileiro. A piada deve ser engraçada, inocente e fazer uma criança sorrir! Responda APENAS com a piada, sem explicações.`;
+          
+          try {
+            let joke = '';
+
+            if (aiModel === "gemini") {
+              const response = await gemini.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: jokePrompt,
+                generationConfig: {
+                  temperature: 0.9,
+                  maxOutputTokens: 150
+                }
+              });
+              joke = response.text || '';
+            } else {
+              const client = aiModel === "xai" ? xai : openai;
+              const model = aiModel === "xai" ? "grok-2-1212" : "gpt-4o";
+              
+              const response = await client.chat.completions.create({
+                model,
+                messages: [
+                  { role: "system", content: "Você é Lele, uma IA de 7 anos que conta piadas divertidas para crianças." },
+                  { role: "user", content: jokePrompt }
+                ],
+                temperature: 0.9,
+                max_tokens: 150
+              });
+
+              joke = response.choices[0]?.message?.content || '';
+            }
+            
+            // Clean up the joke text
+            joke = joke.replace(/^["']|["']$/g, '').trim();
+            
+            if (!joke) {
+              joke = "Por que o livro de matemática estava triste? Porque tinha muitos problemas! 😄";
+            }
+            
+            // Update avatar state to excited
+            await storage.updateAvatarState(userId, "excited", {
+              enthusiasm: 0.9,
+              curiosity: 0.7,
+              playfulness: 0.9,
+              friendliness: 0.8
+            });
+            
+            return res.json({ joke });
+            
+          } catch (error) {
+            console.error('Joke generation error:', error);
+            return res.json({ 
+              joke: "Por que o livro de matemática estava triste? Porque tinha muitos problemas! 😄" 
+            });
+          }
+        }
+        break;
     }
 
     // If no route matched

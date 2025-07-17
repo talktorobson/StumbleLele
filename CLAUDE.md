@@ -10,12 +10,15 @@ StumbleLele is an interactive AI companion application for children, featuring L
 ### ✅ Working Features
 - **Multi-AI Chat System**: Supports Google Gemini (default), OpenAI GPT-4, XAI Grok, and Anthropic Claude
 - **AI Model Selector**: User-friendly interface to switch between AI providers with real-time updates
-- **Avatar System**: Cartoon-style animated character with dynamic expressions
+- **Avatar System**: High-quality cartoon-style main avatar with new image asset + animated floating avatar
+- **Joke Generation**: AI-powered joke telling feature with emotion-based responses
 - **Memory System**: Stores conversations and creates contextual memories
 - **Friend Management**: Basic CRUD operations for virtual friends
 - **Progress Tracking**: Records game scores and achievements
-- **Voice Input**: Browser-based speech recognition
-- **Responsive UI**: Mobile-friendly interface with bottom navigation
+- **Voice Input**: Browser-based speech recognition with iOS compatibility
+- **Voice Synthesis**: Female voice selection with emotion-based variations and iOS audio fixes
+- **Responsive UI**: Mobile-friendly interface optimized for iPhone and Android devices
+- **Enhanced Navigation**: Clean bottom navigation with emoji labels (removed duplicate icons)
 - **Cosmic Blaster Game**: Complete 1945 Air Force-style space shooter with:
   - Touch-drag movement controls (mobile-first design)
   - Automatic continuous shooting with 6-level weapon progression
@@ -26,7 +29,7 @@ StumbleLele is an interactive AI companion application for children, featuring L
 
 ### 🚧 Features In Development
 - **Additional Games**: Memory, word, and math games need implementation
-- **Voice Synthesis**: Limited to browser TTS - needs enhancement
+- **Enhanced Voice**: Custom voice models for more natural speech
 
 ### 🔧 Technical Stack
 - Frontend: React + TypeScript + Vite + TailwindCSS + shadcn/ui
@@ -49,7 +52,8 @@ StumbleLele is an interactive AI companion application for children, featuring L
 - **Language**: Brazilian Portuguese, child-appropriate
 - **Age**: 7 years old, speaks like a smart child
 - **Responses**: Short, energetic, with occasional emojis
-- **Avatar**: Cartoon girl with brown hair, blue dress, expressive eyes
+- **Avatar**: High-quality cartoon girl with long brown hair, blue dress with bow pattern, expressive eyes
+- **Floating Avatar**: SVG-based animated version with longer hair matching main character style
 
 ### API Integration
 - **Multi-AI Support**: Google Gemini (primary), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
@@ -123,7 +127,24 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 - Provide visual feedback for all actions
 - Support high contrast modes
 
-## Recent Updates (July 16, 2025)
+## Recent Updates (July 17, 2025)
+
+### Avatar System Enhancement v2.8
+- **New Main Avatar**: Replaced SVG avatar with high-quality cartoon image asset (`lele-main.png`)
+- **Enhanced Floating Avatar**: Updated with longer hair to match main character + blue dress with bow pattern
+- **Improved Animations**: Added smooth motion effects, sparkle animations, and glowing borders
+- **Better UI Design**: Enhanced main avatar section with gradient backgrounds and motion effects
+- **Clean Navigation**: Removed redundant icons from bottom bar, kept only emoji labels
+- **Joke Feature**: Added `/api/joke` endpoint with AI-powered joke generation
+- **iOS Compatibility**: Fixed voice synthesis and UI layout issues for iPhone users
+
+### UX Improvements v2.7.1
+- **Chat Auto-scroll**: Fixed message ordering to show newest at bottom with proper scroll behavior
+- **Female Voice**: Enhanced voice selection algorithm prioritizing female voices for iOS and Android
+- **Mobile Optimization**: Added iOS-specific meta tags and CSS fixes for better compatibility
+- **Audio Initialization**: Implemented user interaction requirement for iOS audio playback
+
+## Previous Updates (July 16, 2025)
 
 ### Google Gemini Integration v2.7
 - **Primary AI Provider**: Google Gemini 2.5 Flash now default for all new users
@@ -174,8 +195,9 @@ npm run vercel-build  # Builds React app to dist/public
 
 # API Structure (Consolidated)
 /api
-└── [...route].ts              # Single catch-all handler for all endpoints
+└── index.ts                   # Single catch-all handler for all endpoints
     ├── /chat                  # AI conversation endpoint
+    ├── /joke                  # AI-powered joke generation
     ├── /user/{id}             # User management
     ├── /user/{id}/ai-model    # AI model preference updates
     ├── /conversations/{userId} # Conversation history

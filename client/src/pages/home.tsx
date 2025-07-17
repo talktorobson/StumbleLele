@@ -148,7 +148,6 @@ export default function Home() {
               }`}
               onClick={() => setCurrentSection("home")}
             >
-              <HomeIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-xs font-semibold">🏠 Início</span>
             </Button>
             <Button
@@ -161,7 +160,6 @@ export default function Home() {
               }`}
               onClick={() => setCurrentSection("games")}
             >
-              <Gamepad2 className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-xs font-semibold">🎮 Jogos</span>
             </Button>
             <Button
@@ -174,7 +172,6 @@ export default function Home() {
               }`}
               onClick={() => setCurrentSection("memories")}
             >
-              <Heart className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-xs font-semibold">💝 Memórias</span>
             </Button>
             <Button
@@ -187,7 +184,6 @@ export default function Home() {
               }`}
               onClick={() => setCurrentSection("friends")}
             >
-              <Users className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-xs font-semibold">👥 Amigos</span>
             </Button>
             <Button
@@ -200,7 +196,6 @@ export default function Home() {
               }`}
               onClick={() => setCurrentSection("progress")}
             >
-              <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-xs font-semibold">⚙️ Config</span>
             </Button>
           </div>
