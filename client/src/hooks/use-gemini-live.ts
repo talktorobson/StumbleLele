@@ -86,11 +86,10 @@ export function useGeminiLive(userId: number = 1) {
         console.log('Connected to Gemini Live');
         setState('connected');
         
-        // Send initial configuration
+        // Send initial configuration - try minimal setup first
         const setupMessage = {
           setup: {
-            model: `models/${GEMINI_MODEL}`,
-            config: config
+            model: `models/${GEMINI_MODEL}`
           }
         };
         console.log('Sending setup:', setupMessage);
