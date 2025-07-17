@@ -275,6 +275,44 @@ class Storage {
     }
   }
 
+  async createFriend(friend: any) {
+    try {
+      const { data, error } = await supabase
+        .from('friends')
+        .insert({
+          user_id: friend.userId,
+          friend_name: friend.friendName,
+          status: friend.status
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in createFriend:', error);
+      throw error;
+    }
+  }
+
+  async updateFriendStatus(userId: number, friendName: string, status: string) {
+    try {
+      const { data, error } = await supabase
+        .from('friends')
+        .update({ status })
+        .eq('user_id', userId)
+        .eq('friend_name', friendName)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in updateFriendStatus:', error);
+      throw error;
+    }
+  }
+
   async getGameProgress(userId: number) {
     try {
       const { data, error } = await supabase
@@ -453,6 +491,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const userId = parseInt(parts[1]);
           const friends = await storage.getFriends(userId);
           return res.json(friends);
+        }
+        if (req.method === 'POST') {
+          const { userId, friendName, status } = req.body;
+          
+          if (!userId || !friendName) {
+            return res.status(400).json({ message: "userId e friendName são obrigatórios" });
+          }
+          
+          const newFriend = await storage.createFriend({
+            userId,
+            friendName,
+            status: status || "online"
+          });
+          
+          return res.json(newFriend);
+        }
+        if (parts[1] && parts[2] && req.method === 'PATCH') {
+          const userId = parseInt(parts[1]);
+          const friendName = decodeURIComponent(parts[2]);
+          const { status } = req.body;
+          
+          if (!status) {
+            return res.status(400).json({ message: "status é obrigatório" });
+          }
+          
+          const updatedFriend = await storage.updateFriendStatus(userId, friendName, status);
+          return res.json(updatedFriend);
         }
         break;
 
