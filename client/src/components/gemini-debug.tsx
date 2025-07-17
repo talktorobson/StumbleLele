@@ -234,10 +234,11 @@ export default function GeminiDebug() {
       {
         name: 'Test 5: Native Audio Model',
         setup: {
-          model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
-          audioConfig: {
-            audioEncoding: 'LINEAR16',
-            sampleRateHertz: 24000
+          setup: {
+            model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
+            generationConfig: {
+              responseModalities: ['AUDIO']
+            }
           }
         }
       },
@@ -338,10 +339,11 @@ export default function GeminiDebug() {
     {
       name: 'Test 5: Native Audio Model',
       setup: {
-        model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
-        audioConfig: {
-          audioEncoding: 'LINEAR16',
-          sampleRateHertz: 24000
+        setup: {
+          model: 'models/gemini-2.5-flash-preview-native-audio-dialog',
+          generationConfig: {
+            responseModalities: ['AUDIO']
+          }
         }
       }
     },
