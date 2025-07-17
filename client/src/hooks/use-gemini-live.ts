@@ -86,10 +86,11 @@ export function useGeminiLive(userId: number = 1) {
         console.log('Connected to Gemini Live');
         setState('connected');
         
-        // Send initial configuration - try minimal setup first
+        // Send initial configuration with audio response
         const setupMessage = {
           setup: {
-            model: `models/${GEMINI_MODEL}`
+            model: `models/${GEMINI_MODEL}`,
+            response_modalities: ['AUDIO']
           }
         };
         console.log('Sending setup:', setupMessage);
@@ -301,11 +302,13 @@ export function useGeminiLive(userId: number = 1) {
       
       const messagePayload = {
         clientContent: {
-          turns: [{
+          turns: {
+            role: 'user',
             parts: [{
               text: message
             }]
-          }]
+          },
+          turnComplete: true
         }
       };
       
