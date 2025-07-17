@@ -6,6 +6,7 @@ import { MessageCircle, Gamepad2, Laugh, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAvatar } from "@/hooks/use-avatar";
+import { useSpeech } from "@/hooks/use-speech";
 import { motion } from "framer-motion";
 
 interface AvatarProps {
@@ -21,6 +22,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentEmotion, setEmotion, getEmotionIcon } = useAvatar(avatarState?.currentEmotion);
+  const { speak } = useSpeech();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const tellJokeMutation = useMutation({
@@ -29,13 +31,12 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Piada da Lele! 😄",
-        description: data.joke,
-        duration: 8000,
-      });
+      // Remove pop-up and use voice delivery instead
       setEmotion("excited");
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
+      
+      // Speak the joke with playful intonation
+      speak(data.joke, "playful");
     },
     onError: () => {
       toast({
@@ -192,7 +193,6 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
                   document.querySelector('[data-section="chat"]')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                <MessageCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 💬 Conversar
               </Button>
             </motion.div>
@@ -205,7 +205,6 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
                   document.querySelector('[data-section="games"]')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                <Gamepad2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 🎮 Jogar
               </Button>
             </motion.div>
@@ -216,7 +215,6 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
                 onClick={handleJokeClick}
                 disabled={tellJokeMutation.isPending}
               >
-                <Laugh className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 {tellJokeMutation.isPending ? "🤔 Pensando..." : "😄 Piada"}
               </Button>
             </motion.div>

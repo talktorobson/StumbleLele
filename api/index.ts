@@ -488,7 +488,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const user = await storage.getOrCreateUser(userId);
           const aiModel = (user?.preferred_ai || "gemini") as AIModel;
           
-          const jokePrompt = `Você é Lele, uma IA companheira de 7 anos. Conte uma piada divertida e apropriada para crianças em português brasileiro. A piada deve ser engraçada, inocente e fazer uma criança sorrir! Responda APENAS com a piada, sem explicações.`;
+          const jokePrompt = `Você é Lele, uma IA companheira de 7 anos do Brasil. Conte uma piada MUITO divertida e apropriada para crianças brasileiras de 5 a 10 anos. A piada deve ser:
+- Engraçada e inocente, sem nenhum conteúdo adulto
+- Com contexto brasileiro (animais do Brasil, comidas, cultura)
+- Simples de entender para crianças
+- Que faça uma criança rir muito!
+- Pode ser sobre animais, comida, escola, brincadeiras
+- Use linguagem bem simples e alegre
+
+Exemplos de temas: cachorro, gato, peixe, banana, escola, brinquedo, cores, números.
+Responda APENAS com a piada curta, sem explicações ou comentários.`;
           
           try {
             let joke = '';
@@ -524,7 +533,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             joke = joke.replace(/^["']|["']$/g, '').trim();
             
             if (!joke) {
-              joke = "Por que o livro de matemática estava triste? Porque tinha muitos problemas! 😄";
+              joke = "Por que o peixinho não gosta de jogar cartas? Porque ele tem medo do baralho! 🐟😄";
             }
             
             // Update avatar state to excited
@@ -540,7 +549,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           } catch (error) {
             console.error('Joke generation error:', error);
             return res.json({ 
-              joke: "Por que o livro de matemática estava triste? Porque tinha muitos problemas! 😄" 
+              joke: "Por que o peixinho não gosta de jogar cartas? Porque ele tem medo do baralho! 🐟😄" 
             });
           }
         }
