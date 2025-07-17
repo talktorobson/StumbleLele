@@ -22,7 +22,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentEmotion, setEmotion, getEmotionIcon } = useAvatar(avatarState?.currentEmotion);
-  const { speak } = useSpeech();
+  const { speakJoke } = useSpeech();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const tellJokeMutation = useMutation({
@@ -35,8 +35,8 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       setEmotion("excited");
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
       
-      // Speak the joke with playful intonation
-      speak(data.joke, "playful");
+      // Speak the joke with drum sound and laugh effects
+      speakJoke(data.joke);
     },
     onError: () => {
       toast({
