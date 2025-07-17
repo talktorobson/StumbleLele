@@ -6,7 +6,7 @@ import Games from "@/components/games";
 import Friends from "@/components/friends";
 import Memories from "@/components/memories";
 import Progress from "@/components/progress";
-import VoiceInput from "@/components/voice-input";
+import GeminiLiveVoice from "@/components/gemini-live-voice";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -183,10 +183,11 @@ export default function Home() {
         </div>
       </Button>
 
-      {/* Voice Input Component */}
+      {/* Gemini Live Voice Component */}
       {isVoiceActive && (
-        <VoiceInput
+        <GeminiLiveVoice
           userId={userId}
+          isOpen={isVoiceActive}
           onClose={() => setIsVoiceActive(false)}
         />
       )}

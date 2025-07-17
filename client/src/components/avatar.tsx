@@ -6,7 +6,7 @@ import { MessageCircle, Gamepad2, Laugh, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAvatar } from "@/hooks/use-avatar";
-import { useSpeech } from "@/hooks/use-speech";
+import { useGeminiLive } from "@/hooks/use-gemini-live";
 import { motion } from "framer-motion";
 
 interface AvatarProps {
@@ -22,7 +22,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentEmotion, setEmotion, getEmotionIcon } = useAvatar(avatarState?.currentEmotion);
-  const { speakJoke } = useSpeech();
+  const { sendTextMessage, connect, isConnected } = useGeminiLive(userId);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const tellJokeMutation = useMutation({
@@ -30,13 +30,18 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       const response = await apiRequest("POST", "/api/joke", { userId });
       return response.json();
     },
-    onSuccess: (data) => {
-      // Remove pop-up and use voice delivery instead
+    onSuccess: async (data) => {
+      // Remove pop-up and use Gemini Live voice delivery
       setEmotion("excited");
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
       
-      // Speak the joke with drum sound and laugh effects
-      speakJoke(data.joke);
+      // Connect to Gemini Live if not connected, then tell the joke
+      if (!isConnected) {
+        await connect();
+      }
+      
+      // Send joke request to Gemini Live for natural voice delivery
+      sendTextMessage(`Conte esta piada com voz animada e divertida: ${data.joke}`);
     },
     onError: () => {
       toast({
