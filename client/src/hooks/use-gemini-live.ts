@@ -75,21 +75,24 @@ export function useGeminiLive(userId: number = 1) {
         setState('connected');
         
         // Send initial configuration
-        ws.send(JSON.stringify({
+        const setupMessage = {
           setup: {
             model: `models/${GEMINI_MODEL}`,
             ...config
           }
-        }));
+        };
+        console.log('Sending setup:', setupMessage);
+        ws.send(JSON.stringify(setupMessage));
       };
 
       ws.onmessage = (event) => {
+        console.log('Received message:', event.data);
         const data = JSON.parse(event.data);
         handleWebSocketMessage(data);
       };
 
-      ws.onclose = () => {
-        console.log('Disconnected from Gemini Live');
+      ws.onclose = (event) => {
+        console.log('Disconnected from Gemini Live', event.code, event.reason);
         setState('idle');
         setIsListening(false);
         setIsSpeaking(false);
@@ -281,10 +284,11 @@ export function useGeminiLive(userId: number = 1) {
 
   // Send text message to Gemini Live
   const sendTextMessage = useCallback(async (message: string) => {
+    console.log('Sending text message:', message);
     if (websocketRef.current && websocketRef.current.readyState === WebSocket.OPEN) {
       setState('processing');
       
-      websocketRef.current.send(JSON.stringify({
+      const messagePayload = {
         clientContent: {
           turns: [{
             parts: [{
@@ -292,7 +296,12 @@ export function useGeminiLive(userId: number = 1) {
             }]
           }]
         }
-      }));
+      };
+      
+      console.log('Sending message payload:', messagePayload);
+      websocketRef.current.send(JSON.stringify(messagePayload));
+    } else {
+      console.log('WebSocket not ready, state:', websocketRef.current?.readyState);
     }
   }, []);
 

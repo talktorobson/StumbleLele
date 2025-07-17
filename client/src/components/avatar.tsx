@@ -35,13 +35,21 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       setEmotion("excited");
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
       
+      console.log('Joke received:', data.joke);
+      
       // Connect to Gemini Live if not connected, then tell the joke
       if (!isConnected) {
+        console.log('Connecting to Gemini Live...');
         await connect();
+        // Wait a bit for connection to establish
+        setTimeout(() => {
+          console.log('Sending joke to Gemini Live...');
+          sendTextMessage(`Conte esta piada com voz animada e divertida: ${data.joke}`);
+        }, 1000);
+      } else {
+        console.log('Already connected, sending joke...');
+        sendTextMessage(`Conte esta piada com voz animada e divertida: ${data.joke}`);
       }
-      
-      // Send joke request to Gemini Live for natural voice delivery
-      sendTextMessage(`Conte esta piada com voz animada e divertida: ${data.joke}`);
     },
     onError: () => {
       toast({
