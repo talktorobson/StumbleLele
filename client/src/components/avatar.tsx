@@ -31,6 +31,30 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
     setIsAnimating(true);
     setEmotion("excited");
     
+    // Generate variety by randomizing joke themes and styles
+    const jokeThemes = [
+      "animais brasileiros como onça, tucano, preguiça, capivara",
+      "comidas brasileiras como açaí, pão de açúcar, brigadeiro, coxinha", 
+      "escola e professores de forma divertida",
+      "brincadeiras de criança como esconde-esconde, pique-pega",
+      "frutas tropicais como manga, abacaxi, caju, goiaba",
+      "personagens de desenho animado brasileiros",
+      "lugares do Brasil como praia, floresta, cidade",
+      "brinquedos e jogos que crianças adoram"
+    ];
+    
+    const jokeStyles = [
+      "pergunta e resposta",
+      "historinha curta e engraçada", 
+      "trocadilho com palavras",
+      "piada de adivinhação",
+      "situação absurda e divertida"
+    ];
+    
+    const randomTheme = jokeThemes[Math.floor(Math.random() * jokeThemes.length)];
+    const randomStyle = jokeStyles[Math.floor(Math.random() * jokeStyles.length)];
+    const randomNumber = Math.floor(Math.random() * 1000); // Add uniqueness
+    
     // Use the same working Gemini Direct approach as the chat
     const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa! 
 
@@ -42,18 +66,21 @@ CONFIGURAÇÃO DE VOZ:
 - Tom agudo e alegre típico de criança
 - Velocidade natural, mais rápida quando empolgada
 
-TAREFA: Conte uma piada MUITO divertida e apropriada para crianças brasileiras. A piada deve ser:
+TAREFA: Conte uma piada NOVA e DIFERENTE (#${randomNumber}) sobre ${randomTheme} no estilo ${randomStyle}. A piada deve ser:
 - Engraçada e inocente, sem nenhum conteúdo adulto
-- Com contexto brasileiro (animais, comidas, cultura do Brasil)
+- Com contexto brasileiro e regional
 - Simples de entender para crianças
 - Que faça uma criança rir muito
-- Sobre temas como: animais, comida, escola, brincadeiras
 - Use linguagem bem simples e alegre
 - Termine com uma risadinha natural como "hihihi" ou "hahaha"
 
-IMPORTANTE: Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis. Seja natural e espontânea como uma criança brasileira contando para um amiguinho.
+IMPORTANTE: 
+- Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis
+- Seja natural e espontânea como uma criança brasileira contando para um amiguinho
+- SEMPRE invente uma piada completamente nova, nunca repita piadas anteriores
+- Seja criativa e surpreenda com uma piada original
 
-Invente uma piada nova e divertida AGORA!`;
+Invente uma piada nova e divertida AGORA sobre ${randomTheme}!`;
     
     try {
       // Use the same working sendMessage function from chat

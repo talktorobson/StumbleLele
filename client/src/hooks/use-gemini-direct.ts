@@ -93,7 +93,7 @@ export function useGeminiDirect(userId: number) {
     // Common responses based on input patterns
     if (lowerMessage.includes('oi') || lowerMessage.includes('olá')) {
       const greetings = [
-        'Oi amiguinho! Eu tô super bem! Como você tá? 😊',
+        'Oi amiguinho! Eu tô super bem! Como você tá?',
         'Oiii! Que legal falar com você! Tô muito animada!',
         'Oi oi! Nossa, que felicidade ver você aqui!'
       ];
@@ -110,7 +110,7 @@ export function useGeminiDirect(userId: number) {
     }
     
     if (lowerMessage.includes('piada')) {
-      return 'Por que o livro de matemática ficou triste? Porque tinha muitos problemas! Hihihi! 😄';
+      return 'Por que o livro de matemática ficou triste? Porque tinha muitos problemas! Hihihi!';
     }
     
     if (lowerMessage.includes('história')) {
@@ -224,9 +224,13 @@ export function useGeminiDirect(userId: number) {
       // Clear chunks for next response
       audioChunksRef.current = [];
       
+      // Reset processing state after audio playback completes
+      setIsProcessing(false);
+      
     } catch (error) {
       addLog(`❌ Failed to play concatenated audio: ${error}`);
       audioChunksRef.current = []; // Clear on error
+      setIsProcessing(false); // Reset processing state on error too
     }
   }, [addLog, playAudioBuffer, generateContextualTranscript]);
 
