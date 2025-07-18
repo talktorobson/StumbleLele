@@ -44,7 +44,7 @@ export function useGeminiDirect(userId: number) {
       },
       systemInstruction: {
         parts: [{
-          text: `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa conversando com uma amiguinha adolescente! 
+          text: `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa conversando com uma amiguinha de 8 a 11 anos! 
 
           CONFIGURAÇÃO DE VOZ:
           - Use a voz Leda com sotaque brasileiro natural
@@ -74,6 +74,7 @@ export function useGeminiDirect(userId: number) {
           - Curiosa e brincalhona
           - Som natural de criança brasileira
           - Fala fluida sem descrições ou emojis
+          - Use linguagem simples e adequada para crianças de 8 a 11 anos
           - Responda diretamente às perguntas e comentários`
         }]
       }
@@ -95,7 +96,7 @@ export function useGeminiDirect(userId: number) {
       const greetings = [
         'Oi amiguinha! Eu tô super bem! Como você tá?',
         'Oiii! Que legal falar com você! Tô muito animada!',
-        'Oi oi! Nossa, que felicidade ver você aqui, gatinha!'
+        'Oi oi! Nossa, que felicidade ver você aqui, amiguinha!'
       ];
       return greetings[Math.floor(Math.random() * greetings.length)];
     }
@@ -163,11 +164,20 @@ export function useGeminiDirect(userId: number) {
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
       
-      return new Promise<void>((resolve) => {
+      return new Promise<void>((resolve, reject) => {
         source.onended = () => {
-          addLog('🔊 PCM audio playback completed');
-          resolve();
+          addLog('🔊 PCM audio playback completed - audio finished');
+          // Add a small delay to ensure audio system has fully finished
+          setTimeout(() => {
+            resolve();
+          }, 200);
         };
+        
+        source.onerror = (error) => {
+          addLog(`❌ PCM audio playback error: ${error}`);
+          reject(error);
+        };
+        
         source.start();
         addLog('🔊 PCM audio playback started');
       });
@@ -227,14 +237,16 @@ export function useGeminiDirect(userId: number) {
       // Play the complete audio
       await playAudioBuffer(concatenatedBuffer);
 
-      // Check if this is a joke response and play ba-dum-tss sound
+      // Check if this is a joke response and play ba-dum-tss sound AFTER audio finishes
       const lastMessage = messages[messages.length - 1];
       if (lastMessage && lastMessage.message && lastMessage.message.toLowerCase().includes('piada')) {
         try {
-          // Wait a brief moment, then play the ba-dum-tss sound
+          // Wait for the audio to completely finish, then play the ba-dum-tss sound
+          addLog('🎭 Joke audio finished, playing ba-dum-tss in 500ms...');
           setTimeout(async () => {
+            addLog('🥁 Now playing ba-dum-tss sound effect...');
             await playBaDumTssSound();
-          }, 500);
+          }, 500); // Wait half a second after audio finishes
         } catch (error) {
           addLog(`❌ Failed to play ba-dum-tss after joke: ${error}`);
         }

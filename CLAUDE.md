@@ -3,7 +3,7 @@
 This file provides specific guidance for Claude Code when working on the StumbleLele project.
 
 ## Project Overview
-StumbleLele is an interactive AI companion application for teenage Brazilian girls, featuring Lele - a friendly 7-year-old AI character who speaks Portuguese and provides entertaining, age-appropriate content through chat, games, and interactive activities. Lele interacts with teenage users using intelligent humor, cultural references, and girl-focused conversation while maintaining her childlike personality.
+StumbleLele is an interactive AI companion application for Brazilian children aged 8-11, featuring Lele - a friendly 7-year-old AI character who speaks Portuguese and provides entertaining, age-appropriate content through chat, games, and interactive activities. Lele interacts with child users using innocent humor, simple cultural references, and child-friendly conversation while maintaining her playful personality.
 
 ## Current Project Status
 
@@ -13,7 +13,7 @@ StumbleLele is an interactive AI companion application for teenage Brazilian gir
 - **Leda Voice Configuration**: Authentic Brazilian Portuguese female voice with natural intonation
 - **AI Model Selector**: User-friendly interface to switch between AI providers with real-time updates
 - **Avatar System**: High-quality cartoon-style main avatar with new image asset + animated floating avatar
-- **AI Joke Generator**: Real-time voice delivery using Gemini Live with teenager-appropriate humor and drum & bass effects
+- **AI Joke Generator**: Real-time voice delivery using Gemini Live with child-appropriate humor and ba-dum-tss effects
 - **Memory System**: Stores conversations and creates contextual memories
 - **Friend Management**: Basic CRUD operations for virtual friends
 - **Progress Tracking**: Records game scores and achievements

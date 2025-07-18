@@ -49,22 +49,22 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
     
     // Generate variety by randomizing joke themes and styles
     const jokeThemes = [
-      "redes sociais e tecnologia brasileira",
-      "vida de adolescente no Brasil - escola, amigos, paquera",
-      "música brasileira e artistas populares",
-      "séries e filmes que todo mundo assiste",
-      "comidas brasileiras que adolescentes adoram",
-      "situações típicas de adolescente brasileiro",
-      "memes e tendências da internet",
-      "esportes e times brasileiros"
+      "animais domésticos e bichinhos",
+      "escola e vida escolar brasileira",
+      "comida brasileira que as crianças adoram",
+      "brincadeiras e jogos infantis",
+      "desenhos animados e super-heróis",
+      "família brasileira e situações engraçadas",
+      "natureza e animais do Brasil",
+      "esportes e diversão para crianças"
     ];
     
     const jokeStyles = [
-      "piada inteligente com trocadilho",
-      "situação engraçada de adolescente", 
-      "comparação hilária do tipo 'é como se...'",
-      "piada sobre diferenças geracionais",
-      "humor sarcástico mas divertido"
+      "piada simples com trocadilho",
+      "situação engraçada de criança", 
+      "comparação divertida com animais",
+      "piada sobre coisas que as crianças fazem",
+      "humor inocente e alegre"
     ];
     
     const randomTheme = jokeThemes[Math.floor(Math.random() * jokeThemes.length)];
@@ -72,7 +72,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
     const randomNumber = Math.floor(Math.random() * 1000); // Add uniqueness
     
     // Use the same working Gemini Direct approach as the chat
-    const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa conversando com uma amiguinha adolescente! 
+    const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa conversando com uma amiguinha de 8 a 11 anos! 
 
 CONFIGURAÇÃO DE VOZ:
 - Use a voz Leda com sotaque brasileiro natural
@@ -83,12 +83,12 @@ CONFIGURAÇÃO DE VOZ:
 - Velocidade natural, mais rápida quando empolgada
 
 TAREFA: Conte uma piada NOVA e DIFERENTE (#${randomNumber}) sobre ${randomTheme} no estilo ${randomStyle}. A piada deve ser:
-- Engraçada e apropriada para adolescentes brasileiras
-- Com contexto brasileiro atual e urbano
-- Inteligente e esperta, não infantil
-- Que faça uma adolescente rir e se identificar
-- Use linguagem jovem mas não vulgar
-- Sobre temas que adolescentes conhecem e vivem
+- Engraçada e apropriada para crianças de 8 a 11 anos
+- Com contexto brasileiro simples e familiar
+- Inocente e divertida, fácil de entender
+- Que faça uma criança rir muito
+- Use linguagem simples e alegre
+- Sobre temas que crianças conhecem e vivem no dia a dia
 
 IMPORTANTE: 
 - Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis
@@ -97,20 +97,12 @@ IMPORTANTE:
 - Seja criativa e surpreenda com uma piada original
 - Termine naturalmente sem efeitos sonoros (o sistema adicionará automaticamente)
 
-Invente uma piada nova e divertida AGORA sobre ${randomTheme} para uma adolescente!`;
+Invente uma piada nova e divertida AGORA sobre ${randomTheme} para uma criança!`;
     
     try {
       // Use the same working sendMessage function from chat
+      // The ba-dum-tss sound will be handled automatically by the useGeminiDirect hook
       await sendMessage(jokePrompt);
-      
-      // Wait a moment for the voice to finish, then play ba-dum-tss
-      setTimeout(async () => {
-        try {
-          await playBaDumTssSound();
-        } catch (error) {
-          console.error('Failed to play ba-dum-tss after joke:', error);
-        }
-      }, 3000); // Wait 3 seconds for the joke to be delivered
       
       // Invalidate avatar queries to update state
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });

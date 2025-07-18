@@ -1,4 +1,4 @@
-# StumbleLele - AI Companion for Teenage Brazilian Girls 🇧🇷✨
+# StumbleLele - AI Companion for Brazilian Children 🇧🇷✨
 
 <div align="center">
   <img src="./client/public/lele-main.png" alt="Lele Avatar" width="200"/>
@@ -15,9 +15,9 @@
 
 ## 🌟 Overview
 
-StumbleLele is an advanced interactive AI companion designed specifically for teenage Brazilian girls, featuring Lele - a friendly 7-year-old virtual friend who speaks Brazilian Portuguese. The application provides culturally relevant entertainment through intelligent humor, real-time voice chat, and interactive experiences, while maintaining a safe and age-appropriate environment.
+StumbleLele is an advanced interactive AI companion designed specifically for Brazilian children aged 8-11, featuring Lele - a friendly 7-year-old virtual friend who speaks Brazilian Portuguese. The application provides culturally relevant entertainment through child-appropriate humor, real-time voice chat, and interactive educational experiences, while maintaining a safe and age-appropriate environment.
 
-**🎉 Version 3.0 - Teenager-Focused Experience!** Now featuring intelligent humor for teenage girls, classic ba-dum-tss sound effects, girl-focused interactions, and enhanced Gemini Live voice integration with authentic Brazilian Portuguese female voice!
+**🎉 Version 3.1 - Child-Focused Experience!** Now featuring intelligent humor for children aged 8-11, classic ba-dum-tss sound effects, child-friendly interactions, and enhanced Gemini Live voice integration with authentic Brazilian Portuguese female voice!
 
 ## ✨ Features
 
@@ -58,29 +58,29 @@ StumbleLele is an advanced interactive AI companion designed specifically for te
 ### 🎤 Advanced Voice Features
 - **Gemini Live Integration**: Real-time AI voice generation with WebSocket streaming
 - **Leda Voice**: Authentic Brazilian Portuguese female voice with natural intonation
-- **Teenager-Focused Communication**: Girl-to-girl interactions with appropriate language and topics
+- **Child-Focused Communication**: Age-appropriate interactions with simple language and topics
 - **Intelligent Joke System**: AI-powered humor with classic ba-dum-tss sound effects
 - **Smart Voice Selection**: Prioritizes Brazilian Portuguese female voices with fallback to TTS
 - **Multi-Format Audio Support**: Handles various audio formats (MP3, WAV, PCM) with automatic detection
 - **Real-time Processing**: Instant voice recognition and synthesis with comprehensive error handling
-- **Voice Personality**: Enthusiastic, fluid, and vivid Brazilian Portuguese speech tailored for teens
+- **Voice Personality**: Enthusiastic, fluid, and vivid Brazilian Portuguese speech tailored for children
 
 ### 👥 Social Features
 - **Virtual Friends**: Manage friend lists with online/offline status
 - **Memory Album**: Store and review special moments with Lele
-- **AI Joke Generator**: Teenager-appropriate jokes with real-time voice delivery using Gemini Live
+- **AI Joke Generator**: Child-appropriate jokes with real-time voice delivery using Gemini Live
 - **Classic Ba-Dum-Tss Effects**: Professional drum roll sound effects after jokes
 - **Progress Sharing**: Compare achievements and levels
 - **Interactive Avatar**: High-quality cartoon avatar with enhanced animations and expressions
-- **Girl-to-Girl Interactions**: Conversations tailored for teenage Brazilian girls
+- **Child-Friendly Interactions**: Conversations tailored for Brazilian children aged 8-11
 
-### 📱 Teen-Friendly Interface Design
+### 📱 Child-Friendly Interface Design
 - **Vibrant Visual Design**: Colorful gradients, playful animations, and engaging background elements
 - **Floating Avatar Companion**: Always-visible Lele character that follows and interacts throughout the experience
-- **Youth-Optimized Typography**: Fredoka One headings and Nunito body text for optimal readability
+- **Child-Optimized Typography**: Fredoka One headings and Nunito body text for optimal readability
 - **Celebration Effects**: Sparkle animations, rainbow gradients, and reward visuals for achievements
 - **Dynamic Micro-Interactions**: Bounce, wiggle, float, and bubble animations that respond to user actions
-- **Touch-Friendly Interface**: Large buttons with teen-friendly styling and intuitive gestures
+- **Touch-Friendly Interface**: Large buttons with child-friendly styling and intuitive gestures
 - **Responsive Design**: Optimized for all screen sizes with mobile-first approach
 - **Accessibility Features**: High contrast support, reduced motion options, and focus indicators
 
@@ -219,9 +219,9 @@ StumbleLele/
 
 ## 📱 Usage
 
-### For Teenagers
+### For Children (Ages 8-11)
 1. **Chat with Lele**: Type or speak your message and watch her emotions change
-2. **Request Custom Jokes**: Get AI-powered jokes tailored for Brazilian teenage girls with classic ba-dum-tss effects
+2. **Request Custom Jokes**: Get AI-powered jokes tailored for Brazilian children with classic ba-dum-tss effects
 3. **Play Educational Games**: 
    - 🧠 **Memory Game**: Match card pairs with increasing difficulty
    - 📝 **Word Puzzles**: Unscramble words and learn new vocabulary
@@ -237,21 +237,21 @@ StumbleLele/
 ### For Parents
 - Monitor conversations through the memory system
 - Track educational progress with detailed analytics
-- Safe, age-appropriate content for teenagers
+- Safe, age-appropriate content for children aged 8-11
 - No external communications
 - Educational focus with skill development
 - Achievement system motivates continued learning
 - Mobile-safe design with parental-friendly controls
-- Teenager-focused content with appropriate humor and topics
+- Child-focused content with appropriate humor and topics for ages 8-11
 
 ## 🚧 Roadmap
 
-### ✅ Recently Completed (v3.0)
-- [x] **Teenager-Focused Experience** - Complete transformation for teenage Brazilian girls
+### ✅ Recently Completed (v3.1)
+- [x] **Child-Focused Experience** - Complete transformation for Brazilian children aged 8-11
 - [x] **Intelligent Joke System** - AI-powered humor with variety and classic ba-dum-tss effects
-- [x] **Girl-to-Girl Interactions** - Updated greetings and conversations for female users
-- [x] **Enhanced Voice Features** - Leda voice with teenager-appropriate communication
-- [x] **Smart Joke Generation** - Randomized themes including social media, music, and teen culture
+- [x] **Child-Friendly Interactions** - Updated greetings and conversations for children
+- [x] **Enhanced Voice Features** - Leda voice with child-appropriate communication
+- [x] **Smart Joke Generation** - Randomized themes including animals, school, family, and nature
 - [x] **Audio Effects Integration** - Classic ba-dum-tss drum roll sound effects
 - [x] **Emoji-Free Voice Synthesis** - Clean audio output without emoji descriptions
 - [x] **Improved Button State Management** - Fixed joke button transitions and processing states
@@ -271,7 +271,7 @@ StumbleLele/
 
 ### In Development
 - [ ] **Voice Input Enhancement** - Improved speech recognition with disconnect handling
-- [ ] **Advanced Teen Topics** - Expanded conversation topics relevant to Brazilian teenagers
+- [ ] **Advanced Child Topics** - Expanded conversation topics relevant to Brazilian children
 - [ ] **Social Media Integration** - Safe sharing of achievements and memories
 - [ ] **Personalized Learning** - AI-driven content adaptation based on user preferences
 - [ ] **Group Chat Features** - Safe multi-user conversations with friends
@@ -279,11 +279,11 @@ StumbleLele/
 
 ### Future Features
 - [ ] **Offline mode** with cached responses and local voice synthesis
-- [ ] **Story mode adventures** with teen-focused narratives
+- [ ] **Story mode adventures** with child-focused narratives
 - [ ] **Multiple language support** beyond Portuguese
 - [ ] **Custom avatar designs** and personalization options
 - [ ] **Voice cloning** for personalized Lele voice variations
-- [ ] **AR/VR integration** for immersive teen experiences
+- [ ] **AR/VR integration** for immersive child experiences
 - [ ] **Native mobile apps** for iOS and Android
 - [ ] **Study Helper Features** - AI-powered homework and study assistance
 - [ ] **Music Integration** - Brazilian music discovery and discussion features
@@ -337,13 +337,13 @@ For production deployment, we recommend using Vercel with Supabase:
 - **Set usage quotas** to prevent abuse
 - **Monitor logs** for suspicious activity
 
-### Teen Safety
-- **All AI responses** are filtered for age-appropriate content for teenagers
+### Child Safety
+- **All AI responses** are filtered for age-appropriate content for children aged 8-11
 - **No external communications** outside the AI providers
 - **Secure data storage** with encryption
 - **No personal information** collected or stored
 - **Safe interaction environment** with content monitoring
-- **Appropriate humor and topics** for Brazilian teenage culture
+- **Appropriate humor and topics** for Brazilian children's culture
 
 📋 **See [SECURITY_GUIDE.md](SECURITY_GUIDE.md) for detailed security practices.**
 
@@ -372,7 +372,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **shadcn/ui** for beautiful component library
 - **Framer Motion** for smooth animations
 - **The React and TypeScript communities** for amazing tools
-- **Inspired by the need for safe, educational AI companions for teenagers worldwide**
+- **Inspired by the need for safe, educational AI companions for children worldwide**
 
 ## 📞 Contact
 
@@ -383,5 +383,5 @@ Project Link: [https://github.com/talktorobson/StumbleLele](https://github.com/t
 ---
 
 <div align="center">
-  Made with ❤️ for Brazilian teenage girls everywhere
+  Made with ❤️ for Brazilian children everywhere
 </div>
