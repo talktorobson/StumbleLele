@@ -21,6 +21,7 @@ export function useGeminiDirect(userId: number) {
   const [logs, setLogs] = useState<string[]>([]);
   const websocketRef = useRef<WebSocket | null>(null);
   const audioChunksRef = useRef<ArrayBuffer[]>([]);
+  const isJokeRequestRef = useRef<boolean>(false);
   const { toast } = useToast();
 
   // EXACT configuration from working debug component
@@ -248,31 +249,26 @@ export function useGeminiDirect(userId: number) {
       await playAudioBuffer(concatenatedBuffer);
 
       // Check if this is a joke response and play ba-dum-tss sound AFTER audio finishes
-      const lastMessage = messages[messages.length - 1];
-      const isJokeMessage = lastMessage && lastMessage.message && 
-        (lastMessage.message.includes('[JOKE_REQUEST]') || 
-         lastMessage.message.toLowerCase().includes('piada') || 
-         lastMessage.message.toLowerCase().includes('conte uma piada') ||
-         lastMessage.message.toLowerCase().includes('invente uma piada'));
+      const isJokeRequest = isJokeRequestRef.current;
       
-      addLog(`🔍 Checking for joke: message exists=${!!lastMessage?.message}, isJoke=${isJokeMessage}`);
-      if (lastMessage?.message) {
-        addLog(`🔍 Message preview: "${lastMessage.message.substring(0, 100)}..."`);
-      }
+      addLog(`🔍 Checking for joke: joke flag=${isJokeRequest}`);
       
-      if (isJokeMessage) {
+      if (isJokeRequest) {
         try {
           // Wait for the audio to completely finish, then play the ba-dum-tss sound
           addLog('🎭 Joke audio finished, playing ba-dum-tss in 500ms...');
           setTimeout(async () => {
             addLog('🥁 Now playing ba-dum-tss sound effect...');
             await playBaDumTssSound();
+            // Reset the joke flag after playing
+            isJokeRequestRef.current = false;
+            addLog('🎭 Joke request flag reset');
           }, 500); // Wait half a second after audio finishes
         } catch (error) {
           addLog(`❌ Failed to play ba-dum-tss after joke: ${error}`);
         }
       } else {
-        addLog('🔍 Not a joke message, skipping ba-dum-tss sound');
+        addLog('🔍 Not a joke request, skipping ba-dum-tss sound');
       }
 
       // Generate transcript based on the user's message
@@ -304,7 +300,7 @@ export function useGeminiDirect(userId: number) {
       audioChunksRef.current = []; // Clear on error
       setIsProcessing(false); // Reset processing state on error too
     }
-  }, [addLog, playAudioBuffer, generateContextualTranscript, playBaDumTssSound, messages]);
+  }, [addLog, playAudioBuffer, generateContextualTranscript, playBaDumTssSound]);
 
   // EXACT message handling logic from debug component
   const handleMessage = useCallback(async (event: MessageEvent) => {
@@ -621,6 +617,15 @@ export function useGeminiDirect(userId: number) {
     // Clear any previous audio chunks
     audioChunksRef.current = [];
     
+    // Check if this is a joke request and set the flag
+    const isJokeMessage = text.includes('[JOKE_REQUEST]') || 
+                         text.toLowerCase().includes('piada') || 
+                         text.toLowerCase().includes('conte uma piada') ||
+                         text.toLowerCase().includes('invente uma piada');
+    
+    isJokeRequestRef.current = isJokeMessage;
+    addLog(`🎭 Setting joke request flag: ${isJokeMessage}`);
+    
     const messageId = Date.now().toString();
     const newMessage: Message = {
       id: messageId,
@@ -643,7 +648,7 @@ export function useGeminiDirect(userId: number) {
       }
     };
 
-    addLog(`📤 Sending message: "${text}"`);
+    addLog(`📤 Sending message: "${text.substring(0, 50)}..."`);
     websocketRef.current.send(JSON.stringify(messagePayload));
   }, [userId, addLog, toast]);
 
