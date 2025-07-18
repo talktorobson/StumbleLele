@@ -259,14 +259,22 @@ export function useGeminiDirect(userId: number) {
           // Wait for the audio to completely finish, then play the ba-dum-tss sound
           addLog('🎭 Joke audio finished, playing ba-dum-tss in 500ms...');
           setTimeout(async () => {
-            addLog('🥁 Now playing ba-dum-tss sound effect...');
-            await playBaDumTssSound();
-            // Reset the joke flag after playing
-            isJokeRequestRef.current = false;
-            addLog('🎭 Joke request flag reset');
+            try {
+              addLog('🥁 Now playing ba-dum-tss sound effect...');
+              await playBaDumTssSound();
+              addLog('🥁 Ba-dum-tss sound completed successfully');
+            } catch (error) {
+              addLog(`❌ Failed to play ba-dum-tss sound: ${error}`);
+            } finally {
+              // Always reset the flag after attempting to play
+              isJokeRequestRef.current = false;
+              addLog('🎭 Joke request flag reset');
+            }
           }, 500); // Wait half a second after audio finishes
         } catch (error) {
           addLog(`❌ Failed to play ba-dum-tss after joke: ${error}`);
+          // Reset flag even if there's an error
+          isJokeRequestRef.current = false;
         }
       } else {
         addLog('🔍 Not a joke request, skipping ba-dum-tss sound');
@@ -624,8 +632,9 @@ export function useGeminiDirect(userId: number) {
                          text.toLowerCase().includes('conte uma piada') ||
                          text.toLowerCase().includes('invente uma piada');
     
+    const previousFlag = isJokeRequestRef.current;
     isJokeRequestRef.current = isJokeMessage;
-    addLog(`🎭 Setting joke request flag: ${isJokeMessage}`);
+    addLog(`🎭 Setting joke request flag: ${previousFlag} -> ${isJokeMessage}`);
     
     const messageId = Date.now().toString();
     const newMessage: Message = {

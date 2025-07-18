@@ -104,8 +104,11 @@ REGRAS OBRIGATÓRIAS:
 - Seja natural e espontânea como uma criança brasileira
 - SEMPRE invente uma piada completamente nova e original
 - Seja criativa e surpreenda com humor inteligente
-- Termine naturalmente sem efeitos sonoros
+- Termine naturalmente COM FINAL ÚNICO E ORIGINAL
 - PROIBIDO usar emojis ou símbolos de qualquer tipo
+- NUNCA use finais repetitivos como "hihihi" ou "hahaha"
+- Cada piada deve ter seu próprio final criativo e único
+- Varie completamente o estilo, estrutura e conclusão
 
 Invente uma piada nova e MUITO ENGRAÇADA AGORA sobre ${randomTheme} para uma criança!`;
     

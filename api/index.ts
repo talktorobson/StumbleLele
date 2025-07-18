@@ -795,7 +795,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           - Explore o humor que crianças brasileiras adoram
           - Sobre temas como: animais, comida, escola, brincadeiras, família
           - Use linguagem bem simples e alegre
-          - Termine com uma risadinha natural como "hihihi" ou "hahaha"
+          - Termine com um final ÚNICO E ORIGINAL para cada piada
 
           EXEMPLOS DE HUMOR QUE FUNCIONA:
           - Trocadilhos com nomes de comidas brasileiras
@@ -810,6 +810,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           - Seja natural e espontânea como uma criança brasileira
           - SEMPRE invente uma piada completamente nova e original
           - Seja criativa e surpreenda com humor inteligente
+          - NUNCA use finais repetitivos como "hihihi" ou "hahaha"
+          - Cada piada deve ter seu próprio final criativo e único
+          - Varie completamente o estilo, estrutura e conclusão
           
           Invente uma piada nova e divertida AGORA!`;
           
