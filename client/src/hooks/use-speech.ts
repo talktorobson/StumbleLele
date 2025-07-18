@@ -36,7 +36,19 @@ export function useSpeech() {
            voice.name.toLowerCase().includes('young') ||
            voice.name.toLowerCase().includes('female') ||
            voice.name.toLowerCase().includes('woman') ||
-           voice.name.toLowerCase().includes('girl'))
+           voice.name.toLowerCase().includes('girl') ||
+           voice.name.toLowerCase().includes('clara') ||
+           voice.name.toLowerCase().includes('sofia') ||
+           voice.name.toLowerCase().includes('julia') ||
+           voice.name.toLowerCase().includes('ana') ||
+           voice.name.toLowerCase().includes('maria') ||
+           voice.name.toLowerCase().includes('isabela') ||
+           voice.name.toLowerCase().includes('fernanda'))
+        );
+        
+        // Try to find any Portuguese voice that's not Eddy
+        const nonEddyVoice = voices.find(voice => 
+          voice.lang === 'pt-BR' && !voice.name.toLowerCase().includes('eddy')
         );
         
         const anyPortugueseVoice = voices.find(voice => voice.lang === 'pt-BR');
@@ -44,13 +56,15 @@ export function useSpeech() {
         console.log('🔍 Voice search results:', {
           ledaFound: !!ledaVoice,
           femaleFound: !!femaleVoice,
+          nonEddyFound: !!nonEddyVoice,
           anyPortugueseFound: !!anyPortugueseVoice,
           ledaName: ledaVoice?.name,
           femaleName: femaleVoice?.name,
+          nonEddyName: nonEddyVoice?.name,
           anyPortugueseName: anyPortugueseVoice?.name
         });
         
-        const suitableVoice = ledaVoice || femaleVoice || anyPortugueseVoice;
+        const suitableVoice = ledaVoice || femaleVoice || nonEddyVoice || anyPortugueseVoice;
 
         if (suitableVoice) {
           console.log('Selected voice:', suitableVoice.name, suitableVoice.lang);
@@ -145,7 +159,19 @@ export function useSpeech() {
          voice.name.toLowerCase().includes('young') ||
          voice.name.toLowerCase().includes('female') ||
          voice.name.toLowerCase().includes('woman') ||
-         voice.name.toLowerCase().includes('girl'))
+         voice.name.toLowerCase().includes('girl') ||
+         voice.name.toLowerCase().includes('clara') ||
+         voice.name.toLowerCase().includes('sofia') ||
+         voice.name.toLowerCase().includes('julia') ||
+         voice.name.toLowerCase().includes('ana') ||
+         voice.name.toLowerCase().includes('maria') ||
+         voice.name.toLowerCase().includes('isabela') ||
+         voice.name.toLowerCase().includes('fernanda'))
+      );
+      
+      // Try to find any Portuguese voice that's not Eddy
+      const nonEddyVoice = currentVoices.find(voice => 
+        voice.lang === 'pt-BR' && !voice.name.toLowerCase().includes('eddy')
       );
       
       const anyPortugueseVoice = currentVoices.find(voice => voice.lang === 'pt-BR');
@@ -153,13 +179,15 @@ export function useSpeech() {
       console.log('🔍 TTS Voice search results:', {
         ledaFound: !!ledaVoice,
         femaleFound: !!femaleVoice,
+        nonEddyFound: !!nonEddyVoice,
         anyPortugueseFound: !!anyPortugueseVoice,
         ledaName: ledaVoice?.name,
         femaleName: femaleVoice?.name,
+        nonEddyName: nonEddyVoice?.name,
         anyPortugueseName: anyPortugueseVoice?.name
       });
       
-      const suitableVoice = ledaVoice || femaleVoice || anyPortugueseVoice;
+      const suitableVoice = ledaVoice || femaleVoice || nonEddyVoice || anyPortugueseVoice;
 
       if (suitableVoice) {
         utterance.voice = suitableVoice;

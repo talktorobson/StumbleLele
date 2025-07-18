@@ -183,10 +183,10 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
             temperature: 0.8,
             maxOutputTokens: 200,
             speechConfig: {
+              languageCode: 'pt-BR',
               voiceConfig: {
                 prebuiltVoiceConfig: {
-                  voiceName: 'Leda',
-                  languageCode: 'pt-BR'
+                  voiceName: 'Leda'
                 }
               }
             }

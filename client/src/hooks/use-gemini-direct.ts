@@ -34,10 +34,10 @@ export function useGeminiDirect(userId: number) {
       generationConfig: {
         responseModalities: ['AUDIO'],
         speechConfig: {
+          languageCode: 'pt-BR',
           voiceConfig: {
             prebuiltVoiceConfig: {
-              voiceName: 'Leda',
-              languageCode: 'pt-BR'
+              voiceName: 'Leda'
             }
           }
         }
