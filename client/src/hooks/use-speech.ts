@@ -37,6 +37,7 @@ export function useSpeech() {
            voice.name.toLowerCase().includes('female') ||
            voice.name.toLowerCase().includes('woman') ||
            voice.name.toLowerCase().includes('girl') ||
+           voice.name.toLowerCase().includes('sandy') ||
            voice.name.toLowerCase().includes('clara') ||
            voice.name.toLowerCase().includes('sofia') ||
            voice.name.toLowerCase().includes('julia') ||
@@ -160,6 +161,7 @@ export function useSpeech() {
          voice.name.toLowerCase().includes('female') ||
          voice.name.toLowerCase().includes('woman') ||
          voice.name.toLowerCase().includes('girl') ||
+         voice.name.toLowerCase().includes('sandy') ||
          voice.name.toLowerCase().includes('clara') ||
          voice.name.toLowerCase().includes('sofia') ||
          voice.name.toLowerCase().includes('julia') ||

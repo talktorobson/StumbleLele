@@ -123,13 +123,24 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
                 return;
               }
               
+              // Calculate dynamic volume boost based on audio level
+              const maxAbsValue = Math.max(Math.abs(maxSample), Math.abs(minSample));
+              const volumeBoost = maxAbsValue < 0.1 ? 20.0 : (maxAbsValue < 0.5 ? 10.0 : 4.0);
+              
+              console.log('🔊 Volume boost calculated:', { maxAbsValue, volumeBoost });
+              
+              // Apply volume boost to all samples
+              for (let i = 0; i < samples; i++) {
+                channelData[i] = Math.min(0.95, Math.max(-0.95, channelData[i] * volumeBoost));
+              }
+              
               // Create and play audio
               const source = audioContext.createBufferSource();
               source.buffer = audioBuffer;
               
-              // Add gain control for volume (boost it)
+              // Add gain control for additional volume
               const gainNode = audioContext.createGain();
-              gainNode.gain.value = 2.0; // Boost volume
+              gainNode.gain.value = 1.0; // Normal gain since we already boosted samples
               
               source.connect(gainNode);
               gainNode.connect(audioContext.destination);
