@@ -24,14 +24,33 @@ export function useSpeech() {
         console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
         
         // Find the best voice for Lele (prioritize Leda, then female, then any Portuguese)
-        const suitableVoice = voices.find(voice => 
+        console.log('🔍 Searching for Leda voice...');
+        
+        const ledaVoice = voices.find(voice => 
           voice.lang === 'pt-BR' && voice.name.toLowerCase().includes('leda')
-        ) || voices.find(voice => 
+        );
+        
+        const femaleVoice = voices.find(voice => 
           voice.lang === 'pt-BR' && 
           (voice.name.toLowerCase().includes('child') || 
            voice.name.toLowerCase().includes('young') ||
-           voice.name.toLowerCase().includes('female'))
-        ) || voices.find(voice => voice.lang === 'pt-BR');
+           voice.name.toLowerCase().includes('female') ||
+           voice.name.toLowerCase().includes('woman') ||
+           voice.name.toLowerCase().includes('girl'))
+        );
+        
+        const anyPortugueseVoice = voices.find(voice => voice.lang === 'pt-BR');
+        
+        console.log('🔍 Voice search results:', {
+          ledaFound: !!ledaVoice,
+          femaleFound: !!femaleVoice,
+          anyPortugueseFound: !!anyPortugueseVoice,
+          ledaName: ledaVoice?.name,
+          femaleName: femaleVoice?.name,
+          anyPortugueseName: anyPortugueseVoice?.name
+        });
+        
+        const suitableVoice = ledaVoice || femaleVoice || anyPortugueseVoice;
 
         if (suitableVoice) {
           console.log('Selected voice:', suitableVoice.name, suitableVoice.lang);
@@ -114,14 +133,33 @@ export function useSpeech() {
     const currentVoices = synthesis.getVoices();
     if (currentVoices.length > 0) {
       // Find a suitable voice (prioritize Leda, then female, then any Portuguese)
-      const suitableVoice = currentVoices.find(voice => 
+      console.log('🔍 TTS: Searching for Leda voice in', currentVoices.length, 'voices...');
+      
+      const ledaVoice = currentVoices.find(voice => 
         voice.lang === 'pt-BR' && voice.name.toLowerCase().includes('leda')
-      ) || currentVoices.find(voice => 
+      );
+      
+      const femaleVoice = currentVoices.find(voice => 
         voice.lang === 'pt-BR' && 
         (voice.name.toLowerCase().includes('child') || 
          voice.name.toLowerCase().includes('young') ||
-         voice.name.toLowerCase().includes('female'))
-      ) || currentVoices.find(voice => voice.lang === 'pt-BR');
+         voice.name.toLowerCase().includes('female') ||
+         voice.name.toLowerCase().includes('woman') ||
+         voice.name.toLowerCase().includes('girl'))
+      );
+      
+      const anyPortugueseVoice = currentVoices.find(voice => voice.lang === 'pt-BR');
+      
+      console.log('🔍 TTS Voice search results:', {
+        ledaFound: !!ledaVoice,
+        femaleFound: !!femaleVoice,
+        anyPortugueseFound: !!anyPortugueseVoice,
+        ledaName: ledaVoice?.name,
+        femaleName: femaleVoice?.name,
+        anyPortugueseName: anyPortugueseVoice?.name
+      });
+      
+      const suitableVoice = ledaVoice || femaleVoice || anyPortugueseVoice;
 
       if (suitableVoice) {
         utterance.voice = suitableVoice;

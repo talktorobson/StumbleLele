@@ -51,9 +51,78 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
           console.log('🎵 Audio format:', mimeType);
           console.log('🎵 Audio data length:', base64Data.length);
           
-          // Try different approaches based on mime type
-          if (mimeType && mimeType.includes('audio/')) {
-            // If we have a proper audio mime type, use Audio element
+          // Handle PCM audio data directly (Gemini Live sends PCM)
+          if (mimeType && mimeType.includes('audio/pcm')) {
+            console.log('🎵 Processing PCM audio from Gemini Live...');
+            
+            try {
+              // Decode base64 PCM data
+              const binaryData = atob(base64Data);
+              const arrayBuffer = new ArrayBuffer(binaryData.length);
+              const uint8Array = new Uint8Array(arrayBuffer);
+              
+              for (let i = 0; i < binaryData.length; i++) {
+                uint8Array[i] = binaryData.charCodeAt(i);
+              }
+              
+              // Create AudioContext for PCM playback
+              const audioContext = new AudioContext();
+              
+              // Ensure audio context is running
+              if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+              }
+              
+              // PCM format: 24kHz sample rate, 16-bit signed integers
+              const sampleRate = 24000;
+              const samples = arrayBuffer.byteLength / 2;
+              
+              console.log('🔊 PCM audio details:', {
+                sampleRate,
+                samples,
+                duration: samples / sampleRate,
+                bytes: arrayBuffer.byteLength
+              });
+              
+              // Create AudioBuffer for PCM data
+              const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
+              const channelData = audioBuffer.getChannelData(0);
+              
+              // Convert 16-bit PCM to float32 (-1.0 to 1.0)
+              const view = new DataView(arrayBuffer);
+              for (let i = 0; i < samples; i++) {
+                const sample = view.getInt16(i * 2, true); // little-endian
+                channelData[i] = sample / 32768.0;
+              }
+              
+              // Create and play audio
+              const source = audioContext.createBufferSource();
+              source.buffer = audioBuffer;
+              
+              // Add gain control for volume
+              const gainNode = audioContext.createGain();
+              gainNode.gain.value = 1.0;
+              
+              source.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+              
+              source.onended = () => {
+                console.log('🎵 PCM audio playback completed');
+              };
+              
+              source.start();
+              console.log('🔊 PCM audio playback started successfully');
+              
+            } catch (error) {
+              console.error('❌ PCM audio processing failed:', error);
+              // Fallback to TTS
+              speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+            }
+            
+          } else if (mimeType && mimeType.includes('audio/')) {
+            // Try regular audio formats (mp3, wav, etc.)
+            console.log('🎵 Processing regular audio format...');
+            
             const audioBlob = new Blob([Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))], { type: mimeType });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
@@ -67,7 +136,6 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               console.log('🔊 Audio duration:', audio.duration);
               console.log('🔊 Audio ready state:', audio.readyState);
               
-              // Ensure audio context is resumed (required for some browsers)
               const playPromise = audio.play();
               if (playPromise !== undefined) {
                 playPromise

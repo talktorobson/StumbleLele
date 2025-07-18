@@ -36,7 +36,8 @@ export function useGeminiDirect(userId: number) {
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
-              voiceName: 'Leda'
+              voiceName: 'Leda',
+              languageCode: 'pt-BR'
             }
           }
         }

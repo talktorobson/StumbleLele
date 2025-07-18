@@ -185,7 +185,8 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
             speechConfig: {
               voiceConfig: {
                 prebuiltVoiceConfig: {
-                  voiceName: 'Leda'
+                  voiceName: 'Leda',
+                  languageCode: 'pt-BR'
                 }
               }
             }
