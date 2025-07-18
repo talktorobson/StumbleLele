@@ -1,16 +1,24 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, uuid, unique, check } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Enhanced users table with friends chat system fields
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   age: integer("age"),
   preferredAI: text("preferred_ai").default("gemini").notNull(), // "openai" | "xai" | "anthropic" | "gemini"
+  // New fields for friends chat system
+  username: text("username").unique().notNull(),
+  displayName: text("display_name"),
+  avatarEmoji: text("avatar_emoji").default("😊"),
+  isOnline: boolean("is_online").default(false),
+  lastSeen: timestamp("last_seen").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const conversations = pgTable("conversations", {
+// AI conversations table (renamed from conversations for clarity)
+export const aiConversations = pgTable("ai_conversations", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   message: text("message").notNull(),
@@ -26,12 +34,46 @@ export const memories = pgTable("memories", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Redesigned friends table for proper friend relationships
 export const friends = pgTable("friends", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  friendName: text("friend_name").notNull(),
-  status: text("status").default("online"), // online, offline, playing
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  friendId: integer("friend_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  status: text("status").default("pending").notNull(), // pending, accepted, rejected, blocked
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint to prevent duplicate friend relationships
+  uniqueFriendship: unique("unique_friendship").on(table.userId, table.friendId),
+  // Check constraint to prevent users from befriending themselves
+  noSelfFriend: check("no_self_friend", `${table.userId} != ${table.friendId}`),
+}));
+
+// New conversations table for 1-on-1 chat conversations
+export const conversations = pgTable("conversations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user1Id: integer("user1_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  user2Id: integer("user2_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastMessageAt: timestamp("last_message_at"),
+  isActive: boolean("is_active").default(true),
+}, (table) => ({
+  // Unique constraint to prevent duplicate conversations
+  uniqueConversation: unique("unique_conversation").on(table.user1Id, table.user2Id),
+  // Check constraint to prevent users from having conversations with themselves
+  noSelfConversation: check("no_self_conversation", `${table.user1Id} != ${table.user2Id}`),
+}));
+
+// New messages table for individual chat messages
+export const messages = pgTable("messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversationId: uuid("conversation_id").references(() => conversations.id, { onDelete: "cascade" }).notNull(),
+  senderId: integer("sender_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  isDeleted: boolean("is_deleted").default(false),
+  messageType: text("message_type").default("text"), // text, emoji, image, audio
 });
 
 export const gameProgress = pgTable("game_progress", {
@@ -51,13 +93,19 @@ export const avatarState = pgTable("avatar_state", {
   lastInteraction: timestamp("last_interaction").defaultNow(),
 });
 
+// Enhanced user schema with friends chat system fields
 export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
   age: true,
   preferredAI: true,
+  username: true,
+  displayName: true,
+  avatarEmoji: true,
+  isOnline: true,
 });
 
-export const insertConversationSchema = createInsertSchema(conversations).pick({
+// AI conversations schema (renamed for clarity)
+export const insertAIConversationSchema = createInsertSchema(aiConversations).pick({
   userId: true,
   message: true,
   response: true,
@@ -69,10 +117,26 @@ export const insertMemorySchema = createInsertSchema(memories).pick({
   category: true,
 });
 
+// Enhanced friends schema for proper friend relationships
 export const insertFriendSchema = createInsertSchema(friends).pick({
   userId: true,
-  friendName: true,
+  friendId: true,
   status: true,
+});
+
+// New conversations schema for 1-on-1 chat conversations
+export const insertConversationSchema = createInsertSchema(conversations).pick({
+  user1Id: true,
+  user2Id: true,
+  isActive: true,
+});
+
+// New messages schema for individual chat messages
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  conversationId: true,
+  senderId: true,
+  content: true,
+  messageType: true,
 });
 
 export const insertGameProgressSchema = createInsertSchema(gameProgress).pick({
@@ -88,15 +152,39 @@ export const insertAvatarStateSchema = createInsertSchema(avatarState).pick({
   personality: true,
 });
 
+// Enhanced type definitions for friends chat system
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type InsertConversation = z.infer<typeof insertConversationSchema>;
-export type Conversation = typeof conversations.$inferSelect;
+export type InsertAIConversation = z.infer<typeof insertAIConversationSchema>;
+export type AIConversation = typeof aiConversations.$inferSelect;
 export type InsertMemory = z.infer<typeof insertMemorySchema>;
 export type Memory = typeof memories.$inferSelect;
 export type InsertFriend = z.infer<typeof insertFriendSchema>;
 export type Friend = typeof friends.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
 export type InsertGameProgress = z.infer<typeof insertGameProgressSchema>;
 export type GameProgress = typeof gameProgress.$inferSelect;
 export type InsertAvatarState = z.infer<typeof insertAvatarStateSchema>;
 export type AvatarState = typeof avatarState.$inferSelect;
+
+// Additional types for friends chat functionality
+export type FriendWithUser = Friend & {
+  user: User;
+  friend: User;
+};
+
+export type ConversationWithUsers = Conversation & {
+  user1: User;
+  user2: User;
+  lastMessage?: Message;
+};
+
+export type MessageWithSender = Message & {
+  sender: User;
+};
+
+export type FriendStatus = "pending" | "accepted" | "rejected" | "blocked";
+export type MessageType = "text" | "emoji" | "image" | "audio";

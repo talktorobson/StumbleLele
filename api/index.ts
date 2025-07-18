@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
 import WebSocket from 'ws';
+import { z } from 'zod';
 
 // Supabase client connection
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -27,6 +28,92 @@ const gemini = new GoogleGenAI({
 });
 
 type AIModel = "openai" | "xai" | "anthropic" | "gemini" | "gemini-live";
+
+// Zod validation schemas for API requests
+const SendFriendRequestSchema = z.object({
+  userId: z.number().int().positive(),
+  friendUsername: z.string().min(1).max(50)
+});
+
+const AcceptFriendRequestSchema = z.object({
+  userId: z.number().int().positive(),
+  friendId: z.number().int().positive()
+});
+
+const SendMessageSchema = z.object({
+  conversationId: z.string().uuid(),
+  senderId: z.number().int().positive(),
+  content: z.string().min(1).max(1000),
+  messageType: z.enum(['text', 'emoji', 'image', 'audio']).default('text')
+});
+
+const UpdateUserStatusSchema = z.object({
+  userId: z.number().int().positive(),
+  isOnline: z.boolean()
+});
+
+const SearchUsersSchema = z.object({
+  query: z.string().min(1).max(50),
+  currentUserId: z.number().int().positive()
+});
+
+// TypeScript interfaces for API responses
+interface FriendWithUser {
+  id: string;
+  status: string;
+  createdAt: string;
+  friend: {
+    id: number;
+    username: string;
+    displayName: string | null;
+    avatarEmoji: string;
+    isOnline: boolean;
+    lastSeen: string | null;
+  };
+}
+
+interface ConversationWithUsers {
+  id: string;
+  user1Id: number;
+  user2Id: number;
+  lastMessageAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+  user1: {
+    id: number;
+    username: string;
+    displayName: string | null;
+    avatarEmoji: string;
+    isOnline: boolean;
+  };
+  user2: {
+    id: number;
+    username: string;
+    displayName: string | null;
+    avatarEmoji: string;
+    isOnline: boolean;
+  };
+  lastMessage?: {
+    id: string;
+    content: string;
+    createdAt: string;
+    senderId: number;
+  };
+}
+
+interface MessageWithSender {
+  id: string;
+  content: string;
+  createdAt: string;
+  senderId: number;
+  messageType: string;
+  sender: {
+    id: number;
+    username: string;
+    displayName: string | null;
+    avatarEmoji: string;
+  };
+}
 
 // AI Service (inline)
 const LELE_PROMPT = `Você é Lele, uma IA companheira de 7 anos que é muito amigável, curiosa e brincalhona. 
@@ -467,12 +554,27 @@ class Storage {
     }
   }
 
-  async getFriends(userId: number) {
+  // Enhanced friends management methods
+  async getFriends(userId: number): Promise<FriendWithUser[]> {
     try {
       const { data, error } = await supabase
         .from('friends')
-        .select('*')
-        .eq('user_id', userId);
+        .select(`
+          id,
+          status,
+          created_at,
+          friend:friend_id (
+            id,
+            username,
+            display_name,
+            avatar_emoji,
+            is_online,
+            last_seen
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'accepted')
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -482,14 +584,64 @@ class Storage {
     }
   }
 
-  async createFriend(friend: any) {
+  async getPendingFriendRequests(userId: number) {
     try {
       const { data, error } = await supabase
         .from('friends')
+        .select(`
+          id,
+          created_at,
+          user:user_id (
+            id,
+            username,
+            display_name,
+            avatar_emoji,
+            is_online
+          )
+        `)
+        .eq('friend_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Database error in getPendingFriendRequests:', error);
+      return [];
+    }
+  }
+
+  async sendFriendRequest(userId: number, friendUsername: string) {
+    try {
+      // First find the friend by username
+      const { data: friend, error: friendError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', friendUsername)
+        .single();
+      
+      if (friendError || !friend) {
+        throw new Error('User not found');
+      }
+
+      // Check if friendship already exists
+      const { data: existingFriend, error: existingError } = await supabase
+        .from('friends')
+        .select('id')
+        .or(`and(user_id.eq.${userId},friend_id.eq.${friend.id}),and(user_id.eq.${friend.id},friend_id.eq.${userId})`)
+        .single();
+
+      if (existingFriend) {
+        throw new Error('Friend relationship already exists');
+      }
+
+      // Create friend request
+      const { data, error } = await supabase
+        .from('friends')
         .insert({
-          user_id: friend.userId,
-          friend_name: friend.friendName,
-          status: friend.status
+          user_id: userId,
+          friend_id: friend.id,
+          status: 'pending'
         })
         .select()
         .single();
@@ -497,25 +649,293 @@ class Storage {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Database error in createFriend:', error);
+      console.error('Database error in sendFriendRequest:', error);
       throw error;
     }
   }
 
-  async updateFriendStatus(userId: number, friendName: string, status: string) {
+  async acceptFriendRequest(userId: number, friendId: number) {
+    try {
+      // Accept the friend request
+      const { data, error } = await supabase
+        .from('friends')
+        .update({ status: 'accepted' })
+        .eq('user_id', friendId)
+        .eq('friend_id', userId)
+        .eq('status', 'pending')
+        .select()
+        .single();
+      
+      if (error) throw error;
+      if (!data) throw new Error('Friend request not found');
+
+      // Create reciprocal friendship
+      const { data: reciprocalFriend, error: reciprocalError } = await supabase
+        .from('friends')
+        .insert({
+          user_id: userId,
+          friend_id: friendId,
+          status: 'accepted'
+        })
+        .select()
+        .single();
+
+      if (reciprocalError) throw reciprocalError;
+      
+      return data;
+    } catch (error) {
+      console.error('Database error in acceptFriendRequest:', error);
+      throw error;
+    }
+  }
+
+  async rejectFriendRequest(userId: number, friendId: number) {
     try {
       const { data, error } = await supabase
         .from('friends')
-        .update({ status })
-        .eq('user_id', userId)
-        .eq('friend_name', friendName)
+        .update({ status: 'rejected' })
+        .eq('user_id', friendId)
+        .eq('friend_id', userId)
+        .eq('status', 'pending')
         .select()
         .single();
       
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Database error in updateFriendStatus:', error);
+      console.error('Database error in rejectFriendRequest:', error);
+      throw error;
+    }
+  }
+
+  async removeFriend(userId: number, friendId: number) {
+    try {
+      // Remove both directions of the friendship
+      const { error: error1 } = await supabase
+        .from('friends')
+        .delete()
+        .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`);
+      
+      if (error1) throw error1;
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Database error in removeFriend:', error);
+      throw error;
+    }
+  }
+
+  async searchUsers(query: string, currentUserId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, display_name, avatar_emoji, is_online')
+        .ilike('username', `%${query}%`)
+        .neq('id', currentUserId)
+        .order('username')
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Database error in searchUsers:', error);
+      return [];
+    }
+  }
+
+  async updateUserStatus(userId: number, isOnline: boolean) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ 
+          is_online: isOnline, 
+          last_seen: new Date().toISOString() 
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in updateUserStatus:', error);
+      throw error;
+    }
+  }
+
+  // Chat conversation methods
+  async getUserConversations(userId: number): Promise<ConversationWithUsers[]> {
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          user1_id,
+          user2_id,
+          last_message_at,
+          is_active,
+          created_at,
+          user1:user1_id (
+            id,
+            username,
+            display_name,
+            avatar_emoji,
+            is_online
+          ),
+          user2:user2_id (
+            id,
+            username,
+            display_name,
+            avatar_emoji,
+            is_online
+          )
+        `)
+        .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        .eq('is_active', true)
+        .order('last_message_at', { ascending: false, nullsFirst: false });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Database error in getUserConversations:', error);
+      return [];
+    }
+  }
+
+  async getOrCreateConversation(user1Id: number, user2Id: number) {
+    try {
+      // Ensure consistent ordering (smaller ID first)
+      const [smallerId, largerId] = user1Id < user2Id ? [user1Id, user2Id] : [user2Id, user1Id];
+      
+      // Check if conversation exists
+      const { data: existingConversation, error: existingError } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('user1_id', smallerId)
+        .eq('user2_id', largerId)
+        .single();
+      
+      if (existingConversation) {
+        return existingConversation;
+      }
+
+      // Create new conversation
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user1_id: smallerId,
+          user2_id: largerId,
+          is_active: true
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in getOrCreateConversation:', error);
+      throw error;
+    }
+  }
+
+  async getConversationMessages(conversationId: string): Promise<MessageWithSender[]> {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          created_at,
+          sender_id,
+          message_type,
+          sender:sender_id (
+            id,
+            username,
+            display_name,
+            avatar_emoji
+          )
+        `)
+        .eq('conversation_id', conversationId)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Database error in getConversationMessages:', error);
+      return [];
+    }
+  }
+
+  async sendMessage(conversationId: string, senderId: number, content: string, messageType: string = 'text') {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: senderId,
+          content: content,
+          message_type: messageType
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+
+      // Update conversation last_message_at
+      const { error: updateError } = await supabase
+        .from('conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', conversationId);
+      
+      if (updateError) console.error('Error updating conversation timestamp:', updateError);
+      
+      return data;
+    } catch (error) {
+      console.error('Database error in sendMessage:', error);
+      throw error;
+    }
+  }
+
+  async editMessage(messageId: string, content: string, userId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .update({ 
+          content: content,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', messageId)
+        .eq('sender_id', userId)
+        .eq('is_deleted', false)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in editMessage:', error);
+      throw error;
+    }
+  }
+
+  async deleteMessage(messageId: string, userId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .update({ 
+          is_deleted: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', messageId)
+        .eq('sender_id', userId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in deleteMessage:', error);
       throw error;
     }
   }
@@ -612,6 +1032,124 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Handle different routes
     switch (parts[0]) {
+      case 'messages':
+        // POST /api/messages - Send message
+        if (req.method === 'POST') {
+          try {
+            const validatedData = SendMessageSchema.parse(req.body);
+            const message = await storage.sendMessage(
+              validatedData.conversationId,
+              validatedData.senderId,
+              validatedData.content,
+              validatedData.messageType
+            );
+            return res.json({ 
+              success: true, 
+              message 
+            });
+          } catch (error) {
+            if (error instanceof z.ZodError) {
+              return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+            }
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // PUT /api/messages/{id} - Edit message
+        if (parts[1] && req.method === 'PUT') {
+          const messageId = parts[1];
+          const { content, userId } = req.body;
+          
+          if (!content || !userId) {
+            return res.status(400).json({ message: "content e userId são obrigatórios" });
+          }
+          
+          try {
+            const message = await storage.editMessage(messageId, content, userId);
+            return res.json({ 
+              success: true, 
+              message 
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // DELETE /api/messages/{id} - Delete message
+        if (parts[1] && req.method === 'DELETE') {
+          const messageId = parts[1];
+          const { userId } = req.body;
+          
+          if (!userId) {
+            return res.status(400).json({ message: "userId é obrigatório" });
+          }
+          
+          try {
+            const message = await storage.deleteMessage(messageId, userId);
+            return res.json({ 
+              success: true, 
+              message: "Mensagem deletada com sucesso" 
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        break;
+
+      case 'users':
+        // GET /api/users/search?q={query}&currentUserId={id} - Search users
+        if (parts[1] === 'search' && req.method === 'GET') {
+          const query = req.query.q as string;
+          const currentUserId = parseInt(req.query.currentUserId as string);
+          
+          if (!query || isNaN(currentUserId)) {
+            return res.status(400).json({ message: "query e currentUserId são obrigatórios" });
+          }
+          
+          try {
+            const users = await storage.searchUsers(query, currentUserId);
+            return res.json({ users });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // PUT /api/users/{id}/status - Update user online status
+        if (parts[1] && parts[2] === 'status' && req.method === 'PUT') {
+          const userId = parseInt(parts[1]);
+          const { isOnline } = req.body;
+          
+          if (isNaN(userId) || typeof isOnline !== 'boolean') {
+            return res.status(400).json({ message: "userId e isOnline são obrigatórios" });
+          }
+          
+          try {
+            const user = await storage.updateUserStatus(userId, isOnline);
+            return res.json({ 
+              success: true, 
+              user 
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        break;
+
       case 'user':
         if (parts[1] && req.method === 'GET') {
           const userId = parseInt(parts[1]);
@@ -675,25 +1213,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         break;
 
       case 'conversations':
-        if (parts[1] && req.method === 'GET') {
+        // GET /api/conversations?userId={id} - Get user's conversations
+        if (req.method === 'GET' && req.query.userId) {
+          const userId = parseInt(req.query.userId as string);
+          if (isNaN(userId)) {
+            return res.status(400).json({ message: "userId deve ser um número válido" });
+          }
+          
+          const conversations = await storage.getUserConversations(userId);
+          return res.json({ conversations });
+        }
+        
+        // POST /api/conversations - Create or get conversation
+        if (req.method === 'POST') {
+          const { user1Id, user2Id } = req.body;
+          
+          if (!user1Id || !user2Id) {
+            return res.status(400).json({ message: "user1Id e user2Id são obrigatórios" });
+          }
+          
+          if (user1Id === user2Id) {
+            return res.status(400).json({ message: "Um usuário não pode conversar consigo mesmo" });
+          }
+          
+          try {
+            const conversation = await storage.getOrCreateConversation(user1Id, user2Id);
+            return res.json({ 
+              success: true, 
+              conversation 
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // GET /api/conversations/{id}/messages - Get messages in conversation
+        if (parts[1] && parts[2] === 'messages' && req.method === 'GET') {
+          const conversationId = parts[1];
+          
+          try {
+            const messages = await storage.getConversationMessages(conversationId);
+            return res.json({ messages });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // Legacy AI conversations endpoint (keep for backward compatibility)
+        if (parts[1] && req.method === 'GET' && !parts[2]) {
           const userId = parseInt(parts[1]);
           const conversations = await storage.getConversations(userId);
           return res.json(conversations);
-        }
-        if (req.method === 'POST') {
-          const { userId, message, response } = req.body;
-          
-          if (!userId || !message || !response) {
-            return res.status(400).json({ message: "userId, message e response são obrigatórios" });
-          }
-          
-          const conversation = await storage.createConversation({
-            userId,
-            message,
-            response
-          });
-          
-          return res.json(conversation);
         }
         break;
 
@@ -709,37 +1285,112 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         break;
 
       case 'friends':
-        if (parts[1] && req.method === 'GET') {
-          const userId = parseInt(parts[1]);
+        // GET /api/friends?userId={id} - Get user's friends list
+        if (req.method === 'GET' && req.query.userId) {
+          const userId = parseInt(req.query.userId as string);
+          if (isNaN(userId)) {
+            return res.status(400).json({ message: "userId deve ser um número válido" });
+          }
+          
           const friends = await storage.getFriends(userId);
-          return res.json(friends);
+          return res.json({ friends });
         }
+        
+        // POST /api/friends - Send friend request
         if (req.method === 'POST') {
-          const { userId, friendName, status } = req.body;
-          
-          if (!userId || !friendName) {
-            return res.status(400).json({ message: "userId e friendName são obrigatórios" });
+          try {
+            const validatedData = SendFriendRequestSchema.parse(req.body);
+            const friendRequest = await storage.sendFriendRequest(validatedData.userId, validatedData.friendUsername);
+            return res.json({ 
+              success: true, 
+              message: "Pedido de amizade enviado!",
+              friendRequest 
+            });
+          } catch (error) {
+            if (error instanceof z.ZodError) {
+              return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+            }
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
           }
-          
-          const newFriend = await storage.createFriend({
-            userId,
-            friendName,
-            status: status || "online"
-          });
-          
-          return res.json(newFriend);
         }
-        if (parts[1] && parts[2] && req.method === 'PATCH') {
-          const userId = parseInt(parts[1]);
-          const friendName = decodeURIComponent(parts[2]);
-          const { status } = req.body;
-          
-          if (!status) {
-            return res.status(400).json({ message: "status é obrigatório" });
+        
+        // GET /api/friends/requests?userId={id} - Get pending friend requests
+        if (parts[1] === 'requests' && req.method === 'GET' && req.query.userId) {
+          const userId = parseInt(req.query.userId as string);
+          if (isNaN(userId)) {
+            return res.status(400).json({ message: "userId deve ser um número válido" });
           }
           
-          const updatedFriend = await storage.updateFriendStatus(userId, friendName, status);
-          return res.json(updatedFriend);
+          const requests = await storage.getPendingFriendRequests(userId);
+          return res.json({ requests });
+        }
+        
+        // POST /api/friends/accept - Accept friend request
+        if (parts[1] === 'accept' && req.method === 'POST') {
+          try {
+            const validatedData = AcceptFriendRequestSchema.parse(req.body);
+            const acceptedFriend = await storage.acceptFriendRequest(validatedData.userId, validatedData.friendId);
+            return res.json({ 
+              success: true, 
+              message: "Pedido de amizade aceito!",
+              friendship: acceptedFriend 
+            });
+          } catch (error) {
+            if (error instanceof z.ZodError) {
+              return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+            }
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // POST /api/friends/reject - Reject friend request
+        if (parts[1] === 'reject' && req.method === 'POST') {
+          try {
+            const validatedData = AcceptFriendRequestSchema.parse(req.body);
+            const rejectedFriend = await storage.rejectFriendRequest(validatedData.userId, validatedData.friendId);
+            return res.json({ 
+              success: true, 
+              message: "Pedido de amizade rejeitado",
+              friendship: rejectedFriend 
+            });
+          } catch (error) {
+            if (error instanceof z.ZodError) {
+              return res.status(400).json({ message: "Dados inválidos", errors: error.errors });
+            }
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
+        }
+        
+        // DELETE /api/friends/{friendId}?userId={userId} - Remove friend
+        if (parts[1] && req.method === 'DELETE' && req.query.userId) {
+          const userId = parseInt(req.query.userId as string);
+          const friendId = parseInt(parts[1]);
+          
+          if (isNaN(userId) || isNaN(friendId)) {
+            return res.status(400).json({ message: "userId e friendId devem ser números válidos" });
+          }
+          
+          try {
+            const result = await storage.removeFriend(userId, friendId);
+            return res.json({ 
+              success: true, 
+              message: "Amigo removido com sucesso" 
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(400).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro interno do servidor" });
+          }
         }
         break;
 
