@@ -58,29 +58,43 @@ export function useGeminiDirect(userId: number) {
     console.log(`[Gemini Direct] ${message}`);
   }, []);
 
-  // EXACT audio playback logic from debug component
+  // PCM audio playback logic for raw audio data
   const playAudioBuffer = useCallback(async (arrayBuffer: ArrayBuffer) => {
     try {
-      addLog(`🎵 Playing audio data: ${arrayBuffer.byteLength} bytes`);
+      addLog(`🎵 Playing PCM audio data: ${arrayBuffer.byteLength} bytes`);
       
-      // EXACT method from debug component
       const audioContext = new AudioContext();
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      // PCM format: 24kHz sample rate, 16-bit signed integers
+      const sampleRate = 24000;
+      const samples = arrayBuffer.byteLength / 2; // 16-bit = 2 bytes per sample
+      
+      // Create AudioBuffer for PCM data
+      const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
+      const channelData = audioBuffer.getChannelData(0);
+      
+      // Convert 16-bit PCM to float32 (-1.0 to 1.0)
+      const view = new DataView(arrayBuffer);
+      for (let i = 0; i < samples; i++) {
+        const sample = view.getInt16(i * 2, true); // little-endian
+        channelData[i] = sample / 32768.0; // Convert to float32 range
+      }
+      
       const source = audioContext.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioContext.destination);
       
       return new Promise<void>((resolve) => {
         source.onended = () => {
-          addLog('🔊 Audio playback completed');
+          addLog('🔊 PCM audio playback completed');
           resolve();
         };
         source.start();
-        addLog('🔊 Audio playback started');
+        addLog('🔊 PCM audio playback started');
       });
     } catch (error) {
-      console.error('Audio playback error:', error);
-      addLog(`❌ Audio playback failed: ${error}`);
+      console.error('PCM audio playback error:', error);
+      addLog(`❌ PCM audio playback failed: ${error}`);
       throw error;
     }
   }, [addLog]);
