@@ -191,20 +191,30 @@ export function useGeminiDirect(userId: number) {
   // Function to play ba-dum-tss sound effect
   const playBaDumTssSound = useCallback(async () => {
     try {
-      addLog('🥁 Playing ba-dum-tss sound effect...');
+      addLog('🥁 Starting ba-dum-tss sound effect...');
       const audio = new Audio('/ba-dum-tss.wav');
       audio.volume = 0.7; // Adjust volume as needed
       
+      addLog(`🥁 Audio element created, src: ${audio.src}`);
+      
       return new Promise<void>((resolve, reject) => {
         audio.onended = () => {
-          addLog('🥁 Ba-dum-tss sound completed');
+          addLog('🥁 Ba-dum-tss sound completed successfully');
           resolve();
         };
         audio.onerror = (error) => {
           addLog(`❌ Ba-dum-tss sound failed: ${error}`);
           reject(error);
         };
-        audio.play().catch(reject);
+        audio.onloadstart = () => {
+          addLog('🥁 Ba-dum-tss audio loading started');
+        };
+        audio.oncanplay = () => {
+          addLog('🥁 Ba-dum-tss audio can play');
+        };
+        audio.play().then(() => {
+          addLog('🥁 Ba-dum-tss audio play() successful');
+        }).catch(reject);
       });
     } catch (error) {
       addLog(`❌ Failed to play ba-dum-tss sound: ${error}`);
@@ -239,7 +249,18 @@ export function useGeminiDirect(userId: number) {
 
       // Check if this is a joke response and play ba-dum-tss sound AFTER audio finishes
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage && lastMessage.message && lastMessage.message.toLowerCase().includes('piada')) {
+      const isJokeMessage = lastMessage && lastMessage.message && 
+        (lastMessage.message.includes('[JOKE_REQUEST]') || 
+         lastMessage.message.toLowerCase().includes('piada') || 
+         lastMessage.message.toLowerCase().includes('conte uma piada') ||
+         lastMessage.message.toLowerCase().includes('invente uma piada'));
+      
+      addLog(`🔍 Checking for joke: message exists=${!!lastMessage?.message}, isJoke=${isJokeMessage}`);
+      if (lastMessage?.message) {
+        addLog(`🔍 Message preview: "${lastMessage.message.substring(0, 100)}..."`);
+      }
+      
+      if (isJokeMessage) {
         try {
           // Wait for the audio to completely finish, then play the ba-dum-tss sound
           addLog('🎭 Joke audio finished, playing ba-dum-tss in 500ms...');
@@ -250,6 +271,8 @@ export function useGeminiDirect(userId: number) {
         } catch (error) {
           addLog(`❌ Failed to play ba-dum-tss after joke: ${error}`);
         }
+      } else {
+        addLog('🔍 Not a joke message, skipping ba-dum-tss sound');
       }
 
       // Generate transcript based on the user's message

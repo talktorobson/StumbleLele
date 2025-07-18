@@ -102,7 +102,9 @@ Invente uma piada nova e divertida AGORA sobre ${randomTheme} para uma criança!
     try {
       // Use the same working sendMessage function from chat
       // The ba-dum-tss sound will be handled automatically by the useGeminiDirect hook
-      await sendMessage(jokePrompt);
+      // Add a clear marker to help identify this as a joke request
+      const jokeMarker = "[JOKE_REQUEST] ";
+      await sendMessage(jokeMarker + jokePrompt);
       
       // Invalidate avatar queries to update state
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
