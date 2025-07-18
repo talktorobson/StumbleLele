@@ -33,22 +33,22 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
     
     // Generate variety by randomizing joke themes and styles
     const jokeThemes = [
-      "animais brasileiros como onça, tucano, preguiça, capivara",
-      "comidas brasileiras como açaí, pão de açúcar, brigadeiro, coxinha", 
-      "escola e professores de forma divertida",
-      "brincadeiras de criança como esconde-esconde, pique-pega",
-      "frutas tropicais como manga, abacaxi, caju, goiaba",
-      "personagens de desenho animado brasileiros",
-      "lugares do Brasil como praia, floresta, cidade",
-      "brinquedos e jogos que crianças adoram"
+      "redes sociais e tecnologia brasileira",
+      "vida de adolescente no Brasil - escola, amigos, paquera",
+      "música brasileira e artistas populares",
+      "séries e filmes que todo mundo assiste",
+      "comidas brasileiras que adolescentes adoram",
+      "situações típicas de adolescente brasileiro",
+      "memes e tendências da internet",
+      "esportes e times brasileiros"
     ];
     
     const jokeStyles = [
-      "pergunta e resposta",
-      "historinha curta e engraçada", 
-      "trocadilho com palavras",
-      "piada de adivinhação",
-      "situação absurda e divertida"
+      "piada inteligente com trocadilho",
+      "situação engraçada de adolescente", 
+      "comparação hilária do tipo 'é como se...'",
+      "piada sobre diferenças geracionais",
+      "humor sarcástico mas divertido"
     ];
     
     const randomTheme = jokeThemes[Math.floor(Math.random() * jokeThemes.length)];
@@ -56,7 +56,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
     const randomNumber = Math.floor(Math.random() * 1000); // Add uniqueness
     
     // Use the same working Gemini Direct approach as the chat
-    const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa! 
+    const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa conversando com uma amiguinha adolescente! 
 
 CONFIGURAÇÃO DE VOZ:
 - Use a voz Leda com sotaque brasileiro natural
@@ -67,20 +67,21 @@ CONFIGURAÇÃO DE VOZ:
 - Velocidade natural, mais rápida quando empolgada
 
 TAREFA: Conte uma piada NOVA e DIFERENTE (#${randomNumber}) sobre ${randomTheme} no estilo ${randomStyle}. A piada deve ser:
-- Engraçada e inocente, sem nenhum conteúdo adulto
-- Com contexto brasileiro e regional
-- Simples de entender para crianças
-- Que faça uma criança rir muito
-- Use linguagem bem simples e alegre
-- Termine com uma risadinha natural como "hihihi" ou "hahaha"
+- Engraçada e apropriada para adolescentes brasileiras
+- Com contexto brasileiro atual e urbano
+- Inteligente e esperta, não infantil
+- Que faça uma adolescente rir e se identificar
+- Use linguagem jovem mas não vulgar
+- Sobre temas que adolescentes conhecem e vivem
 
 IMPORTANTE: 
 - Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis
-- Seja natural e espontânea como uma criança brasileira contando para um amiguinho
+- Seja natural e espontânea como uma criança brasileira contando para uma amiguinha
 - SEMPRE invente uma piada completamente nova, nunca repita piadas anteriores
 - Seja criativa e surpreenda com uma piada original
+- TERMINE com som de bumbo: "tss tss boom boom" (como adolescentes fazem após contar piadas)
 
-Invente uma piada nova e divertida AGORA sobre ${randomTheme}!`;
+Invente uma piada nova e divertida AGORA sobre ${randomTheme} para uma adolescente!`;
     
     try {
       // Use the same working sendMessage function from chat

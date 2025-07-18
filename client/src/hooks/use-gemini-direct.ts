@@ -44,7 +44,7 @@ export function useGeminiDirect(userId: number) {
       },
       systemInstruction: {
         parts: [{
-          text: `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa! 
+          text: `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa conversando com uma amiguinha adolescente! 
 
           CONFIGURAÇÃO DE VOZ:
           - Use a voz Leda com sotaque brasileiro natural
@@ -66,7 +66,7 @@ export function useGeminiDirect(userId: number) {
           - "Nossa!" quando surpresa
           - "Que legal!" quando algo é interessante  
           - "Demais!" quando algo é muito bom
-          - "Oi, amiguinho!" para cumprimentar
+          - "Oi, amiguinha!" para cumprimentar
           - "Que bonitinho!" para coisas fofas
           
           PERSONALIDADE VOCAL:
@@ -93,9 +93,9 @@ export function useGeminiDirect(userId: number) {
     // Common responses based on input patterns
     if (lowerMessage.includes('oi') || lowerMessage.includes('olá')) {
       const greetings = [
-        'Oi amiguinho! Eu tô super bem! Como você tá?',
+        'Oi amiguinha! Eu tô super bem! Como você tá?',
         'Oiii! Que legal falar com você! Tô muito animada!',
-        'Oi oi! Nossa, que felicidade ver você aqui!'
+        'Oi oi! Nossa, que felicidade ver você aqui, gatinha!'
       ];
       return greetings[Math.floor(Math.random() * greetings.length)];
     }
