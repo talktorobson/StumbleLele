@@ -105,10 +105,14 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
    # Add your AI API keys (at least one required)
    OPENAI_API_KEY=your_openai_api_key_here
    XAI_API_KEY=your_xai_api_key_here
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   ANTHROPIC_API_KEY=your_anthropic_api_key_here
    
    # Optional: Add PostgreSQL connection
    DATABASE_URL=postgresql://user:password@host:port/database
    ```
+   
+   **⚠️ SECURITY NOTE**: Never commit your `.env` file to Git. It contains sensitive API keys.
 
 4. **Start the development server**
    ```bash
@@ -185,7 +189,10 @@ StumbleLele/
 | `OPENAI_API_KEY` | OpenAI API key for GPT-4 | Yes (or other AI) |
 | `XAI_API_KEY` | XAI API key for Grok-3 | Yes (or other AI) |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude | Yes (or other AI) |
+| `VITE_GEMINI_API_KEY` | Google Gemini API key for Live Audio | Yes (or other AI) |
 | `DATABASE_URL` | PostgreSQL connection string | No (uses in-memory) |
+| `VITE_SUPABASE_URL` | Supabase project URL | No |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | No |
 | `PORT` | Server port (default: 5000) | No |
 
 ### Customization
@@ -292,6 +299,30 @@ For production deployment, we recommend using Vercel with Supabase:
 - **Railway**: Works with the same configuration
 - **Render**: Compatible with PostgreSQL addon
 - **Heroku**: Use Heroku Postgres addon
+
+## 🔐 Security
+
+### API Key Security
+- **Never commit `.env` files** to version control
+- **Use environment variables** for all sensitive data
+- **Rotate API keys regularly** (every 90 days recommended)
+- **Monitor API usage** for unauthorized access
+- **Use different keys** for development/production
+
+### Deployment Security
+- **Set environment variables** in hosting platform (Vercel, Railway, etc.)
+- **Enable domain restrictions** where possible
+- **Set usage quotas** to prevent abuse
+- **Monitor logs** for suspicious activity
+
+### Child Safety
+- **All AI responses** are filtered for age-appropriate content
+- **No external communications** outside the AI providers
+- **Secure data storage** with encryption
+- **No personal information** collected or stored
+- **Offline-first design** where possible
+
+📋 **See [SECURITY_GUIDE.md](SECURITY_GUIDE.md) for detailed security practices.**
 
 ## 🤝 Contributing
 
