@@ -82,10 +82,10 @@ export default function Chat({ userId }: ChatProps) {
   };
 
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
-    const scrollArea = document.querySelector('.chat-messages .scroll-area-viewport');
+    // Auto-scroll to top when new messages arrive (since we use flex-col-reverse)
+    const scrollArea = document.querySelector('[data-radix-scroll-area-viewport]');
     if (scrollArea) {
-      scrollArea.scrollTop = scrollArea.scrollHeight;
+      scrollArea.scrollTop = 0;
     }
   }, [messages]);
 

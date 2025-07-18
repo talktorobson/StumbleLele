@@ -32,7 +32,7 @@ export function useGeminiDirect(userId: number) {
     setup: {
       model: 'models/gemini-2.0-flash-live-001',
       generationConfig: {
-        responseModalities: ['AUDIO'],
+        responseModalities: ['AUDIO', 'TEXT'],
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
@@ -180,9 +180,25 @@ export function useGeminiDirect(userId: number) {
           const jsonData = JSON.parse(text);
           addLog(`✅ JSON parsed successfully`);
           
-          // Debug: Log the full structure when we detect audio
+          // Debug: Process both text and audio in blob handler
           if (jsonData.serverContent && jsonData.serverContent.modelTurn && jsonData.serverContent.modelTurn.parts) {
+            const textPart = jsonData.serverContent.modelTurn.parts.find((part: any) => part.text);
             const audioPart = jsonData.serverContent.modelTurn.parts.find((part: any) => part.inlineData);
+            
+            // Handle text part for conversation history
+            if (textPart) {
+              addLog(`💬 TEXT in blob: ${textPart.text.substring(0, 50)}...`);
+              setMessages(prev => {
+                const updated = [...prev];
+                if (updated.length > 0) {
+                  const lastMessage = updated[updated.length - 1];
+                  lastMessage.response = textPart.text;
+                }
+                return updated;
+              });
+            }
+            
+            // Handle audio part
             if (audioPart) {
               addLog(`🔍 FULL AUDIO PART: ${JSON.stringify(audioPart, null, 2)}`);
               
@@ -203,6 +219,16 @@ export function useGeminiDirect(userId: number) {
                   addLog(`🎵 Converting audio data: ${arrayBuffer.byteLength} bytes`);
                   audioChunksRef.current.push(arrayBuffer);
                   addLog(`📦 Audio chunks collected: ${audioChunksRef.current.length} total`);
+                  
+                  // Mark message as having audio
+                  setMessages(prev => {
+                    const updated = [...prev];
+                    if (updated.length > 0) {
+                      const lastMessage = updated[updated.length - 1];
+                      lastMessage.hasAudio = true;
+                    }
+                    return updated;
+                  });
                 } catch (error) {
                   addLog(`❌ Failed to decode audio data: ${error}`);
                 }
