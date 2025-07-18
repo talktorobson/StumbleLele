@@ -17,7 +17,7 @@
 
 StumbleLele is an advanced interactive AI companion designed specifically for Brazilian children aged 8-11, featuring Lele - a friendly 7-year-old virtual friend who speaks Brazilian Portuguese. The application provides culturally relevant entertainment through child-appropriate humor, real-time voice chat, and interactive educational experiences, while maintaining a safe and age-appropriate environment.
 
-**🎉 Version 3.1 - Child-Focused Experience!** Now featuring intelligent humor for children aged 8-11, classic ba-dum-tss sound effects, child-friendly interactions, and enhanced Gemini Live voice integration with authentic Brazilian Portuguese female voice!
+**🎉 Version 3.2 - Perfected Experience!** Now featuring flawless ba-dum-tss sound effects on ALL jokes, completely original joke content without repetitive endings, emoji-free voice narration, and enhanced child-appropriate humor with Brazilian cultural context!
 
 ## ✨ Features
 
@@ -59,7 +59,10 @@ StumbleLele is an advanced interactive AI companion designed specifically for Br
 - **Gemini Live Integration**: Real-time AI voice generation with WebSocket streaming
 - **Leda Voice**: Authentic Brazilian Portuguese female voice with natural intonation
 - **Child-Focused Communication**: Age-appropriate interactions with simple language and topics
-- **Intelligent Joke System**: AI-powered humor with classic ba-dum-tss sound effects
+- **Perfected Joke System**: AI-powered humor with flawless ba-dum-tss sound effects on ALL jokes
+- **Original Content**: Each joke is completely unique with creative endings - no repetitive "hihihi" or "hahaha"
+- **Emoji-Free Voice**: Clean voice narration without reading emoji symbols or descriptions
+- **Enhanced Humor Quality**: Brazilian cultural context with trocadilhos, wordplay, and clever twists
 - **Smart Voice Selection**: Prioritizes Brazilian Portuguese female voices with fallback to TTS
 - **Multi-Format Audio Support**: Handles various audio formats (MP3, WAV, PCM) with automatic detection
 - **Real-time Processing**: Instant voice recognition and synthesis with comprehensive error handling
@@ -69,7 +72,8 @@ StumbleLele is an advanced interactive AI companion designed specifically for Br
 - **Virtual Friends**: Manage friend lists with online/offline status
 - **Memory Album**: Store and review special moments with Lele
 - **AI Joke Generator**: Child-appropriate jokes with real-time voice delivery using Gemini Live
-- **Classic Ba-Dum-Tss Effects**: Professional drum roll sound effects after jokes
+- **Perfected Ba-Dum-Tss Effects**: Professional drum roll sound effects after ALL jokes with perfect timing
+- **Original Joke Content**: Each joke is completely unique with creative Brazilian humor and wordplay
 - **Progress Sharing**: Compare achievements and levels
 - **Interactive Avatar**: High-quality cartoon avatar with enhanced animations and expressions
 - **Child-Friendly Interactions**: Conversations tailored for Brazilian children aged 8-11
