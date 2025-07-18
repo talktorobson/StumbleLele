@@ -82,10 +82,9 @@ export default function Chat({ userId }: ChatProps) {
   };
 
   useEffect(() => {
-    // Auto-scroll to top when new messages arrive (since we use flex-col-reverse)
-    const scrollArea = document.querySelector('[data-radix-scroll-area-viewport]');
-    if (scrollArea) {
-      scrollArea.scrollTop = 0;
+    // Auto-scroll to bottom when new messages arrive
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
@@ -108,9 +107,9 @@ export default function Chat({ userId }: ChatProps) {
       </CardHeader>
       <CardContent>
         {/* Chat Messages */}
-        <ScrollArea className="h-48 sm:h-64 mb-4 sm:mb-6 chat-messages flex flex-col-reverse">
-          <div className="space-y-3 sm:space-y-4 flex flex-col-reverse">
-            {messages.slice().reverse().map((msg: any) => (
+        <ScrollArea className="h-48 sm:h-64 mb-4 sm:mb-6 chat-messages">
+          <div className="space-y-3 sm:space-y-4">
+            {messages.map((msg: any) => (
               <div key={msg.id} className="space-y-2">
                 {/* User Message */}
                 {msg.message && (
