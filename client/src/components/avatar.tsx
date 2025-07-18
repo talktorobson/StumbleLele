@@ -40,38 +40,143 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       // Check if we have audio data from Gemini Live
       if (data.hasAudio && data.audioData) {
         console.log('🎵 Playing Gemini Live audio joke');
+        console.log('Audio data:', data.audioData);
         
         try {
           // Decode base64 audio data
           const audioData = data.audioData;
           const base64Data = audioData.data;
-          const binaryData = atob(base64Data);
-          const arrayBuffer = new ArrayBuffer(binaryData.length);
-          const uint8Array = new Uint8Array(arrayBuffer);
+          const mimeType = audioData.mimeType;
           
-          for (let i = 0; i < binaryData.length; i++) {
-            uint8Array[i] = binaryData.charCodeAt(i);
+          console.log('🎵 Audio format:', mimeType);
+          console.log('🎵 Audio data length:', base64Data.length);
+          
+          // Try different approaches based on mime type
+          if (mimeType && mimeType.includes('audio/')) {
+            // If we have a proper audio mime type, use Audio element
+            const audioBlob = new Blob([Uint8Array.from(atob(base64Data), c => c.charCodeAt(0))], { type: mimeType });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            
+            // Set volume and ensure audio is audible
+            audio.volume = 1.0;
+            audio.preload = 'auto';
+            
+            audio.onloadeddata = () => {
+              console.log('🔊 Audio loaded, attempting to play...');
+              console.log('🔊 Audio duration:', audio.duration);
+              console.log('🔊 Audio ready state:', audio.readyState);
+              
+              // Ensure audio context is resumed (required for some browsers)
+              const playPromise = audio.play();
+              if (playPromise !== undefined) {
+                playPromise
+                  .then(() => {
+                    console.log('🎵 Audio playback started successfully');
+                  })
+                  .catch(error => {
+                    console.error('❌ Audio play failed:', error);
+                    // Fallback to TTS
+                    speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+                  });
+              }
+            };
+            
+            audio.onerror = (error) => {
+              console.error('❌ Audio element failed:', error);
+              // Fallback to TTS
+              speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+            };
+            
+            audio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              console.log('🎵 Audio playback completed');
+            };
+            
+          } else {
+            // Fallback to PCM decoding
+            console.log('🎵 Trying PCM audio decoding...');
+            const binaryData = atob(base64Data);
+            const arrayBuffer = new ArrayBuffer(binaryData.length);
+            const uint8Array = new Uint8Array(arrayBuffer);
+            
+            for (let i = 0; i < binaryData.length; i++) {
+              uint8Array[i] = binaryData.charCodeAt(i);
+            }
+            
+            // Try Web Audio API with different sample rates
+            const audioContext = new AudioContext();
+            
+            // Ensure audio context is running
+            if (audioContext.state === 'suspended') {
+              await audioContext.resume();
+            }
+            
+            // First try decoding as a complete audio file
+            audioContext.decodeAudioData(arrayBuffer.slice(0))
+              .then(audioBuffer => {
+                console.log('🔊 Audio decoded successfully, playing...');
+                console.log('🔊 Audio buffer duration:', audioBuffer.duration);
+                console.log('🔊 Audio buffer channels:', audioBuffer.numberOfChannels);
+                console.log('🔊 Audio buffer sample rate:', audioBuffer.sampleRate);
+                
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                
+                // Create a gain node to control volume
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 1.0;
+                
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                source.onended = () => {
+                  console.log('🎵 Web Audio playback completed');
+                };
+                
+                source.start();
+                console.log('🎵 Web Audio playback started');
+              })
+              .catch(error => {
+                console.log('❌ Audio decoding failed, trying PCM...', error);
+                
+                // Fallback to PCM interpretation
+                const sampleRate = 24000;
+                const samples = arrayBuffer.byteLength / 2;
+                console.log('🔊 PCM samples:', samples, 'Sample rate:', sampleRate);
+                
+                if (samples > 0) {
+                  const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
+                  const channelData = audioBuffer.getChannelData(0);
+                  
+                  const view = new DataView(arrayBuffer);
+                  for (let i = 0; i < samples; i++) {
+                    const sample = view.getInt16(i * 2, true);
+                    channelData[i] = sample / 32768.0;
+                  }
+                  
+                  const source = audioContext.createBufferSource();
+                  source.buffer = audioBuffer;
+                  
+                  // Create a gain node to control volume
+                  const gainNode = audioContext.createGain();
+                  gainNode.gain.value = 1.0;
+                  
+                  source.connect(gainNode);
+                  gainNode.connect(audioContext.destination);
+                  
+                  source.onended = () => {
+                    console.log('🎵 PCM audio playback completed');
+                  };
+                  
+                  source.start();
+                  console.log('🔊 PCM audio playback started');
+                } else {
+                  console.error('❌ No PCM samples to play');
+                  speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+                }
+              });
           }
-          
-          // Play PCM audio
-          const audioContext = new AudioContext();
-          const sampleRate = 24000;
-          const samples = arrayBuffer.byteLength / 2;
-          const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
-          const channelData = audioBuffer.getChannelData(0);
-          
-          const view = new DataView(arrayBuffer);
-          for (let i = 0; i < samples; i++) {
-            const sample = view.getInt16(i * 2, true);
-            channelData[i] = sample / 32768.0;
-          }
-          
-          const source = audioContext.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(audioContext.destination);
-          source.start();
-          
-          console.log('🔊 Gemini Live audio playback started');
           
         } catch (error) {
           console.error('❌ Audio playback failed:', error);
