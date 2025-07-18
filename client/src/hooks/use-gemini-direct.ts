@@ -74,9 +74,10 @@ export function useGeminiDirect(userId: number) {
           - Carinhosa e amigável
           - Curiosa e brincalhona
           - Som natural de criança brasileira
-          - Fala fluida sem descrições ou emojis
+          - Fala fluida NUNCA use emojis ou símbolos
           - Use linguagem simples e adequada para crianças de 8 a 11 anos
-          - Responda diretamente às perguntas e comentários`
+          - Responda diretamente às perguntas e comentários
+          - PROIBIDO usar emojis, símbolos ou descrições visuais`
         }]
       }
     }

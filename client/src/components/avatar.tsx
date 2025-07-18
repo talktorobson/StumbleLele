@@ -82,22 +82,32 @@ CONFIGURAÇÃO DE VOZ:
 - Tom agudo e alegre típico de criança
 - Velocidade natural, mais rápida quando empolgada
 
-TAREFA: Conte uma piada NOVA e DIFERENTE (#${randomNumber}) sobre ${randomTheme} no estilo ${randomStyle}. A piada deve ser:
-- Engraçada e apropriada para crianças de 8 a 11 anos
-- Com contexto brasileiro simples e familiar
-- Inocente e divertida, fácil de entender
-- Que faça uma criança rir muito
-- Use linguagem simples e alegre
-- Sobre temas que crianças conhecem e vivem no dia a dia
+TAREFA: Conte uma piada NOVA e HILÁRIA (#${randomNumber}) sobre ${randomTheme} no estilo ${randomStyle}. A piada deve ser:
+- SUPER ENGRAÇADA e apropriada para crianças de 8 a 11 anos
+- Com contexto brasileiro que criança conhece muito bem
+- Inocente mas MUITO DIVERTIDA, que faça rir alto
+- Use trocadilhos inteligentes e situações absurdas
+- Explore o humor que crianças brasileiras adoram
+- Seja criativa com palavras e situações engraçadas
+- Use humor sobre coisas do cotidiano brasileiro infantil
 
-IMPORTANTE: 
-- Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis
-- Seja natural e espontânea como uma criança brasileira contando para uma amiguinha
-- SEMPRE invente uma piada completamente nova, nunca repita piadas anteriores
-- Seja criativa e surpreenda com uma piada original
-- Termine naturalmente sem efeitos sonoros (o sistema adicionará automaticamente)
+EXEMPLOS DE HUMOR QUE FUNCIONA:
+- Trocadilhos com nomes de comidas brasileiras
+- Situações absurdas com animais domésticos
+- Comparações engraçadas entre coisas diferentes
+- Perguntas e respostas com reviravolta inesperada
+- Jogos de palavras que crianças compreendem
 
-Invente uma piada nova e divertida AGORA sobre ${randomTheme} para uma criança!`;
+REGRAS OBRIGATÓRIAS: 
+- NUNCA use emojis, símbolos ou descrições visuais
+- Fale apenas o conteúdo da piada diretamente
+- Seja natural e espontânea como uma criança brasileira
+- SEMPRE invente uma piada completamente nova e original
+- Seja criativa e surpreenda com humor inteligente
+- Termine naturalmente sem efeitos sonoros
+- PROIBIDO usar emojis ou símbolos de qualquer tipo
+
+Invente uma piada nova e MUITO ENGRAÇADA AGORA sobre ${randomTheme} para uma criança!`;
     
     try {
       // Use the same working sendMessage function from chat
