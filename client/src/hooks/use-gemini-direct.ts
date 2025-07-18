@@ -145,6 +145,14 @@ export function useGeminiDirect(userId: number) {
           const jsonData = JSON.parse(text);
           addLog(`✅ JSON parsed successfully`);
           
+          // Debug: Log the full structure when we detect audio
+          if (jsonData.serverContent && jsonData.serverContent.modelTurn && jsonData.serverContent.modelTurn.parts) {
+            const audioPart = jsonData.serverContent.modelTurn.parts.find((part: any) => part.inlineData);
+            if (audioPart) {
+              addLog(`🔍 FULL AUDIO PART: ${JSON.stringify(audioPart, null, 2)}`);
+            }
+          }
+          
           // Check for server content and response types
           if (jsonData.serverContent) {
             addLog('✅ Server content received');
