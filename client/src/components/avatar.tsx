@@ -68,9 +68,14 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               // Create AudioContext for PCM playback
               const audioContext = new AudioContext();
               
+              console.log('🔊 AudioContext state:', audioContext.state);
+              console.log('🔊 AudioContext sample rate:', audioContext.sampleRate);
+              
               // Ensure audio context is running
               if (audioContext.state === 'suspended') {
+                console.log('🔊 Resuming suspended audio context...');
                 await audioContext.resume();
+                console.log('🔊 AudioContext resumed, new state:', audioContext.state);
               }
               
               // PCM format: 24kHz sample rate, 16-bit signed integers
@@ -90,18 +95,41 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               
               // Convert 16-bit PCM to float32 (-1.0 to 1.0)
               const view = new DataView(arrayBuffer);
+              let maxSample = 0;
+              let minSample = 0;
+              let nonZeroSamples = 0;
               for (let i = 0; i < samples; i++) {
                 const sample = view.getInt16(i * 2, true); // little-endian
-                channelData[i] = sample / 32768.0;
+                const normalizedSample = sample / 32768.0;
+                channelData[i] = normalizedSample;
+                
+                // Track min/max for debugging
+                maxSample = Math.max(maxSample, normalizedSample);
+                minSample = Math.min(minSample, normalizedSample);
+                
+                // Count non-zero samples
+                if (sample !== 0) {
+                  nonZeroSamples++;
+                }
+              }
+              
+              console.log('🔊 Audio data range:', { minSample, maxSample, nonZeroSamples, totalSamples: samples });
+              
+              // Check if audio is just silence
+              if (nonZeroSamples === 0) {
+                console.log('⚠️ WARNING: Audio data appears to be all zeros (silence)');
+                // Fallback to TTS
+                speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+                return;
               }
               
               // Create and play audio
               const source = audioContext.createBufferSource();
               source.buffer = audioBuffer;
               
-              // Add gain control for volume
+              // Add gain control for volume (boost it)
               const gainNode = audioContext.createGain();
-              gainNode.gain.value = 1.0;
+              gainNode.gain.value = 2.0; // Boost volume
               
               source.connect(gainNode);
               gainNode.connect(audioContext.destination);
@@ -110,8 +138,44 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
                 console.log('🎵 PCM audio playback completed');
               };
               
+              // Add start event listener
+              source.addEventListener('ended', () => {
+                console.log('🎵 PCM audio ended event fired');
+              });
+              
               source.start();
               console.log('🔊 PCM audio playback started successfully');
+              
+              // Debug: Check if audio is actually playing
+              setTimeout(() => {
+                console.log('🔊 Audio context state after 100ms:', audioContext.state);
+                console.log('🔊 Current time:', audioContext.currentTime);
+              }, 100);
+              
+              // Test: Generate a simple beep to verify audio is working
+              const testBeep = () => {
+                const testContext = new AudioContext();
+                if (testContext.state === 'suspended') {
+                  testContext.resume();
+                }
+                
+                const oscillator = testContext.createOscillator();
+                const testGain = testContext.createGain();
+                
+                oscillator.connect(testGain);
+                testGain.connect(testContext.destination);
+                
+                oscillator.frequency.value = 440; // A4 note
+                testGain.gain.value = 0.1;
+                
+                oscillator.start();
+                oscillator.stop(testContext.currentTime + 0.1);
+                
+                console.log('🔊 Test beep played to verify audio system');
+              };
+              
+              // Play test beep after 300ms
+              setTimeout(testBeep, 300);
               
             } catch (error) {
               console.error('❌ PCM audio processing failed:', error);
