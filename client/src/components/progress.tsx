@@ -5,28 +5,61 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Star, Gamepad2, Heart, Smile, ArrowUp, Target, Zap, Settings } from "lucide-react";
 import AIModelSelector from "@/components/ai-model-selector";
 
+interface GameProgressItem {
+  gameType: string;
+  level: number;
+  score: number;
+}
+
+interface MemoryItem {
+  id: string;
+  content: string;
+  category: string;
+  timestamp: string;
+}
+
+interface ConversationItem {
+  id: string;
+  message: string;
+  response: string;
+  timestamp: string;
+}
+
+interface ProgressionItem {
+  currentLevel: number;
+  gamesPlayed: number;
+  nextLevelRequirements: { level: number };
+  averageScore: number;
+  accuracy: number;
+  bestScore: number;
+}
+
+interface User {
+  aiModel: string;
+}
+
 interface ProgressProps {
   userId: number;
 }
 
 export default function Progress({ userId }: ProgressProps) {
-  const { data: gameProgress = [] } = useQuery({
+  const { data: gameProgress = [] } = useQuery<GameProgressItem[]>({
     queryKey: ["/api/game/progress", userId],
   });
 
-  const { data: memories = [] } = useQuery({
+  const { data: memories = [] } = useQuery<MemoryItem[]>({
     queryKey: ["/api/memories", userId],
   });
 
-  const { data: conversations = [] } = useQuery({
+  const { data: conversations = [] } = useQuery<ConversationItem[]>({
     queryKey: ["/api/conversations", userId],
   });
 
-  const { data: progressions = {} } = useQuery({
+  const { data: progressions = {} } = useQuery<Record<string, ProgressionItem>>({
     queryKey: ["/api/game/progressions", userId],
   });
 
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User>({
     queryKey: ["/api/user", userId],
   });
 

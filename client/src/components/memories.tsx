@@ -3,12 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Smile, Gamepad2, Laugh, Tag } from "lucide-react";
 
+interface Memory {
+  id: string;
+  content: string;
+  category: string;
+  timestamp: string;
+}
+
 interface MemoriesProps {
   userId: number;
 }
 
 export default function Memories({ userId }: MemoriesProps) {
-  const { data: memories = [] } = useQuery({
+  const { data: memories = [] } = useQuery<Memory[]>({
     queryKey: ["/api/memories", userId],
   });
 

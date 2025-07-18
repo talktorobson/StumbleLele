@@ -6,7 +6,6 @@ import Games from "@/components/games";
 import Friends from "@/components/friends";
 import Memories from "@/components/memories";
 import Progress from "@/components/progress";
-import GeminiLiveVoice from "@/components/gemini-live-voice";
 import GeminiDebug from "@/components/gemini-debug";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,9 +18,14 @@ import {
   Mic 
 } from "lucide-react";
 
+interface AvatarState {
+  currentEmotion: string;
+  personality: any; // You might want to define a more specific type for personality
+  lastInteraction: string;
+}
+
 export default function Home() {
   const [currentSection, setCurrentSection] = useState("home");
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
   
   const userId = 1; // Default user Helena
 
@@ -29,7 +33,7 @@ export default function Home() {
     queryKey: ["/api/user", userId],
   });
 
-  const { data: avatarState } = useQuery({
+  const { data: avatarState } = useQuery<AvatarState>({
     queryKey: ["/api/avatar", userId],
   });
 
@@ -170,28 +174,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Floating Voice Button - Bigger for kids */}
-      <Button
-        size="lg"
-        className={`fixed bottom-32 left-4 w-20 h-20 sm:left-6 sm:w-24 sm:h-24 bg-gradient-to-br from-red-400 to-pink-500 rounded-full shadow-2xl hover:scale-110 transition-all z-40 border-4 border-white ${
-          isVoiceActive ? "animate-pulse from-green-400 to-blue-500" : ""
-        }`}
-        onClick={() => setIsVoiceActive(!isVoiceActive)}
-      >
-        <div className="flex flex-col items-center">
-          <Mic className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-          <span className="text-xs text-white font-bold mt-1">Falar</span>
-        </div>
-      </Button>
-
-      {/* Gemini Live Voice Component */}
-      {isVoiceActive && (
-        <GeminiLiveVoice
-          userId={userId}
-          isOpen={isVoiceActive}
-          onClose={() => setIsVoiceActive(false)}
-        />
-      )}
 
       {/* Debug Component */}
       <GeminiDebug />

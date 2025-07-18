@@ -633,6 +633,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const conversations = await storage.getConversations(userId);
           return res.json(conversations);
         }
+        if (req.method === 'POST') {
+          const { userId, message, response } = req.body;
+          
+          if (!userId || !message || !response) {
+            return res.status(400).json({ message: "userId, message e response são obrigatórios" });
+          }
+          
+          const conversation = await storage.createConversation({
+            userId,
+            message,
+            response
+          });
+          
+          return res.json(conversation);
+        }
         break;
 
       case 'avatar':

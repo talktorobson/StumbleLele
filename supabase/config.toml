@@ -1,0 +1,48 @@
+[project]
+ref = "vbtfaypcrupztcnbdlmf"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54322
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://stumble-lele.vercel.app"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_update_password_required = true
+enable_signup = true
+
+[db]
+port = 54323
+shadow_port = 54324
+major_version = 15
+
+[studio]
+enabled = true
+port = 54325
+api_url = "http://localhost:54321"
+
+[inbucket]
+enabled = true
+port = 54326
+smtp_port = 54327
+pop3_port = 54328
+
+[storage]
+enabled = true
+port = 54329
+file_size_limit = "50MiB"
+image_transformation = true
+
+[functions]
+enabled = true
+port = 54330
+
+[analytics]
+enabled = false

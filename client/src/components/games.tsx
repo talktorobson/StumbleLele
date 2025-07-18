@@ -12,6 +12,12 @@ import MathGame from "./games/math-game";
 import EmotionGame from "./games/emotion-game";
 import CosmicBlasterGame from "./games/cosmic-blaster-game";
 
+interface GameProgress {
+  gameType: string;
+  level: number;
+  score: number;
+}
+
 interface GamesProps {
   userId: number;
 }
@@ -22,7 +28,7 @@ export default function Games({ userId }: GamesProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: gameProgress = [] } = useQuery({
+  const { data: gameProgress = [] } = useQuery<GameProgress[]>({
     queryKey: ["/api/game/progress", userId],
   });
 

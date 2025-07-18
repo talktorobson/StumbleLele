@@ -10,6 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import FriendChat from "@/components/friend-chat";
 
+interface Friend {
+  id: number;
+  friend_name: string;
+  status: string;
+}
+
 interface FriendsProps {
   userId: number;
 }
@@ -17,11 +23,11 @@ interface FriendsProps {
 export default function Friends({ userId }: FriendsProps) {
   const [newFriendName, setNewFriendName] = useState("");
   const [isAddingFriend, setIsAddingFriend] = useState(false);
-  const [activeChatFriend, setActiveChatFriend] = useState<any>(null);
+  const [activeChatFriend, setActiveChatFriend] = useState<Friend | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: friends = [] } = useQuery({
+  const { data: friends = [] } = useQuery<Friend[]>({
     queryKey: ["/api/friends", userId],
   });
 

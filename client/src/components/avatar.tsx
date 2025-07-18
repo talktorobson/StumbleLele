@@ -6,7 +6,6 @@ import { MessageCircle, Gamepad2, Laugh, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAvatar } from "@/hooks/use-avatar";
-import { useGeminiLive } from "@/hooks/use-gemini-live";
 import { useSpeech } from "@/hooks/use-speech";
 import { motion } from "framer-motion";
 
@@ -23,7 +22,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { currentEmotion, setEmotion, getEmotionIcon } = useAvatar(avatarState?.currentEmotion);
-  const { sendTextMessage, connect, isConnected } = useGeminiLive(userId);
+  // Note: Using regular TTS for now since Gemini Live is integrated via Supabase Realtime
   const { speak } = useSpeech();
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -44,7 +43,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       console.log('Using TTS fallback for joke delivery');
       
       // Use speech synthesis for voice delivery
-      speak(`Olá! Aqui está uma piada para você: ${data.joke}`, 'playful');
+      speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
     },
     onError: () => {
       toast({
