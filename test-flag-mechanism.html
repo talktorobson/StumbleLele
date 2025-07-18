@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Flag Mechanism</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
+        }
+        .joke-flag {
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+        .audio-event {
+            color: #2196F3;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚩 Flag Mechanism Test</h1>
+        <p>Testing the joke flag mechanism that should trigger ba-dum-tss sound.</p>
+        
+        <button onclick="simulateJokeRequest()">🎭 Simulate Joke Request</button>
+        <button onclick="simulateNormalMessage()">💬 Simulate Normal Message</button>
+        <button onclick="simulateAudioCompletion()">🎵 Simulate Audio Completion</button>
+        <button onclick="clearLog()">🗑️ Clear Log</button>
+        
+        <div id="log" class="log">
+            <div class="log-entry">Ready to test flag mechanism...</div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the flag mechanism
+        let isJokeRequestFlag = false;
+        
+        function log(message, type = 'normal') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '<div class="log-entry">Log cleared...</div>';
+        }
+        
+        function simulateJokeRequest() {
+            const message = "[JOKE_REQUEST] Você é Lele, uma menina brasileira de 7 anos...";
+            
+            // Simulate sendMessage logic
+            const isJokeMessage = message.includes('[JOKE_REQUEST]') || 
+                                 message.toLowerCase().includes('piada') || 
+                                 message.toLowerCase().includes('conte uma piada') ||
+                                 message.toLowerCase().includes('invente uma piada');
+            
+            isJokeRequestFlag = isJokeMessage;
+            log(`📤 Sending message: "${message.substring(0, 50)}..."`);
+            log(`🎭 Setting joke request flag: ${isJokeMessage}`, 'joke-flag');
+            
+            // Simulate audio processing
+            setTimeout(() => {
+                log('🎵 Audio chunks collected and playing...', 'audio-event');
+                setTimeout(() => {
+                    simulateAudioCompletion();
+                }, 2000);
+            }, 1000);
+        }
+        
+        function simulateNormalMessage() {
+            const message = "Oi, como você está hoje?";
+            
+            // Simulate sendMessage logic
+            const isJokeMessage = message.includes('[JOKE_REQUEST]') || 
+                                 message.toLowerCase().includes('piada') || 
+                                 message.toLowerCase().includes('conte uma piada') ||
+                                 message.toLowerCase().includes('invente uma piada');
+            
+            isJokeRequestFlag = isJokeMessage;
+            log(`📤 Sending message: "${message}"`);
+            log(`🎭 Setting joke request flag: ${isJokeMessage}`, 'joke-flag');
+            
+            // Simulate audio processing
+            setTimeout(() => {
+                log('🎵 Audio chunks collected and playing...', 'audio-event');
+                setTimeout(() => {
+                    simulateAudioCompletion();
+                }, 2000);
+            }, 1000);
+        }
+        
+        function simulateAudioCompletion() {
+            log('🔊 PCM audio playback completed - audio finished', 'audio-event');
+            
+            // Simulate the joke check logic
+            log(`🔍 Checking for joke: joke flag=${isJokeRequestFlag}`, 'joke-flag');
+            
+            if (isJokeRequestFlag) {
+                log('🎭 Joke audio finished, playing ba-dum-tss in 500ms...', 'joke-flag');
+                setTimeout(() => {
+                    log('🥁 Now playing ba-dum-tss sound effect...', 'audio-event');
+                    
+                    // Simulate ba-dum-tss sound
+                    try {
+                        const audio = new Audio('/ba-dum-tss.wav');
+                        audio.volume = 0.7;
+                        audio.play().then(() => {
+                            log('🥁 Ba-dum-tss audio play() successful', 'audio-event');
+                        }).catch(error => {
+                            log(`❌ Ba-dum-tss failed: ${error}`, 'error');
+                        });
+                        
+                        audio.onended = () => {
+                            log('🥁 Ba-dum-tss sound completed successfully', 'audio-event');
+                            isJokeRequestFlag = false;
+                            log('🎭 Joke request flag reset', 'joke-flag');
+                        };
+                    } catch (error) {
+                        log(`❌ Failed to play ba-dum-tss: ${error}`, 'error');
+                    }
+                }, 500);
+            } else {
+                log('🔍 Not a joke request, skipping ba-dum-tss sound');
+            }
+        }
+    </script>
+</body>
+</html>

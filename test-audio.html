@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Ba-Dum-Tss Audio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥁 Ba-Dum-Tss Audio Test</h1>
+        <p>Test the ba-dum-tss sound effect that plays after jokes</p>
+        
+        <button id="testBtn" onclick="testAudio()">
+            🎵 Test Ba-Dum-Tss Sound
+        </button>
+        
+        <button onclick="simulateJoke()">
+            😄 Simulate Full Joke Experience
+        </button>
+        
+        <button onclick="testJokeDetection()">
+            🧪 Test Joke Detection Logic
+        </button>
+        
+        <div id="status" class="status">
+            Ready to test audio...
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        async function testAudio() {
+            const btn = document.getElementById('testBtn');
+            btn.disabled = true;
+            updateStatus('🎵 Playing ba-dum-tss sound...');
+            
+            try {
+                const audio = new Audio('/ba-dum-tss.wav');
+                audio.volume = 0.7;
+                
+                audio.onended = () => {
+                    updateStatus('✅ Ba-dum-tss sound completed successfully!');
+                    btn.disabled = false;
+                };
+                
+                audio.onerror = (error) => {
+                    updateStatus(`❌ Error playing sound: ${error}`);
+                    btn.disabled = false;
+                };
+                
+                await audio.play();
+                
+            } catch (error) {
+                updateStatus(`❌ Failed to play audio: ${error.message}`);
+                btn.disabled = false;
+            }
+        }
+
+        async function simulateJoke() {
+            updateStatus('🎭 Telling a joke...');
+            
+            // Simulate joke delivery with proper timing
+            setTimeout(() => {
+                updateStatus('😄 Starting joke: "Por que o computador foi ao médico?"');
+                
+                // Simulate the joke audio playing for a realistic duration
+                setTimeout(() => {
+                    updateStatus('😄 "Porque estava com vírus! Hahaha!"');
+                    
+                    // Wait for joke to finish, then play ba-dum-tss
+                    setTimeout(async () => {
+                        updateStatus('🥁 Joke finished! Now playing ba-dum-tss...');
+                        try {
+                            const audio = new Audio('/ba-dum-tss.wav');
+                            audio.volume = 0.7;
+                            
+                            audio.onended = () => {
+                                updateStatus('✅ Complete joke experience finished! Perfect timing!');
+                            };
+                            
+                            await audio.play();
+                            
+                        } catch (error) {
+                            updateStatus(`❌ Failed to play ba-dum-tss: ${error.message}`);
+                        }
+                    }, 1000); // Wait 1 second after joke finishes
+                }, 2000); // Joke takes 2 seconds to deliver
+            }, 1000);
+        }
+        
+        function testJokeDetection() {
+            // Test the joke detection logic
+            function isJokeMessage(message) {
+                if (!message) return false;
+                
+                return message.includes('[JOKE_REQUEST]') || 
+                       message.toLowerCase().includes('piada') || 
+                       message.toLowerCase().includes('conte uma piada') ||
+                       message.toLowerCase().includes('invente uma piada');
+            }
+            
+            const testMessage = "[JOKE_REQUEST] Você é Lele, uma menina brasileira de 7 anos super animada...";
+            const result = isJokeMessage(testMessage);
+            updateStatus(`🧪 Test message: "${testMessage.substring(0, 50)}..."`);
+            setTimeout(() => {
+                updateStatus(`🧪 Joke detection result: ${result ? '✅ DETECTED' : '❌ NOT DETECTED'}`);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

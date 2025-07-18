@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Joke Detection Logic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-case.failed {
+            border-left-color: #f44336;
+        }
+        .message {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .result {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .passed { color: #4CAF50; }
+        .failed { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Joke Detection Logic Test</h1>
+        <p>Testing the logic that detects when a joke request is made to trigger ba-dum-tss sound.</p>
+        
+        <div id="test-results"></div>
+        
+        <button onclick="runTests()" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 20px 0;">
+            🧪 Run Tests
+        </button>
+    </div>
+
+    <script>
+        // Simulate the joke detection logic from the hook
+        function isJokeMessage(message) {
+            if (!message) return false;
+            
+            return message.includes('[JOKE_REQUEST]') || 
+                   message.toLowerCase().includes('piada') || 
+                   message.toLowerCase().includes('conte uma piada') ||
+                   message.toLowerCase().includes('invente uma piada');
+        }
+
+        function runTests() {
+            const testCases = [
+                {
+                    name: "Joke button with marker",
+                    message: "[JOKE_REQUEST] Você é Lele, uma menina brasileira de 7 anos super animada...",
+                    expected: true
+                },
+                {
+                    name: "Direct joke request",
+                    message: "Conte uma piada para mim",
+                    expected: true
+                },
+                {
+                    name: "Joke request with 'piada'",
+                    message: "Me conta uma piada engraçada",
+                    expected: true
+                },
+                {
+                    name: "Invention request",
+                    message: "Invente uma piada nova",
+                    expected: true
+                },
+                {
+                    name: "Normal conversation",
+                    message: "Oi, como você está?",
+                    expected: false
+                },
+                {
+                    name: "Long conversation",
+                    message: "Olá Lele, eu queria falar sobre o meu dia na escola hoje...",
+                    expected: false
+                },
+                {
+                    name: "Empty message",
+                    message: "",
+                    expected: false
+                },
+                {
+                    name: "Null message",
+                    message: null,
+                    expected: false
+                }
+            ];
+
+            let resultsHTML = "<h2>Test Results:</h2>";
+            let passedTests = 0;
+            
+            testCases.forEach(testCase => {
+                const result = isJokeMessage(testCase.message);
+                const passed = result === testCase.expected;
+                
+                if (passed) passedTests++;
+                
+                resultsHTML += `
+                    <div class="test-case ${passed ? 'passed' : 'failed'}">
+                        <h3>${testCase.name}</h3>
+                        <div class="message">Message: "${testCase.message || 'null'}"</div>
+                        <div class="result">
+                            Expected: ${testCase.expected} | 
+                            Got: ${result} | 
+                            <span class="${passed ? 'passed' : 'failed'}">
+                                ${passed ? '✅ PASSED' : '❌ FAILED'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsHTML += `
+                <div style="margin-top: 20px; padding: 20px; background: rgba(255, 255, 255, 0.2); border-radius: 10px;">
+                    <h3>Summary: ${passedTests}/${testCases.length} tests passed</h3>
+                    ${passedTests === testCases.length ? 
+                        '<div class="passed">🎉 All tests passed! Joke detection logic is working correctly.</div>' : 
+                        '<div class="failed">❌ Some tests failed. The joke detection logic needs fixing.</div>'
+                    }
+                </div>
+            `;
+            
+            document.getElementById('test-results').innerHTML = resultsHTML;
+        }
+        
+        // Run tests on page load
+        window.onload = runTests;
+    </script>
+</body>
+</html>
