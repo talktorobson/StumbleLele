@@ -79,41 +79,62 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               }
               
               // PCM format: 24kHz sample rate, 16-bit signed integers
-              const sampleRate = 24000;
-              const samples = arrayBuffer.byteLength / 2;
+              const pcmSampleRate = 24000;
+              const inputSamples = arrayBuffer.byteLength / 2;
+              
+              // Use AudioContext's native sample rate for proper playback
+              const outputSampleRate = audioContext.sampleRate;
+              
+              // Calculate resampling ratio and output sample count
+              const resampleRatio = outputSampleRate / pcmSampleRate;
+              const outputSamples = Math.floor(inputSamples * resampleRatio);
               
               console.log('🔊 PCM audio details:', {
-                sampleRate,
-                samples,
-                duration: samples / sampleRate,
+                pcmSampleRate,
+                outputSampleRate,
+                inputSamples,
+                outputSamples,
+                resampleRatio,
+                duration: inputSamples / pcmSampleRate,
                 bytes: arrayBuffer.byteLength
               });
               
-              // Create AudioBuffer for PCM data
-              const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
+              // Create AudioBuffer using the AudioContext's native sample rate
+              const audioBuffer = audioContext.createBuffer(1, outputSamples, outputSampleRate);
               const channelData = audioBuffer.getChannelData(0);
               
-              // Convert 16-bit PCM to float32 (-1.0 to 1.0)
+              // Convert 16-bit PCM to float32 and resample
               const view = new DataView(arrayBuffer);
               let maxSample = 0;
               let minSample = 0;
               let nonZeroSamples = 0;
-              for (let i = 0; i < samples; i++) {
-                const sample = view.getInt16(i * 2, true); // little-endian
-                const normalizedSample = sample / 32768.0;
-                channelData[i] = normalizedSample;
+              
+              for (let i = 0; i < outputSamples; i++) {
+                // Linear interpolation for resampling
+                const sourceIndex = i / resampleRatio;
+                const lowerIndex = Math.floor(sourceIndex);
+                const upperIndex = Math.min(lowerIndex + 1, inputSamples - 1);
+                const fraction = sourceIndex - lowerIndex;
+                
+                // Get samples from PCM data
+                const lowerSample = lowerIndex < inputSamples ? view.getInt16(lowerIndex * 2, true) / 32768.0 : 0;
+                const upperSample = upperIndex < inputSamples ? view.getInt16(upperIndex * 2, true) / 32768.0 : 0;
+                
+                // Linear interpolation
+                const interpolatedSample = lowerSample + (upperSample - lowerSample) * fraction;
+                channelData[i] = interpolatedSample;
                 
                 // Track min/max for debugging
-                maxSample = Math.max(maxSample, normalizedSample);
-                minSample = Math.min(minSample, normalizedSample);
+                maxSample = Math.max(maxSample, interpolatedSample);
+                minSample = Math.min(minSample, interpolatedSample);
                 
                 // Count non-zero samples
-                if (sample !== 0) {
+                if (Math.abs(interpolatedSample) > 0.0001) {
                   nonZeroSamples++;
                 }
               }
               
-              console.log('🔊 Audio data range:', { minSample, maxSample, nonZeroSamples, totalSamples: samples });
+              console.log('🔊 Audio data range:', { minSample, maxSample, nonZeroSamples, totalSamples: outputSamples });
               
               // Check if audio is just silence
               if (nonZeroSamples === 0) {
@@ -130,7 +151,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               console.log('🔊 Volume boost calculated:', { maxAbsValue, volumeBoost });
               
               // Apply volume boost to all samples
-              for (let i = 0; i < samples; i++) {
+              for (let i = 0; i < outputSamples; i++) {
                 channelData[i] = Math.min(0.95, Math.max(-0.95, channelData[i] * volumeBoost));
               }
               
