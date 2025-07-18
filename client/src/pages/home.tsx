@@ -6,7 +6,6 @@ import Games from "@/components/games";
 import Friends from "@/components/friends";
 import Memories from "@/components/memories";
 import Progress from "@/components/progress";
-import GeminiDebug from "@/components/gemini-debug";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -173,11 +172,6 @@ export default function Home() {
           </div>
         </div>
       </nav>
-
-
-      {/* Debug Component */}
-      <GeminiDebug />
-
     </div>
   );
 }

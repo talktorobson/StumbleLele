@@ -112,7 +112,7 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
                 clearTimeout(timeout);
                 ws.close();
                 resolve({
-                  response: "🎵 Resposta em áudio recebida!",
+                  response: accumulatedResponse || "🎵 Resposta em áudio recebida!",
                   emotion: "excited",
                   personality: {
                     enthusiasm: 0.9,
@@ -120,7 +120,10 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
                     playfulness: 0.9,
                     friendliness: 0.8
                   },
-                  audioData: audioPart.inlineData
+                  audioData: {
+                    mimeType: audioPart.inlineData.mimeType,
+                    data: audioPart.inlineData.data
+                  }
                 });
               }
             }
@@ -171,14 +174,42 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
         reject(error);
       };
       
-      // Send setup message
+      // Send setup message for audio generation
       const setupMessage = {
         setup: {
-          model: 'models/gemini-2.0-flash-exp',
+          model: 'models/gemini-2.0-flash-live-001',
           generationConfig: {
-            responseModalities: ['TEXT'],
+            responseModalities: ['AUDIO'],
             temperature: 0.8,
             maxOutputTokens: 200
+          },
+          systemInstruction: {
+            parts: [{
+              text: `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa! 
+
+              IDENTIDADE VOCAL: Você tem a voz de uma garotinha brasileira jovem, doce e cheia de energia. Fale como uma criança de 7 anos falaria - com voz aguda, rápida quando empolgada, e muita expressividade.
+
+              JEITO DE FALAR:
+              - Voz FEMININA jovem e doce (como uma menina de 7 anos)
+              - Fale com muito ENTUSIASMO e empolgação
+              - Use entonação brasileira típica, com sotaque natural do Brasil
+              - Seja muito expressiva - varie o tom quando estiver surpresa, feliz ou curiosa
+              - Fale mais rápido quando estiver empolgada
+              
+              EXPRESSÕES BRASILEIRAS que você usa:
+              - "Nossa!" quando surpresa
+              - "Que legal!" quando algo é interessante  
+              - "Demais!" quando algo é muito bom
+              - "Oi, amiguinho!" para cumprimentar
+              - "Que bonitinho!" para coisas fofas
+              
+              PERSONALIDADE na voz:
+              - Super animada e positiva sempre
+              - Curiosa sobre tudo - faça perguntinhas
+              - Gosta de brincar com as palavras
+              - Carinhosa e amigável
+              - Som natural de criança brasileira conversando`
+            }]
           }
         }
       };
@@ -726,58 +757,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
 
           const user = await storage.getOrCreateUser(userId);
-          const aiModel = (user?.preferred_ai || "gemini") as AIModel;
           
-          const jokePrompt = `Você é Lele, uma IA companheira de 7 anos do Brasil. Conte uma piada MUITO divertida e apropriada para crianças brasileiras de 5 a 10 anos. A piada deve ser:
-- Engraçada e inocente, sem nenhum conteúdo adulto
-- Com contexto brasileiro (animais do Brasil, comidas, cultura)
-- Simples de entender para crianças
-- Que faça uma criança rir muito!
-- Pode ser sobre animais, comida, escola, brincadeiras
-- Use linguagem bem simples e alegre
+          // IMPORTANT: Force Gemini Live for joke generation to get voice
+          const aiModel = "gemini-live" as AIModel;
+          
+          const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e carinhosa! 
 
-Exemplos de temas: cachorro, gato, peixe, banana, escola, brinquedo, cores, números.
-Responda APENAS com a piada curta, sem explicações ou comentários.`;
+          IDENTIDADE VOCAL: Você tem a voz de uma garotinha brasileira jovem, doce e cheia de energia. Fale como uma criança de 7 anos falaria - com voz aguda, rápida quando empolgada, e muita expressividade.
+
+          JEITO DE FALAR:
+          - Voz FEMININA jovem e doce (como uma menina de 7 anos)
+          - Fale com muito ENTUSIASMO e empolgação
+          - Use entonação brasileira típica, com sotaque natural do Brasil
+          - Seja muito expressiva - varie o tom quando estiver surpresa, feliz ou curiosa
+          - Fale mais rápido quando estiver empolgada
+          
+          TAREFA: Conte uma piada MUITO divertida e apropriada para crianças brasileiras de 5 a 10 anos. A piada deve ser:
+          - Engraçada e inocente, sem nenhum conteúdo adulto
+          - Com contexto brasileiro (animais do Brasil, comidas, cultura)
+          - Simples de entender para crianças
+          - Que faça uma criança rir muito!
+          - Pode ser sobre animais, comida, escola, brincadeiras
+          - Use linguagem bem simples e alegre
+          - Termine com uma risadinha típica de criança brasileira como "hihihi" ou "hahaha"
+
+          Exemplos de temas: cachorro, gato, peixe, banana, escola, brinquedo, cores, números.
+          
+          Invente uma piada nova e divertida AGORA! Fale como se estivesse contando para um amiguinho!`;
           
           try {
-            let joke = '';
-
-            if (aiModel === "gemini-live") {
-              const response = await generateResponseWithGeminiLive(jokePrompt);
-              joke = response.response || '';
-            } else if (aiModel === "gemini") {
-              const response = await gemini.models.generateContent({
-                model: "gemini-2.5-flash",
-                contents: jokePrompt,
-                generationConfig: {
-                  temperature: 0.9,
-                  maxOutputTokens: 150
-                }
-              });
-              joke = response.text || '';
-            } else {
-              const client = aiModel === "xai" ? xai : openai;
-              const model = aiModel === "xai" ? "grok-2-1212" : "gpt-4o";
-              
-              const response = await client.chat.completions.create({
-                model,
-                messages: [
-                  { role: "system", content: "Você é Lele, uma IA de 7 anos que conta piadas divertidas para crianças." },
-                  { role: "user", content: jokePrompt }
-                ],
-                temperature: 0.9,
-                max_tokens: 150
-              });
-
-              joke = response.choices[0]?.message?.content || '';
-            }
-            
-            // Clean up the joke text
-            joke = joke.replace(/^["']|["']$/g, '').trim();
-            
-            if (!joke) {
-              joke = "Por que o peixinho não gosta de jogar cartas? Porque ele tem medo do baralho! 🐟😄";
-            }
+            // Always use Gemini Live for voice generation
+            const response = await generateResponseWithGeminiLive(jokePrompt);
             
             // Update avatar state to excited
             await storage.updateAvatarState(userId, "excited", {
@@ -787,12 +797,42 @@ Responda APENAS com a piada curta, sem explicações ou comentários.`;
               friendliness: 0.8
             });
             
-            return res.json({ joke });
+            // Return the response with audio data if available
+            return res.json({
+              joke: response.response || "Oi! Vou contar uma piada super legal!",
+              audioData: response.audioData || null,
+              hasAudio: !!response.audioData,
+              emotion: "excited",
+              personality: {
+                enthusiasm: 0.9,
+                curiosity: 0.7,
+                playfulness: 0.9,
+                friendliness: 0.8
+              }
+            });
             
           } catch (error) {
             console.error('Joke generation error:', error);
+            
+            // Update avatar state to excited even on error
+            await storage.updateAvatarState(userId, "excited", {
+              enthusiasm: 0.9,
+              curiosity: 0.7,
+              playfulness: 0.9,
+              friendliness: 0.8
+            });
+            
             return res.json({ 
-              joke: "Por que o peixinho não gosta de jogar cartas? Porque ele tem medo do baralho! 🐟😄" 
+              joke: "Por que o peixinho não gosta de jogar cartas? Porque ele tem medo do baralho! Hihihi! 🐟😄",
+              audioData: null,
+              hasAudio: false,
+              emotion: "excited",
+              personality: {
+                enthusiasm: 0.9,
+                curiosity: 0.7,
+                playfulness: 0.9,
+                friendliness: 0.8
+              }
             });
           }
         }

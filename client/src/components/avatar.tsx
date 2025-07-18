@@ -32,18 +32,57 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
       return response.json();
     },
     onSuccess: async (data) => {
-      // Remove pop-up and use Gemini Live voice delivery
       setEmotion("excited");
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
       
-      console.log('Joke received:', data.joke);
+      console.log('Joke received:', data);
       
-      // For now, let's use regular TTS since Gemini Live is having issues
-      // TODO: Fix Gemini Live configuration and re-enable
-      console.log('Using TTS fallback for joke delivery');
-      
-      // Use speech synthesis for voice delivery
-      speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+      // Check if we have audio data from Gemini Live
+      if (data.hasAudio && data.audioData) {
+        console.log('🎵 Playing Gemini Live audio joke');
+        
+        try {
+          // Decode base64 audio data
+          const audioData = data.audioData;
+          const base64Data = audioData.data;
+          const binaryData = atob(base64Data);
+          const arrayBuffer = new ArrayBuffer(binaryData.length);
+          const uint8Array = new Uint8Array(arrayBuffer);
+          
+          for (let i = 0; i < binaryData.length; i++) {
+            uint8Array[i] = binaryData.charCodeAt(i);
+          }
+          
+          // Play PCM audio
+          const audioContext = new AudioContext();
+          const sampleRate = 24000;
+          const samples = arrayBuffer.byteLength / 2;
+          const audioBuffer = audioContext.createBuffer(1, samples, sampleRate);
+          const channelData = audioBuffer.getChannelData(0);
+          
+          const view = new DataView(arrayBuffer);
+          for (let i = 0; i < samples; i++) {
+            const sample = view.getInt16(i * 2, true);
+            channelData[i] = sample / 32768.0;
+          }
+          
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioContext.destination);
+          source.start();
+          
+          console.log('🔊 Gemini Live audio playback started');
+          
+        } catch (error) {
+          console.error('❌ Audio playback failed:', error);
+          // Fallback to TTS
+          speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+        }
+      } else {
+        console.log('📢 Using TTS fallback for joke delivery');
+        // Use speech synthesis for voice delivery
+        speak(`Olá! Aqui está uma piada para você: ${data.joke}`);
+      }
     },
     onError: () => {
       toast({
