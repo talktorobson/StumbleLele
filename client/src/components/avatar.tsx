@@ -146,7 +146,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               
               // Calculate dynamic volume boost based on audio level
               const maxAbsValue = Math.max(Math.abs(maxSample), Math.abs(minSample));
-              const volumeBoost = maxAbsValue < 0.1 ? 20.0 : (maxAbsValue < 0.5 ? 10.0 : 4.0);
+              const volumeBoost = maxAbsValue < 0.01 ? 100.0 : (maxAbsValue < 0.1 ? 50.0 : 20.0);
               
               console.log('🔊 Volume boost calculated:', { maxAbsValue, volumeBoost });
               
@@ -154,6 +154,14 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               for (let i = 0; i < outputSamples; i++) {
                 channelData[i] = Math.min(0.95, Math.max(-0.95, channelData[i] * volumeBoost));
               }
+              
+              // Log some sample values after boost for debugging
+              console.log('🔊 Sample values after boost:', {
+                first10: Array.from(channelData.slice(0, 10)),
+                last10: Array.from(channelData.slice(-10)),
+                maxAfterBoost: Math.max(...channelData),
+                minAfterBoost: Math.min(...channelData)
+              });
               
               // Create and play audio
               const source = audioContext.createBufferSource();
@@ -166,15 +174,6 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
               source.connect(gainNode);
               gainNode.connect(audioContext.destination);
               
-              source.onended = () => {
-                console.log('🎵 PCM audio playback completed');
-              };
-              
-              // Add start event listener
-              source.addEventListener('ended', () => {
-                console.log('🎵 PCM audio ended event fired');
-              });
-              
               source.start();
               console.log('🔊 PCM audio playback started successfully');
               
@@ -184,30 +183,33 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
                 console.log('🔊 Current time:', audioContext.currentTime);
               }, 100);
               
-              // Test: Generate a simple beep to verify audio is working
-              const testBeep = () => {
-                const testContext = new AudioContext();
-                if (testContext.state === 'suspended') {
-                  testContext.resume();
-                }
+              // Test: Generate a simple sine wave to verify audio system works
+              source.onended = () => {
+                console.log('🎵 PCM audio playback completed');
                 
-                const oscillator = testContext.createOscillator();
-                const testGain = testContext.createGain();
-                
-                oscillator.connect(testGain);
-                testGain.connect(testContext.destination);
-                
-                oscillator.frequency.value = 440; // A4 note
-                testGain.gain.value = 0.1;
-                
-                oscillator.start();
-                oscillator.stop(testContext.currentTime + 0.1);
-                
-                console.log('🔊 Test beep played to verify audio system');
+                // Generate a test sine wave after PCM audio ends
+                setTimeout(() => {
+                  const testContext = new AudioContext();
+                  if (testContext.state === 'suspended') {
+                    testContext.resume();
+                  }
+                  
+                  const testBuffer = testContext.createBuffer(1, testContext.sampleRate * 0.5, testContext.sampleRate);
+                  const testData = testBuffer.getChannelData(0);
+                  
+                  // Generate a 440Hz sine wave
+                  for (let i = 0; i < testData.length; i++) {
+                    testData[i] = Math.sin(2 * Math.PI * 440 * i / testContext.sampleRate) * 0.3;
+                  }
+                  
+                  const testSource = testContext.createBufferSource();
+                  testSource.buffer = testBuffer;
+                  testSource.connect(testContext.destination);
+                  testSource.start();
+                  
+                  console.log('🔊 Test sine wave played after PCM audio');
+                }, 500);
               };
-              
-              // Play test beep after 300ms
-              setTimeout(testBeep, 300);
               
             } catch (error) {
               console.error('❌ PCM audio processing failed:', error);
