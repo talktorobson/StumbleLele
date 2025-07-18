@@ -9,14 +9,16 @@ StumbleLele is an interactive AI companion application for children, featuring L
 
 ### ✅ Working Features
 - **Multi-AI Chat System**: Supports Google Gemini (default), OpenAI GPT-4, XAI Grok, and Anthropic Claude
+- **Gemini Live Voice Integration**: Real-time AI voice generation with WebSocket streaming
+- **Leda Voice Configuration**: Authentic Brazilian Portuguese female voice with natural intonation
 - **AI Model Selector**: User-friendly interface to switch between AI providers with real-time updates
 - **Avatar System**: High-quality cartoon-style main avatar with new image asset + animated floating avatar
-- **Joke Generation**: AI-powered joke telling feature with emotion-based responses
+- **AI Joke Generator**: Real-time voice delivery using Gemini Live with Brazilian Portuguese enthusiasm
 - **Memory System**: Stores conversations and creates contextual memories
 - **Friend Management**: Basic CRUD operations for virtual friends
 - **Progress Tracking**: Records game scores and achievements
 - **Voice Input**: Browser-based speech recognition with iOS compatibility
-- **Voice Synthesis**: Female voice selection with emotion-based variations and iOS audio fixes
+- **Advanced Audio Support**: Multi-format audio handling (MP3, WAV, PCM) with automatic detection
 - **Responsive UI**: Mobile-friendly interface optimized for iPhone and Android devices
 - **Enhanced Navigation**: Clean bottom navigation with emoji labels (removed duplicate icons)
 - **Cosmic Blaster Game**: Complete 1945 Air Force-style space shooter with:
@@ -28,15 +30,17 @@ StumbleLele is an interactive AI companion application for children, featuring L
   - Real-time HUD with health, score, wave, and weapon level
 
 ### 🚧 Features In Development
+- **Voice Input Enhancement**: Improved speech recognition with disconnect handling
 - **Additional Games**: Memory, word, and math games need implementation
-- **Enhanced Voice**: Custom voice models for more natural speech
+- **Real-time Friend Interactions**: WebSocket multiplayer functionality
 
 ### 🔧 Technical Stack
 - Frontend: React + TypeScript + Vite + TailwindCSS + shadcn/ui
 - Backend: Vercel Serverless Functions + TypeScript
-- AI: Google Gemini 2.5 Flash (default), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
+- AI: Google Gemini Live (voice), Gemini 2.5 Flash (default), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
 - Database: PostgreSQL with Drizzle ORM (Supabase transaction pooler)
 - Deployment: Vercel (production) + port 5000 (local development)
+- Voice: Gemini Live with Leda voice for Brazilian Portuguese
 
 ## Development Guidelines
 
@@ -56,19 +60,21 @@ StumbleLele is an interactive AI companion application for children, featuring L
 - **Floating Avatar**: SVG-based animated version with longer hair matching main character style
 
 ### API Integration
-- **Multi-AI Support**: Google Gemini (primary), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
+- **Multi-AI Support**: Google Gemini Live (voice), Gemini 2.5 Flash (primary), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
+- **Gemini Live Voice**: Real-time WebSocket-based voice generation with Leda voice
 - **Model Selection**: Users can switch AI providers via UI with real-time preference updates
 - **Error Handling**: Graceful fallbacks for API failures across all providers
-- **Rate Limiting**: Consider implementing for production
+- **Audio Support**: Multi-format audio handling with automatic detection (MP3, WAV, PCM)
 - **Response Format**: Always includes emotion and personality traits
 - **Default Provider**: Google Gemini 2.5 Flash for optimal speed and performance
 
 ### Environment Variables
 ```bash
-GEMINI_API_KEY=your_key_here    # Google Gemini API (primary AI)
-XAI_API_KEY=your_key_here       # XAI Grok API (alternative)
-OPENAI_API_KEY=your_key_here    # OpenAI GPT API (alternative)
-ANTHROPIC_API_KEY=your_key_here # Anthropic Claude API (alternative)
+GEMINI_API_KEY=your_key_here         # Google Gemini API (primary AI + voice)
+VITE_GEMINI_API_KEY=your_key_here    # Google Gemini API for Live Voice features
+XAI_API_KEY=your_key_here            # XAI Grok API (alternative)
+OPENAI_API_KEY=your_key_here         # OpenAI GPT API (alternative)
+ANTHROPIC_API_KEY=your_key_here      # Anthropic Claude API (alternative)
 DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1.pooler.supabase.com:6543/postgres  # Supabase transaction pooler
 ```
 
@@ -127,9 +133,18 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 - Provide visual feedback for all actions
 - Support high contrast modes
 
-## Recent Updates (July 17, 2025)
+## Recent Updates (July 18, 2025)
 
-### Avatar System Enhancement v2.8
+### Gemini Live Voice Integration v2.9
+- **Real-time Voice Generation**: Implemented WebSocket-based Gemini Live API for authentic voice synthesis
+- **Leda Voice Configuration**: Configured Brazilian Portuguese female voice with natural intonation
+- **Multi-Format Audio Support**: Added comprehensive audio handling (MP3, WAV, PCM) with automatic detection
+- **Enhanced Audio Debugging**: Comprehensive logging and error handling for audio playback
+- **Voice Personality Optimization**: Enthusiastic, fluid, and vivid Brazilian Portuguese child-like speech
+- **Audio Context Management**: Improved browser compatibility and audio playback reliability
+- **Security Enhancements**: Comprehensive API key protection and secure environment handling
+
+### Avatar System Enhancement v2.8 (July 17, 2025)
 - **New Main Avatar**: Replaced SVG avatar with high-quality cartoon image asset (`lele-main.png`)
 - **Enhanced Floating Avatar**: Updated with longer hair to match main character + blue dress with bow pattern
 - **Improved Animations**: Added smooth motion effects, sparkle animations, and glowing borders

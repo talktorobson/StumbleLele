@@ -23,8 +23,10 @@ export function useSpeech() {
         // Log available voices for debugging on iOS
         console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
         
-        // Find the best voice for Lele (young, female, Portuguese)
+        // Find the best voice for Lele (prioritize Leda, then female, then any Portuguese)
         const suitableVoice = voices.find(voice => 
+          voice.lang === 'pt-BR' && voice.name.toLowerCase().includes('leda')
+        ) || voices.find(voice => 
           voice.lang === 'pt-BR' && 
           (voice.name.toLowerCase().includes('child') || 
            voice.name.toLowerCase().includes('young') ||
@@ -111,8 +113,10 @@ export function useSpeech() {
     // iOS fix: Always load voices fresh for each utterance
     const currentVoices = synthesis.getVoices();
     if (currentVoices.length > 0) {
-      // Find a suitable voice (e.g., a child-like or friendly female voice)
+      // Find a suitable voice (prioritize Leda, then female, then any Portuguese)
       const suitableVoice = currentVoices.find(voice => 
+        voice.lang === 'pt-BR' && voice.name.toLowerCase().includes('leda')
+      ) || currentVoices.find(voice => 
         voice.lang === 'pt-BR' && 
         (voice.name.toLowerCase().includes('child') || 
          voice.name.toLowerCase().includes('young') ||

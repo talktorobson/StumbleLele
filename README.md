@@ -6,8 +6,10 @@
   [![Node.js](https://img.shields.io/badge/Node.js-v22.14-green)](https://nodejs.org/)
   [![React](https://img.shields.io/badge/React-18.3-blue)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
-  [![XAI](https://img.shields.io/badge/XAI-Grok--3-orange)](https://x.ai/)
+  [![Gemini](https://img.shields.io/badge/Gemini-Live--2.5-green)](https://ai.google.dev/)
   [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-blue)](https://openai.com/)
+  [![XAI](https://img.shields.io/badge/XAI-Grok--3-orange)](https://x.ai/)
+  [![Vercel](https://img.shields.io/badge/Vercel-Production-black)](https://vercel.com/)
   [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 </div>
 
@@ -15,16 +17,17 @@
 
 StumbleLele is an advanced interactive AI companion designed for children, featuring Lele - a friendly 7-year-old virtual friend who speaks Brazilian Portuguese. The application provides a safe, educational, and entertaining environment where children can chat, play educational games, and create memories with their emotionally intelligent AI companion.
 
-**🎉 Version 2.3 - 1945 Air Force Game Mechanics!** Now featuring the complete Cosmic Blaster game with authentic 1945 Air Force style mechanics - automatic shooting, drag-to-move controls, and mobile-first gameplay designed for one-finger operation!
+**🎉 Version 2.9 - Gemini Live Voice Integration!** Now featuring real-time AI voice generation with Leda voice for authentic Brazilian Portuguese female speech, plus enhanced avatar system and comprehensive security improvements!
 
 ## ✨ Features
 
 ### 🤖 AI-Powered Interactions
-- **Triple AI Support**: Choose between OpenAI GPT-4, XAI Grok-3, and Anthropic Claude models
-- **Smart Conversations**: Lele responds intelligently with contextual awareness
+- **Quad AI Support**: Choose between Google Gemini 2.5 Flash (default), OpenAI GPT-4, XAI Grok-3, and Anthropic Claude models
+- **Gemini Live Voice**: Real-time AI voice generation with Leda voice for authentic Brazilian Portuguese female speech
+- **Smart Conversations**: Lele responds intelligently with contextual awareness and emotional intelligence
 - **Contextual Memory**: Remembers past conversations and creates meaningful memories
-- **Emotional Intelligence**: Dynamic expressions and responses based on conversation context
-- **Portuguese Language**: Native Brazilian Portuguese for authentic interactions
+- **Voice Integration**: Advanced speech synthesis with Brazilian Portuguese accent and child-like enthusiasm
+- **Multi-Modal Interaction**: Text, voice input, and AI-generated voice responses
 
 ### 🎮 Complete Game System
 - **5 Interactive Games**: Memory matching, word puzzles, math challenges, emotion recognition, and Cosmic Blaster
@@ -52,18 +55,21 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
 - **Eye Tracking**: Avatar follows action during games and learning activities
 - **Gesture Recognition**: Peace signs, tilting, bouncing based on emotions
 
-### 🎤 Enhanced Voice Features
-- **Emotion-Based Speech**: 8 different voice emotions with pitch and speed variations
-- **Smart Voice Selection**: Prioritizes Brazilian Portuguese female voices
-- **Contextual Emotion Detection**: Automatically selects appropriate voice tone
-- **Voice Customization**: Adjustable speed, pitch, and volume settings
-- **Real-time Processing**: Instant voice recognition and synthesis
+### 🎤 Advanced Voice Features
+- **Gemini Live Integration**: Real-time AI voice generation with WebSocket streaming
+- **Leda Voice**: Authentic Brazilian Portuguese female voice with natural intonation
+- **Emotion-Based Speech**: Dynamic voice variations based on context and emotions
+- **Smart Voice Selection**: Prioritizes Brazilian Portuguese female voices with fallback to TTS
+- **Multi-Format Audio Support**: Handles various audio formats (MP3, WAV, PCM) with automatic detection
+- **Real-time Processing**: Instant voice recognition and synthesis with comprehensive error handling
+- **Voice Personality**: Enthusiastic, fluid, and vivid Brazilian Portuguese child-like speech
 
 ### 👥 Social Features
 - **Virtual Friends**: Manage friend lists with online/offline status
 - **Memory Album**: Store and review special moments with Lele
-- **Joke Generator**: Age-appropriate jokes in Portuguese
+- **AI Joke Generator**: Age-appropriate jokes with real-time voice delivery using Gemini Live
 - **Progress Sharing**: Compare achievements and levels
+- **Interactive Avatar**: High-quality cartoon avatar with enhanced animations and expressions
 
 ### 📱 Kid-Friendly Interface Design
 - **Vibrant Visual Design**: Colorful gradients, playful animations, and engaging background elements
@@ -103,9 +109,10 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
    cp .env.example .env
    
    # Add your AI API keys (at least one required)
+   GEMINI_API_KEY=your_gemini_api_key_here
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
    OPENAI_API_KEY=your_openai_api_key_here
    XAI_API_KEY=your_xai_api_key_here
-   VITE_GEMINI_API_KEY=your_gemini_api_key_here
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    
    # Optional: Add PostgreSQL connection
@@ -137,12 +144,14 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
 - **TanStack Query** - Data fetching with offline support
 
 ### Backend
-- **Express.js** - Server framework
+- **Vercel Serverless Functions** - Scalable API endpoints
 - **TypeScript** - Type safety
+- **Google Gemini Live** - Real-time AI voice generation (primary)
 - **OpenAI API** - GPT-4 AI responses
 - **XAI API** - Grok-3 AI responses
+- **Anthropic Claude** - Additional AI support
 - **Drizzle ORM** - Database ORM
-- **PostgreSQL** - Database (optional)
+- **PostgreSQL** - Database with Supabase
 
 ## 📁 Project Structure
 
@@ -186,10 +195,11 @@ StumbleLele/
 ### Environment Variables
 | Variable | Description | Required |
 |----------|-------------|----------|
+| `GEMINI_API_KEY` | Google Gemini API key for AI responses | Yes (primary) |
+| `VITE_GEMINI_API_KEY` | Google Gemini API key for Live Audio | Yes (voice features) |
 | `OPENAI_API_KEY` | OpenAI API key for GPT-4 | Yes (or other AI) |
 | `XAI_API_KEY` | XAI API key for Grok-3 | Yes (or other AI) |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude | Yes (or other AI) |
-| `VITE_GEMINI_API_KEY` | Google Gemini API key for Live Audio | Yes (or other AI) |
 | `DATABASE_URL` | PostgreSQL connection string | No (uses in-memory) |
 | `VITE_SUPABASE_URL` | Supabase project URL | No |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | No |
@@ -229,14 +239,14 @@ StumbleLele/
 
 ## 🚧 Roadmap
 
-### ✅ Recently Completed (v2.3)
-- [x] **1945 Air Force Game Mechanics** - Complete Cosmic Blaster implementation with authentic mobile gameplay
-- [x] **Automatic Continuous Shooting** - No manual shooting controls - pure movement-focused gameplay  
-- [x] **Drag-to-Move Controls** - Touch anywhere and drag to move ship with smooth finger tracking
-- [x] **Automatic Weapon Progression** - 6-level weapon system upgrades through pickup collection
-- [x] **Pickup Collection System** - Weapon, health, and shield power-ups with auto-collection
-- [x] **Mobile-First Game Design** - One-finger operation optimized for phones and tablets
-- [x] **Visual & Audio Integration** - Pulsing animations, explosion effects, and dedicated sound effects
+### ✅ Recently Completed (v2.9)
+- [x] **Gemini Live Voice Integration** - Real-time AI voice generation with WebSocket streaming
+- [x] **Leda Voice Configuration** - Authentic Brazilian Portuguese female voice with natural intonation
+- [x] **Enhanced Audio Support** - Multi-format audio handling (MP3, WAV, PCM) with automatic detection
+- [x] **Comprehensive Security** - API key protection, secure environment handling, and GitGuardian integration
+- [x] **Avatar System Enhancement** - High-quality cartoon avatar with improved animations and expressions
+- [x] **Voice Personality Optimization** - Enthusiastic, fluid, and vivid Brazilian Portuguese child-like speech
+- [x] **Debug UI Management** - Clean separation of development tools from production interface
 
 ### ✅ Previous Milestones (v2.2)
 - [x] **Kid-Friendly Design Revolution** - Complete interface redesign optimized for children
@@ -252,6 +262,7 @@ StumbleLele/
 - [x] **Dual AI support** (OpenAI GPT-4 + XAI Grok-3)
 
 ### In Development
+- [ ] **Voice Input Enhancement** - Improved speech recognition with disconnect handling
 - [ ] **Real-time friend interactions** with WebSocket multiplayer
 - [ ] **Smart conversation memory** with personality development
 - [ ] **Parental dashboard** with detailed progress reports
@@ -282,6 +293,8 @@ For production deployment, we recommend using Vercel with Supabase:
    - Add environment variables:
      ```
      DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres
+     GEMINI_API_KEY=your_gemini_api_key_here
+     VITE_GEMINI_API_KEY=your_gemini_api_key_here
      OPENAI_API_KEY=your_openai_api_key_here
      XAI_API_KEY=your_xai_api_key_here
      ANTHROPIC_API_KEY=your_anthropic_api_key_here
@@ -340,8 +353,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
+- **Google** for Gemini Live API and real-time voice generation capabilities
 - **OpenAI** for GPT-4 API and AI capabilities
 - **XAI** for Grok-3 API and advanced AI features
+- **Anthropic** for Claude API and AI assistance
+- **Vercel** for seamless deployment and serverless functions
+- **Supabase** for PostgreSQL database and real-time features
 - **shadcn/ui** for beautiful component library
 - **Framer Motion** for smooth animations
 - **The React and TypeScript communities** for amazing tools
