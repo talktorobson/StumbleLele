@@ -228,11 +228,14 @@ export function useGeminiDirect(userId: number) {
             }
             if (audioPart) {
               addLog(`🔊 AUDIO response detected! MIME: ${audioPart.inlineData.mimeType}`);
+              addLog(`🔍 Audio part structure: ${JSON.stringify(Object.keys(audioPart.inlineData))}`);
               
               // Extract and decode base64 audio data
               if (audioPart.inlineData.data) {
                 try {
                   const base64Data = audioPart.inlineData.data;
+                  addLog(`📊 Base64 data length: ${base64Data.length} characters`);
+                  
                   const binaryData = atob(base64Data);
                   const arrayBuffer = new ArrayBuffer(binaryData.length);
                   const uint8Array = new Uint8Array(arrayBuffer);
@@ -245,16 +248,20 @@ export function useGeminiDirect(userId: number) {
                   
                   // Collect audio chunks
                   audioChunksRef.current.push(arrayBuffer);
+                  addLog(`📦 Audio chunks collected: ${audioChunksRef.current.length} total`);
                 } catch (error) {
                   addLog(`❌ Failed to decode audio data: ${error}`);
                 }
+              } else {
+                addLog(`❌ No audio data field found in inlineData`);
+                addLog(`🔍 Available inlineData fields: ${JSON.stringify(Object.keys(audioPart.inlineData))}`);
               }
             }
           }
           
           // Check for generation complete
           if (data.serverContent && data.serverContent.generationComplete) {
-            addLog('🔄 Generation complete - processing collected audio chunks');
+            addLog(`🔄 Generation complete - processing ${audioChunksRef.current.length} collected audio chunks`);
             await playCollectedAudio();
           }
           
