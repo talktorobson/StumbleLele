@@ -150,6 +150,28 @@ export function useGeminiDirect(userId: number) {
             const audioPart = jsonData.serverContent.modelTurn.parts.find((part: any) => part.inlineData);
             if (audioPart) {
               addLog(`🔍 FULL AUDIO PART: ${JSON.stringify(audioPart, null, 2)}`);
+              
+              // Process audio immediately in blob handler
+              if (audioPart.inlineData && audioPart.inlineData.data) {
+                try {
+                  const base64Data = audioPart.inlineData.data;
+                  addLog(`📊 Base64 data length: ${base64Data.length} characters`);
+                  
+                  const binaryData = atob(base64Data);
+                  const arrayBuffer = new ArrayBuffer(binaryData.length);
+                  const uint8Array = new Uint8Array(arrayBuffer);
+                  
+                  for (let i = 0; i < binaryData.length; i++) {
+                    uint8Array[i] = binaryData.charCodeAt(i);
+                  }
+                  
+                  addLog(`🎵 Converting audio data: ${arrayBuffer.byteLength} bytes`);
+                  audioChunksRef.current.push(arrayBuffer);
+                  addLog(`📦 Audio chunks collected: ${audioChunksRef.current.length} total`);
+                } catch (error) {
+                  addLog(`❌ Failed to decode audio data: ${error}`);
+                }
+              }
             }
           }
           
@@ -173,6 +195,12 @@ export function useGeminiDirect(userId: number) {
           
           if (jsonData.setupComplete) {
             addLog('✅ Setup complete - ready for audio responses');
+          }
+          
+          // Check for generation complete in blob handler too
+          if (jsonData.serverContent && jsonData.serverContent.generationComplete) {
+            addLog(`🔄 Generation complete - processing ${audioChunksRef.current.length} collected audio chunks`);
+            await playCollectedAudio();
           }
           
           // Check for error messages
@@ -218,8 +246,10 @@ export function useGeminiDirect(userId: number) {
           addLog('✅ Server content received');
           const { modelTurn } = data.serverContent;
           if (modelTurn && modelTurn.parts) {
+            addLog(`🔍 Processing ${modelTurn.parts.length} parts`);
             const textPart = modelTurn.parts.find((part: any) => part.text);
             const audioPart = modelTurn.parts.find((part: any) => part.inlineData);
+            addLog(`🔍 Found textPart: ${!!textPart}, audioPart: ${!!audioPart}`);
             
             if (textPart) {
               addLog(`💬 TEXT response: ${textPart.text.substring(0, 50)}...`);
