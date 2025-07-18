@@ -20,6 +20,7 @@ export function useGeminiDirect(userId: number) {
   const [currentEmotion, setCurrentEmotion] = useState<string>('happy');
   const [logs, setLogs] = useState<string[]>([]);
   const websocketRef = useRef<WebSocket | null>(null);
+  const audioChunksRef = useRef<ArrayBuffer[]>([]);
   const { toast } = useToast();
 
   // EXACT configuration from working debug component
@@ -83,6 +84,51 @@ export function useGeminiDirect(userId: number) {
       throw error;
     }
   }, [addLog]);
+
+  // Function to concatenate and play collected audio chunks
+  const playCollectedAudio = useCallback(async () => {
+    if (audioChunksRef.current.length === 0) {
+      addLog('❌ No audio chunks to play');
+      return;
+    }
+
+    try {
+      // Calculate total size
+      const totalSize = audioChunksRef.current.reduce((sum, chunk) => sum + chunk.byteLength, 0);
+      addLog(`🎵 Concatenating ${audioChunksRef.current.length} audio chunks, total: ${totalSize} bytes`);
+
+      // Concatenate all chunks
+      const concatenatedBuffer = new ArrayBuffer(totalSize);
+      const concatenatedArray = new Uint8Array(concatenatedBuffer);
+      let offset = 0;
+
+      for (const chunk of audioChunksRef.current) {
+        concatenatedArray.set(new Uint8Array(chunk), offset);
+        offset += chunk.byteLength;
+      }
+
+      // Play the complete audio
+      await playAudioBuffer(concatenatedBuffer);
+
+      // Update the last message with complete audio data
+      setMessages(prev => {
+        const updated = [...prev];
+        if (updated.length > 0) {
+          const lastMessage = updated[updated.length - 1];
+          lastMessage.audioData = concatenatedBuffer;
+          lastMessage.hasAudio = true;
+        }
+        return updated;
+      });
+
+      // Clear chunks for next response
+      audioChunksRef.current = [];
+      
+    } catch (error) {
+      addLog(`❌ Failed to play concatenated audio: ${error}`);
+      audioChunksRef.current = []; // Clear on error
+    }
+  }, [addLog, playAudioBuffer]);
 
   // EXACT message handling logic from debug component
   const handleMessage = useCallback(async (event: MessageEvent) => {
@@ -182,8 +228,34 @@ export function useGeminiDirect(userId: number) {
             }
             if (audioPart) {
               addLog(`🔊 AUDIO response detected! MIME: ${audioPart.inlineData.mimeType}`);
-              // Audio data will come in a separate blob message
+              
+              // Extract and decode base64 audio data
+              if (audioPart.inlineData.data) {
+                try {
+                  const base64Data = audioPart.inlineData.data;
+                  const binaryData = atob(base64Data);
+                  const arrayBuffer = new ArrayBuffer(binaryData.length);
+                  const uint8Array = new Uint8Array(arrayBuffer);
+                  
+                  for (let i = 0; i < binaryData.length; i++) {
+                    uint8Array[i] = binaryData.charCodeAt(i);
+                  }
+                  
+                  addLog(`🎵 Converting audio data: ${arrayBuffer.byteLength} bytes`);
+                  
+                  // Collect audio chunks
+                  audioChunksRef.current.push(arrayBuffer);
+                } catch (error) {
+                  addLog(`❌ Failed to decode audio data: ${error}`);
+                }
+              }
             }
+          }
+          
+          // Check for generation complete
+          if (data.serverContent && data.serverContent.generationComplete) {
+            addLog('🔄 Generation complete - processing collected audio chunks');
+            await playCollectedAudio();
           }
           
           setIsProcessing(false);
@@ -267,6 +339,9 @@ export function useGeminiDirect(userId: number) {
     }
 
     setIsProcessing(true);
+    
+    // Clear any previous audio chunks
+    audioChunksRef.current = [];
     
     const messageId = Date.now().toString();
     const newMessage: Message = {
