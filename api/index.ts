@@ -795,7 +795,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           - Use linguagem bem simples e alegre
           - Termine com uma risadinha natural como "hihihi" ou "hahaha"
 
-          IMPORTANTE: Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis. Seja natural e espontânea como uma criança brasileira contando para um amiguinho.
+          IMPORTANTE: Fale apenas o conteúdo da piada diretamente, sem descrições ou emojis. Seja natural e espontânea como uma criança brasileira contando para uma amiguinha.
           
           Invente uma piada nova e divertida AGORA!`;
           

@@ -3,7 +3,7 @@
 This file provides specific guidance for Claude Code when working on the StumbleLele project.
 
 ## Project Overview
-StumbleLele is an interactive AI companion application for children, featuring Lele - a friendly 7-year-old AI character who speaks Portuguese and provides educational entertainment through chat, games, and interactive activities.
+StumbleLele is an interactive AI companion application for teenage Brazilian girls, featuring Lele - a friendly 7-year-old AI character who speaks Portuguese and provides entertaining, age-appropriate content through chat, games, and interactive activities. Lele interacts with teenage users using intelligent humor, cultural references, and girl-focused conversation while maintaining her childlike personality.
 
 ## Current Project Status
 
@@ -13,7 +13,7 @@ StumbleLele is an interactive AI companion application for children, featuring L
 - **Leda Voice Configuration**: Authentic Brazilian Portuguese female voice with natural intonation
 - **AI Model Selector**: User-friendly interface to switch between AI providers with real-time updates
 - **Avatar System**: High-quality cartoon-style main avatar with new image asset + animated floating avatar
-- **AI Joke Generator**: Real-time voice delivery using Gemini Live with Brazilian Portuguese enthusiasm
+- **AI Joke Generator**: Real-time voice delivery using Gemini Live with teenager-appropriate humor and drum & bass effects
 - **Memory System**: Stores conversations and creates contextual memories
 - **Friend Management**: Basic CRUD operations for virtual friends
 - **Progress Tracking**: Records game scores and achievements
@@ -53,11 +53,13 @@ StumbleLele is an interactive AI companion application for children, featuring L
 
 ### Lele Character Guidelines
 - **Personality**: Enthusiastic, curious, playful, and friendly
-- **Language**: Brazilian Portuguese, child-appropriate
-- **Age**: 7 years old, speaks like a smart child
-- **Responses**: Short, energetic, with occasional emojis
+- **Language**: Brazilian Portuguese, teenager-appropriate but maintains childlike charm
+- **Age**: 7 years old, speaks like a smart child but understands teen culture
+- **Target Audience**: Teenage Brazilian girls
+- **Responses**: Short, energetic, with girl-focused language ("amiguinha", "gatinha")
 - **Avatar**: High-quality cartoon girl with long brown hair, blue dress with bow pattern, expressive eyes
 - **Floating Avatar**: SVG-based animated version with longer hair matching main character style
+- **Interaction Style**: Intelligent humor, cultural references, drum & bass sound effects in jokes
 
 ### API Integration
 - **Multi-AI Support**: Google Gemini Live (voice), Gemini 2.5 Flash (primary), OpenAI GPT-4o, XAI Grok-2, Anthropic Claude
@@ -79,10 +81,13 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 ```
 
 ### Testing Approach
-- Test AI responses in Portuguese
+- Test AI responses in Portuguese with teenager-appropriate content
 - Verify avatar animations match emotions
-- Check mobile responsiveness
-- Ensure child-friendly content
+- Check mobile responsiveness (iPhone/Android optimization)
+- Ensure content is appropriate for teenage Brazilian girls
+- Test joke variety and drum & bass sound effects
+- Verify voice synthesis uses female Brazilian Portuguese (Leda voice)
+- Test sample rate conversion and volume boost for audio playback
 
 ## Common Tasks
 
@@ -135,9 +140,21 @@ DATABASE_URL=postgresql://postgres.vbtfaypcrupztcnbdlmf:PASSWORD@aws-0-sa-east-1
 
 ## Recent Updates (July 18, 2025)
 
+### Teenager-Focused Experience v3.0 🎯
+- **Target Audience Update**: Optimized for teenage Brazilian girls instead of young children
+- **Intelligent Joke System**: Advanced humor with themes like social media, teen life, music, and memes
+- **Drum & Bass Sound Effects**: Authentic "tss tss boom boom" sounds after jokes (teenager style)
+- **Girl-Focused Interaction**: Updated greetings from "amiguinho" to "amiguinha" and "gatinha"
+- **Variety Algorithm**: Randomized joke themes and styles to prevent repetition
+- **Cultural Relevance**: Brazilian teenager context with urbane, intelligent humor
+- **Button State Management**: Proper reset of "Pensando" to "Piada" after completion
+- **Clean Voice Output**: Removed emoji descriptions from voice synthesis
+
 ### Gemini Live Voice Integration v2.9
 - **Real-time Voice Generation**: Implemented WebSocket-based Gemini Live API for authentic voice synthesis
 - **Leda Voice Configuration**: Configured Brazilian Portuguese female voice with natural intonation
+- **Sample Rate Conversion**: Fixed 24kHz to 48kHz resampling with linear interpolation
+- **Dynamic Volume Boost**: Intelligent amplification (20x-100x) based on audio levels
 - **Multi-Format Audio Support**: Added comprehensive audio handling (MP3, WAV, PCM) with automatic detection
 - **Enhanced Audio Debugging**: Comprehensive logging and error handling for audio playback
 - **Voice Personality Optimization**: Enthusiastic, fluid, and vivid Brazilian Portuguese child-like speech
@@ -237,14 +254,17 @@ npm run db:push               # Push database schema
 - **Local**: Use .env file in project root
 
 ## Future Enhancements
-1. **Additional Games**: Implement memory, word, and math games
-2. **Enhanced Voice**: Add emotion-based voice synthesis
-3. **Multiplayer**: Allow friends to play together
-4. **Parental Controls**: Add parent dashboard
+1. **Additional Games**: Implement memory, word, and math games with teenager appeal
+2. **Enhanced Voice**: Add emotion-based voice synthesis and custom sound effects
+3. **Multiplayer**: Allow friends to play together with social features
+4. **Teen Social Features**: Add friend sharing, group chats, and social challenges
 5. **Offline Mode**: Cache responses for offline play
-6. **Achievement System**: Badges and rewards
-7. **Story Mode**: Interactive storytelling with Lele
+6. **Achievement System**: Badges and rewards with teen-oriented goals
+7. **Story Mode**: Interactive storytelling with Lele featuring teen-relevant themes
 8. **Game Improvements**: Add more enemy types, special weapons, and boss varieties
+9. **Music Integration**: Add Brazilian music references and sound effects
+10. **Meme Generator**: Create shareable memes with Lele
+11. **Voice Input Enhancement**: Improved speech recognition with disconnect handling
 
 ## Debugging Tips
 - Check browser console for API errors

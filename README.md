@@ -1,7 +1,7 @@
-# StumbleLele - AI Companion for Children 🎮
+# StumbleLele - AI Companion for Teenage Brazilian Girls 🇧🇷✨
 
 <div align="center">
-  <img src="https://ibb.co/7N1JwBY5" alt="StumbleLele Avatar" width="200"/>
+  <img src="./client/public/lele-main.png" alt="Lele Avatar" width="200"/>
   
   [![Node.js](https://img.shields.io/badge/Node.js-v22.14-green)](https://nodejs.org/)
   [![React](https://img.shields.io/badge/React-18.3-blue)](https://reactjs.org/)
@@ -15,9 +15,9 @@
 
 ## 🌟 Overview
 
-StumbleLele is an advanced interactive AI companion designed for children, featuring Lele - a friendly 7-year-old virtual friend who speaks Brazilian Portuguese. The application provides a safe, educational, and entertaining environment where children can chat, play educational games, and create memories with their emotionally intelligent AI companion.
+StumbleLele is an advanced interactive AI companion designed specifically for teenage Brazilian girls, featuring Lele - a friendly 7-year-old virtual friend who speaks Brazilian Portuguese. The application provides culturally relevant entertainment through intelligent humor, real-time voice chat, and interactive experiences, while maintaining a safe and age-appropriate environment.
 
-**🎉 Version 2.9 - Gemini Live Voice Integration!** Now featuring real-time AI voice generation with Leda voice for authentic Brazilian Portuguese female speech, plus enhanced avatar system and comprehensive security improvements!
+**🎉 Version 3.0 - Teenager-Focused Experience!** Now featuring intelligent humor for teenage girls, classic ba-dum-tss sound effects, girl-focused interactions, and enhanced Gemini Live voice integration with authentic Brazilian Portuguese female voice!
 
 ## ✨ Features
 
@@ -58,26 +58,29 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
 ### 🎤 Advanced Voice Features
 - **Gemini Live Integration**: Real-time AI voice generation with WebSocket streaming
 - **Leda Voice**: Authentic Brazilian Portuguese female voice with natural intonation
-- **Emotion-Based Speech**: Dynamic voice variations based on context and emotions
+- **Teenager-Focused Communication**: Girl-to-girl interactions with appropriate language and topics
+- **Intelligent Joke System**: AI-powered humor with classic ba-dum-tss sound effects
 - **Smart Voice Selection**: Prioritizes Brazilian Portuguese female voices with fallback to TTS
 - **Multi-Format Audio Support**: Handles various audio formats (MP3, WAV, PCM) with automatic detection
 - **Real-time Processing**: Instant voice recognition and synthesis with comprehensive error handling
-- **Voice Personality**: Enthusiastic, fluid, and vivid Brazilian Portuguese child-like speech
+- **Voice Personality**: Enthusiastic, fluid, and vivid Brazilian Portuguese speech tailored for teens
 
 ### 👥 Social Features
 - **Virtual Friends**: Manage friend lists with online/offline status
 - **Memory Album**: Store and review special moments with Lele
-- **AI Joke Generator**: Age-appropriate jokes with real-time voice delivery using Gemini Live
+- **AI Joke Generator**: Teenager-appropriate jokes with real-time voice delivery using Gemini Live
+- **Classic Ba-Dum-Tss Effects**: Professional drum roll sound effects after jokes
 - **Progress Sharing**: Compare achievements and levels
 - **Interactive Avatar**: High-quality cartoon avatar with enhanced animations and expressions
+- **Girl-to-Girl Interactions**: Conversations tailored for teenage Brazilian girls
 
-### 📱 Kid-Friendly Interface Design
+### 📱 Teen-Friendly Interface Design
 - **Vibrant Visual Design**: Colorful gradients, playful animations, and engaging background elements
 - **Floating Avatar Companion**: Always-visible Lele character that follows and interacts throughout the experience
-- **Child-Optimized Typography**: Fredoka One headings and Nunito body text for optimal readability
+- **Youth-Optimized Typography**: Fredoka One headings and Nunito body text for optimal readability
 - **Celebration Effects**: Sparkle animations, rainbow gradients, and reward visuals for achievements
-- **Playful Micro-Interactions**: Bounce, wiggle, float, and bubble animations that respond to user actions
-- **Touch-Friendly Interface**: Large buttons with kid-friendly styling and intuitive gestures
+- **Dynamic Micro-Interactions**: Bounce, wiggle, float, and bubble animations that respond to user actions
+- **Touch-Friendly Interface**: Large buttons with teen-friendly styling and intuitive gestures
 - **Responsive Design**: Optimized for all screen sizes with mobile-first approach
 - **Accessibility Features**: High contrast support, reduced motion options, and focus indicators
 
@@ -86,6 +89,7 @@ StumbleLele is an advanced interactive AI companion designed for children, featu
 ### Prerequisites
 - Node.js v22.14+ 
 - npm or yarn
+- Google Gemini API key (primary for voice features)
 - OpenAI API key OR XAI API key (or both for dual support)
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - For mobile testing: iOS 12+ or Android 8+
@@ -215,69 +219,74 @@ StumbleLele/
 
 ## 📱 Usage
 
-### For Children
+### For Teenagers
 1. **Chat with Lele**: Type or speak your message and watch her emotions change
-2. **Play Educational Games**: 
+2. **Request Custom Jokes**: Get AI-powered jokes tailored for Brazilian teenage girls with classic ba-dum-tss effects
+3. **Play Educational Games**: 
    - 🧠 **Memory Game**: Match card pairs with increasing difficulty
    - 📝 **Word Puzzles**: Unscramble words and learn new vocabulary
    - 🔢 **Math Challenges**: Solve arithmetic problems at your level
    - 💝 **Emotion Recognition**: Learn about feelings through scenarios
    - 🚀 **Cosmic Blaster**: Pilot Lele's spaceship with drag-to-move controls and automatic shooting
-3. **Track Progress**: See your levels, achievements, and improvement over time
-4. **Make Friends**: Add virtual friends to your list
-5. **Create Memories**: Special moments are saved automatically
-6. **Play Anywhere**: Full functionality on phones, tablets, and computers
+4. **Track Progress**: See your levels, achievements, and improvement over time
+5. **Make Friends**: Add virtual friends to your list
+6. **Create Memories**: Special moments are saved automatically
+7. **Voice Interactions**: Experience real-time AI voice with authentic Brazilian Portuguese
+8. **Play Anywhere**: Full functionality on phones, tablets, and computers
 
 ### For Parents
 - Monitor conversations through the memory system
 - Track educational progress with detailed analytics
-- Safe, age-appropriate content only
+- Safe, age-appropriate content for teenagers
 - No external communications
 - Educational focus with skill development
 - Achievement system motivates continued learning
 - Mobile-safe design with parental-friendly controls
+- Teenager-focused content with appropriate humor and topics
 
 ## 🚧 Roadmap
 
-### ✅ Recently Completed (v2.9)
+### ✅ Recently Completed (v3.0)
+- [x] **Teenager-Focused Experience** - Complete transformation for teenage Brazilian girls
+- [x] **Intelligent Joke System** - AI-powered humor with variety and classic ba-dum-tss effects
+- [x] **Girl-to-Girl Interactions** - Updated greetings and conversations for female users
+- [x] **Enhanced Voice Features** - Leda voice with teenager-appropriate communication
+- [x] **Smart Joke Generation** - Randomized themes including social media, music, and teen culture
+- [x] **Audio Effects Integration** - Classic ba-dum-tss drum roll sound effects
+- [x] **Emoji-Free Voice Synthesis** - Clean audio output without emoji descriptions
+- [x] **Improved Button State Management** - Fixed joke button transitions and processing states
+
+### ✅ Previous Milestones (v2.9)
 - [x] **Gemini Live Voice Integration** - Real-time AI voice generation with WebSocket streaming
 - [x] **Leda Voice Configuration** - Authentic Brazilian Portuguese female voice with natural intonation
 - [x] **Enhanced Audio Support** - Multi-format audio handling (MP3, WAV, PCM) with automatic detection
 - [x] **Comprehensive Security** - API key protection, secure environment handling, and GitGuardian integration
 - [x] **Avatar System Enhancement** - High-quality cartoon avatar with improved animations and expressions
-- [x] **Voice Personality Optimization** - Enthusiastic, fluid, and vivid Brazilian Portuguese child-like speech
+- [x] **Voice Personality Optimization** - Enthusiastic, fluid, and vivid Brazilian Portuguese speech
 - [x] **Debug UI Management** - Clean separation of development tools from production interface
-
-### ✅ Previous Milestones (v2.2)
-- [x] **Kid-Friendly Design Revolution** - Complete interface redesign optimized for children
-- [x] **Floating Avatar Companion** - Always-visible Lele character with interactive features
-- [x] **Vibrant Visual System** - Colorful gradients, playful animations, and engaging backgrounds
-- [x] **Custom Kids Theme** - Specialized CSS with bounce, wiggle, sparkle, and celebration effects
-- [x] **Child-Optimized Typography** - Fredoka One and Nunito fonts for better readability
-- [x] **Playful Micro-Interactions** - Hover effects, button animations, and reward visuals
-- [x] **Enhanced Accessibility** - High contrast support, reduced motion, and focus indicators
-- [x] **Complete game implementations** (memory, word, math, emotions)
+- [x] **Complete game implementations** (memory, word, math, emotions, cosmic blaster)
 - [x] **Enhanced voice synthesis** with 8 emotional variants
 - [x] **Advanced avatar system** with 12 emotions and animations
-- [x] **Dual AI support** (OpenAI GPT-4 + XAI Grok-3)
+- [x] **Quad AI support** (Google Gemini + OpenAI GPT-4 + XAI Grok-3 + Anthropic Claude)
 
 ### In Development
 - [ ] **Voice Input Enhancement** - Improved speech recognition with disconnect handling
-- [ ] **Real-time friend interactions** with WebSocket multiplayer
-- [ ] **Smart conversation memory** with personality development
-- [ ] **Parental dashboard** with detailed progress reports
-- [ ] **Advanced achievement system** with badges and rewards
-- [ ] **Progressive Web App (PWA)** for offline functionality
+- [ ] **Advanced Teen Topics** - Expanded conversation topics relevant to Brazilian teenagers
+- [ ] **Social Media Integration** - Safe sharing of achievements and memories
+- [ ] **Personalized Learning** - AI-driven content adaptation based on user preferences
+- [ ] **Group Chat Features** - Safe multi-user conversations with friends
+- [ ] **Progressive Web App (PWA)** - Offline functionality for core features
 
 ### Future Features
-- [ ] **Offline mode** with cached responses
-- [ ] **Story mode adventures** with narrative gameplay
+- [ ] **Offline mode** with cached responses and local voice synthesis
+- [ ] **Story mode adventures** with teen-focused narratives
 - [ ] **Multiple language support** beyond Portuguese
-- [ ] **Custom avatar designs** and personalization
-- [ ] **Voice cloning** for personalized Lele voice
-- [ ] **AR/VR integration** for immersive experiences
+- [ ] **Custom avatar designs** and personalization options
+- [ ] **Voice cloning** for personalized Lele voice variations
+- [ ] **AR/VR integration** for immersive teen experiences
 - [ ] **Native mobile apps** for iOS and Android
-- [ ] **Tablet-optimized layouts** with enhanced features
+- [ ] **Study Helper Features** - AI-powered homework and study assistance
+- [ ] **Music Integration** - Brazilian music discovery and discussion features
 
 ## 🚀 Deployment
 
@@ -328,12 +337,13 @@ For production deployment, we recommend using Vercel with Supabase:
 - **Set usage quotas** to prevent abuse
 - **Monitor logs** for suspicious activity
 
-### Child Safety
-- **All AI responses** are filtered for age-appropriate content
+### Teen Safety
+- **All AI responses** are filtered for age-appropriate content for teenagers
 - **No external communications** outside the AI providers
 - **Secure data storage** with encryption
 - **No personal information** collected or stored
-- **Offline-first design** where possible
+- **Safe interaction environment** with content monitoring
+- **Appropriate humor and topics** for Brazilian teenage culture
 
 📋 **See [SECURITY_GUIDE.md](SECURITY_GUIDE.md) for detailed security practices.**
 
@@ -362,7 +372,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **shadcn/ui** for beautiful component library
 - **Framer Motion** for smooth animations
 - **The React and TypeScript communities** for amazing tools
-- **Inspired by the need for safe, educational AI companions for children worldwide**
+- **Inspired by the need for safe, educational AI companions for teenagers worldwide**
 
 ## 📞 Contact
 
@@ -373,5 +383,5 @@ Project Link: [https://github.com/talktorobson/StumbleLele](https://github.com/t
 ---
 
 <div align="center">
-  Made with ❤️ for children everywhere
+  Made with ❤️ for Brazilian teenage girls everywhere
 </div>

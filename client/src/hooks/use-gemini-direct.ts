@@ -178,6 +178,30 @@ export function useGeminiDirect(userId: number) {
     }
   }, [addLog]);
 
+  // Function to play ba-dum-tss sound effect
+  const playBaDumTssSound = useCallback(async () => {
+    try {
+      addLog('🥁 Playing ba-dum-tss sound effect...');
+      const audio = new Audio('/ba-dum-tss.wav');
+      audio.volume = 0.7; // Adjust volume as needed
+      
+      return new Promise<void>((resolve, reject) => {
+        audio.onended = () => {
+          addLog('🥁 Ba-dum-tss sound completed');
+          resolve();
+        };
+        audio.onerror = (error) => {
+          addLog(`❌ Ba-dum-tss sound failed: ${error}`);
+          reject(error);
+        };
+        audio.play().catch(reject);
+      });
+    } catch (error) {
+      addLog(`❌ Failed to play ba-dum-tss sound: ${error}`);
+      throw error;
+    }
+  }, [addLog]);
+
   // Function to concatenate and play collected audio chunks
   const playCollectedAudio = useCallback(async () => {
     if (audioChunksRef.current.length === 0) {
@@ -202,6 +226,19 @@ export function useGeminiDirect(userId: number) {
 
       // Play the complete audio
       await playAudioBuffer(concatenatedBuffer);
+
+      // Check if this is a joke response and play ba-dum-tss sound
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && lastMessage.message && lastMessage.message.toLowerCase().includes('piada')) {
+        try {
+          // Wait a brief moment, then play the ba-dum-tss sound
+          setTimeout(async () => {
+            await playBaDumTssSound();
+          }, 500);
+        } catch (error) {
+          addLog(`❌ Failed to play ba-dum-tss after joke: ${error}`);
+        }
+      }
 
       // Generate transcript based on the user's message
       setMessages(prev => {
@@ -232,7 +269,7 @@ export function useGeminiDirect(userId: number) {
       audioChunksRef.current = []; // Clear on error
       setIsProcessing(false); // Reset processing state on error too
     }
-  }, [addLog, playAudioBuffer, generateContextualTranscript]);
+  }, [addLog, playAudioBuffer, generateContextualTranscript, playBaDumTssSound, messages]);
 
   // EXACT message handling logic from debug component
   const handleMessage = useCallback(async (event: MessageEvent) => {

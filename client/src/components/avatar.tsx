@@ -27,6 +27,22 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
   const { sendMessage, isProcessing } = useGeminiDirect(userId);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Function to play ba-dum-tss sound effect
+  const playBaDumTssSound = async () => {
+    try {
+      const audio = new Audio('/ba-dum-tss.wav');
+      audio.volume = 0.7;
+      
+      return new Promise<void>((resolve, reject) => {
+        audio.onended = () => resolve();
+        audio.onerror = (error) => reject(error);
+        audio.play().catch(reject);
+      });
+    } catch (error) {
+      console.error('Failed to play ba-dum-tss sound:', error);
+    }
+  };
+
   const handleJokeClick = async () => {
     setIsAnimating(true);
     setEmotion("excited");
@@ -79,13 +95,22 @@ IMPORTANTE:
 - Seja natural e espontânea como uma criança brasileira contando para uma amiguinha
 - SEMPRE invente uma piada completamente nova, nunca repita piadas anteriores
 - Seja criativa e surpreenda com uma piada original
-- TERMINE com som de bumbo: "tss tss boom boom" (como adolescentes fazem após contar piadas)
+- Termine naturalmente sem efeitos sonoros (o sistema adicionará automaticamente)
 
 Invente uma piada nova e divertida AGORA sobre ${randomTheme} para uma adolescente!`;
     
     try {
       // Use the same working sendMessage function from chat
       await sendMessage(jokePrompt);
+      
+      // Wait a moment for the voice to finish, then play ba-dum-tss
+      setTimeout(async () => {
+        try {
+          await playBaDumTssSound();
+        } catch (error) {
+          console.error('Failed to play ba-dum-tss after joke:', error);
+        }
+      }, 3000); // Wait 3 seconds for the joke to be delivered
       
       // Invalidate avatar queries to update state
       queryClient.invalidateQueries({ queryKey: ["/api/avatar", userId] });
