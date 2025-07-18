@@ -31,7 +31,7 @@ StumbleLele is an advanced interactive AI companion designed specifically for Br
 
 ### 🎮 Complete Game System
 - **5 Interactive Games**: Memory matching, word puzzles, math challenges, emotion recognition, and Cosmic Blaster
-- **Cosmic Blaster (1945 Air Force Style)**: Bullet hell aircraft shooter with automatic shooting and drag-to-move controls
+- **Cosmic Blaster**: Space adventure shooter with automatic shooting and drag-to-move controls
 - **Adaptive Difficulty**: 5 levels per educational game with intelligent progression requirements
 - **Real-time Gameplay**: Fully interactive games with timers, scoring, and feedback
 - **Achievement System**: 10+ achievements with feature unlocks and rewards
@@ -173,7 +173,7 @@ StumbleLele/
 │   │   │   │   ├── words-game.tsx       # Word puzzle game
 │   │   │   │   ├── math-game.tsx        # Math challenge game
 │   │   │   │   ├── emotion-game.tsx     # Emotion recognition game
-│   │   │   │   └── cosmic-blaster-game.tsx # 1945 Air Force style shooter
+│   │   │   │   └── cosmic-blaster-game.tsx # Space adventure shooter
 │   │   │   ├── lele-avatar.tsx  # Advanced avatar system
 │   │   │   ├── floating-lele.tsx # Always-visible floating companion
 │   │   │   ├── voice-input.tsx  # Voice interaction

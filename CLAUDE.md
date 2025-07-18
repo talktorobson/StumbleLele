@@ -26,7 +26,7 @@ StumbleLele is an interactive AI companion application for Brazilian children ag
 - **Advanced Audio Support**: Multi-format audio handling (MP3, WAV, PCM) with automatic detection
 - **Responsive UI**: Mobile-friendly interface optimized for iPhone and Android devices
 - **Enhanced Navigation**: Clean bottom navigation with emoji labels (removed duplicate icons)
-- **Cosmic Blaster Game**: Complete 1945 Air Force-style space shooter with:
+- **Cosmic Blaster Game**: Complete space adventure shooter with:
   - Touch-drag movement controls (mobile-first design)
   - Automatic continuous shooting with 6-level weapon progression
   - Balanced 10-wave campaign with progressive difficulty

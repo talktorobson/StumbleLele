@@ -150,7 +150,7 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
               🚀 Defesa Cósmica da Lele! 🚀
             </h2>
             <div className="text-left mb-6 space-y-2">
-              <p><strong>🎮 Como jogar (estilo 1945 Air Force):</strong></p>
+              <p><strong>🎮 Como jogar:</strong></p>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>👆 ARRASTE o dedo na tela para mover a Lele</li>
                 <li>🎯 Tiros são AUTOMÁTICOS - apenas se mova!</li>
@@ -509,7 +509,7 @@ class CosmicBlasterMock {
       }
     });
 
-    // Touch controls - 1945 Air Force style
+    // Touch controls - drag to move style
     this.canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -2506,7 +2506,7 @@ class CosmicBlasterMock {
         }
         
         this.updatePlayer();
-        this.autoShoot(); // Automatic shooting like 1945 Air Force
+        this.autoShoot(); // Automatic shooting for easy gameplay
         this.updateBullets();
         this.updateEnemies();
         this.updateBoss();

@@ -7,12 +7,12 @@
 **Target Audience**: Children 6-12 years old  
 **Platform**: Web-based (React/TypeScript) - **Mobile-First Design**  
 **Theme**: Colorful space adventure with Lele piloting her cosmic starship  
-**Inspiration**: 1945 Air Force by 1SOFT - automatic shooting with drag controls  
+**Inspiration**: Classic space shooters with automatic shooting and drag controls  
 **Visual Style**: Modern cartoon-style aircraft shooter with vibrant colors and emojis  
-**Control System**: **Drag-to-move + Auto-shooting** (signature 1945 Air Force mechanics)  
+**Control System**: **Drag-to-move + Auto-shooting** (mobile-friendly mechanics)  
 **Status**: ✅ **COMPLETE** - All features implemented and battle-tested
 
-## 🚀 Core Gameplay Mechanics (1945 Air Force Style)
+## 🚀 Core Gameplay Mechanics
 
 ### Automatic Shooting System ✅ IMPLEMENTED
 - **Continuous Fire**: Lele's starship shoots automatically every 150ms
@@ -21,7 +21,7 @@
 - **Multi-Shot Patterns**: Higher levels fire multiple bullets simultaneously
 - **Visual Feedback**: Golden bullets with trail effects and emoji HUD indicator (🚀)
 
-### Movement Control (Signature 1945 Air Force Mechanics) ✅ IMPLEMENTED
+### Movement Control ✅ IMPLEMENTED
 - **Drag-to-Move**: Touch and drag finger anywhere on screen to move Lele's ship
 - **Fluid Movement**: Ship follows finger position with perfect 1:1 tracking
 - **Boundary Constraints**: Ship stays within safe playable area automatically
@@ -348,7 +348,7 @@ client/src/components/games/
 ## 🚀 Development Summary ✅ COMPLETE
 
 ### Implementation Phases Completed
-1. **✅ Core Mechanics**: 1945 Air Force-style auto-shooting and drag controls
+1. **✅ Core Mechanics**: Classic auto-shooting and drag controls
 2. **✅ Enemy System**: Regular enemies with unique behaviors and emojis
 3. **✅ Boss System**: 10 unique bosses with individual weapons and abilities
 4. **✅ Visual Polish**: Emoji integration throughout entire interface
@@ -375,7 +375,7 @@ client/src/components/games/
 
 Lele's Cosmic Blaster Defense is now a fully-featured, professional-quality bullet hell aircraft shooter that successfully combines:
 
-- **Classic 1945 Air Force mechanics** with modern mobile-first design
+- **Classic shoot-em-up mechanics** with modern mobile-first design
 - **Epic boss battles** with progressive difficulty scaling
 - **Child-friendly design** with emoji-enhanced accessibility
 - **Portuguese localization** for Brazilian children

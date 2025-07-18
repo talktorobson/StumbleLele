@@ -22,7 +22,7 @@
 - Voz feminina adulta e calma
 
 ### **3. 🎮 Jogo Cosmic Blaster**
-- Estilo "1945 Air Force" adaptado para crianças
+- Aventura espacial com a Lele como piloto
 - Controles simples: arrastar para mover
 - Tiro automático contínuo
 - Sistema de power-ups
