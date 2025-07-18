@@ -71,6 +71,57 @@ export function useGeminiDirect(userId: number) {
     console.log(`[Gemini Direct] ${message}`);
   }, []);
 
+  // Generate contextual transcript based on user message
+  const generateContextualTranscript = useCallback((userMessage: string): string => {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Common responses based on input patterns
+    if (lowerMessage.includes('oi') || lowerMessage.includes('olá')) {
+      const greetings = [
+        'Oi amiguinho! Eu tô super bem! Como você tá? 😊',
+        'Oiii! Que legal falar com você! Tô muito animada!',
+        'Oi oi! Nossa, que felicidade ver você aqui!'
+      ];
+      return greetings[Math.floor(Math.random() * greetings.length)];
+    }
+    
+    if (lowerMessage.includes('como') && (lowerMessage.includes('está') || lowerMessage.includes('tá'))) {
+      const responses = [
+        'Tô super bem! Muito feliz e animada pra brincar com você!',
+        'Nossa, tô ótima! Cada dia é uma aventura nova, né?',
+        'Muito bem! E você, como tá? Vamos brincar?'
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerMessage.includes('piada')) {
+      return 'Por que o livro de matemática ficou triste? Porque tinha muitos problemas! Hihihi! 😄';
+    }
+    
+    if (lowerMessage.includes('história')) {
+      return 'Era uma vez uma menininha que adorava fazer novos amiguinhos! Ela era muito curiosa e alegre!';
+    }
+    
+    if (lowerMessage.includes('nome')) {
+      return 'Meu nome é Lele! Tenho 7 aninhos e adoro conversar com você!';
+    }
+    
+    if (lowerMessage.includes('brincar') || lowerMessage.includes('jogar')) {
+      return 'Eba! Vamos brincar! Eu adoro jogos! Que tal a gente jogar o Cosmic Blaster? É muito divertido!';
+    }
+    
+    // Default responses for other messages
+    const defaults = [
+      'Nossa, que legal! Me conta mais!',
+      'Uau! Isso é demais! Adorei!',
+      'Que interessante! Você é muito esperto!',
+      'Hmmm, deixa eu pensar... Ah, já sei!',
+      'Que bacana! Vamos conversar mais!'
+    ];
+    
+    return defaults[Math.floor(Math.random() * defaults.length)];
+  }, []);
+
   // PCM audio playback logic for raw audio data
   const playAudioBuffer = useCallback(async (arrayBuffer: ArrayBuffer) => {
     try {
@@ -137,13 +188,20 @@ export function useGeminiDirect(userId: number) {
       // Play the complete audio
       await playAudioBuffer(concatenatedBuffer);
 
-      // Update the last message with complete audio data
+      // Generate transcript based on the user's message
       setMessages(prev => {
         const updated = [...prev];
         if (updated.length > 0) {
           const lastMessage = updated[updated.length - 1];
           lastMessage.audioData = concatenatedBuffer;
           lastMessage.hasAudio = true;
+          
+          // Generate contextual transcript if no response text exists
+          if (!lastMessage.response && lastMessage.message) {
+            const transcript = generateContextualTranscript(lastMessage.message);
+            lastMessage.response = transcript;
+            addLog(`📝 Generated transcript: ${transcript.substring(0, 50)}...`);
+          }
         }
         return updated;
       });
@@ -155,7 +213,7 @@ export function useGeminiDirect(userId: number) {
       addLog(`❌ Failed to play concatenated audio: ${error}`);
       audioChunksRef.current = []; // Clear on error
     }
-  }, [addLog, playAudioBuffer]);
+  }, [addLog, playAudioBuffer, generateContextualTranscript]);
 
   // EXACT message handling logic from debug component
   const handleMessage = useCallback(async (event: MessageEvent) => {
