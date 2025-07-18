@@ -32,7 +32,8 @@ export function useGeminiDirect(userId: number) {
     setup: {
       model: 'models/gemini-2.0-flash-live-001',
       generationConfig: {
-        responseModalities: ['AUDIO']
+        responseModalities: ['AUDIO'],
+        outputAudioTranscription: {}
       },
       systemInstruction: {
         parts: [{
@@ -172,19 +173,36 @@ export function useGeminiDirect(userId: number) {
           const jsonData = JSON.parse(text);
           addLog(`✅ JSON parsed successfully`);
           
+          // Check for audio transcription first
+          if (jsonData.serverContent && jsonData.serverContent.outputTranscription) {
+            const transcriptionText = jsonData.serverContent.outputTranscription.text;
+            addLog(`📝 TRANSCRIPTION: ${transcriptionText.substring(0, 50)}...`);
+            setMessages(prev => {
+              const updated = [...prev];
+              if (updated.length > 0) {
+                const lastMessage = updated[updated.length - 1];
+                lastMessage.response = transcriptionText;
+              }
+              return updated;
+            });
+          }
+
           // Debug: Process both text and audio in blob handler
           if (jsonData.serverContent && jsonData.serverContent.modelTurn && jsonData.serverContent.modelTurn.parts) {
             const textPart = jsonData.serverContent.modelTurn.parts.find((part: any) => part.text);
             const audioPart = jsonData.serverContent.modelTurn.parts.find((part: any) => part.inlineData);
             
-            // Handle text part for conversation history
+            // Handle text part for conversation history (fallback)
             if (textPart) {
               addLog(`💬 TEXT in blob: ${textPart.text.substring(0, 50)}...`);
               setMessages(prev => {
                 const updated = [...prev];
                 if (updated.length > 0) {
                   const lastMessage = updated[updated.length - 1];
-                  lastMessage.response = textPart.text;
+                  // Only set if no transcription already exists
+                  if (!lastMessage.response) {
+                    lastMessage.response = textPart.text;
+                  }
                 }
                 return updated;
               });
@@ -294,6 +312,20 @@ export function useGeminiDirect(userId: number) {
       try {
         const data = JSON.parse(event.data);
         
+        // Check for audio transcription first in text handler too
+        if (data.serverContent && data.serverContent.outputTranscription) {
+          const transcriptionText = data.serverContent.outputTranscription.text;
+          addLog(`📝 TRANSCRIPTION in text handler: ${transcriptionText.substring(0, 50)}...`);
+          setMessages(prev => {
+            const updated = [...prev];
+            if (updated.length > 0) {
+              const lastMessage = updated[updated.length - 1];
+              lastMessage.response = transcriptionText;
+            }
+            return updated;
+          });
+        }
+
         // Check for server content and response types
         if (data.serverContent) {
           addLog('✅ Server content received');
