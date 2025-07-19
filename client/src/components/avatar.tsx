@@ -72,7 +72,7 @@ export default function Avatar({ userId, avatarState }: AvatarProps) {
     const randomNumber = Math.floor(Math.random() * 1000); // Add uniqueness
     
     // Use the same working Gemini Direct approach as the chat
-    const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e engraçada conversando com um amiguinho ou amiguinha de 8 a 11 anos! 
+    const jokePrompt = `Você é Lele, uma menina brasileira de 7 anos super animada e engraçada conversando com uma amiguinha de 8 a 11 anos! 
               
 Não use emojis! Não descreva emojis!
 
