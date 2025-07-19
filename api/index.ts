@@ -169,7 +169,7 @@ function createGeminiLiveWebSocket(apiKey: string): Promise<WebSocket> {
   });
 }
 
-async function generateResponseWithGeminiLive(message: string, context: string[] = []): Promise<any> {
+async function generateResponseWithGeminiLive(message: string, context: string[] = [], userInfo?: { name: string | null, age: number | null }): Promise<any> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY not found');
@@ -338,7 +338,8 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
       // Wait a bit for setup to complete
       setTimeout(() => {
         const contextString = context.length > 0 ? `\n\nContexto das conversas anteriores:\n${context.join('\n')}` : '';
-        const fullPrompt = `${LELE_PROMPT}\n\nMensagem do usuário: ${message}${contextString}`;
+        const userInfoString = userInfo ? `\n\nInformações do usuário:\n- Nome: ${userInfo.name || 'desconhecido'}\n- Idade: ${userInfo.age || 'desconhecida'}` : '';
+        const fullPrompt = `${LELE_PROMPT}\n\nMensagem do usuário: ${message}${contextString}${userInfoString}`;
         
         const messagePayload = {
           clientContent: {
@@ -359,15 +360,16 @@ async function generateResponseWithGeminiLive(message: string, context: string[]
   }
 }
 
-async function generateResponse(message: string, context: string[] = [], aiModel: AIModel = "gemini") {
+async function generateResponse(message: string, context: string[] = [], aiModel: AIModel = "gemini", userInfo?: { name: string | null, age: number | null }) {
   try {
     const contextString = context.length > 0 ? `\n\nContexto das conversas anteriores:\n${context.join('\n')}` : '';
-    const fullPrompt = `${LELE_PROMPT}\n\nMensagem do usuário: ${message}${contextString}`;
+    const userInfoString = userInfo ? `\n\nInformações do usuário:\n- Nome: ${userInfo.name || 'desconhecido'}\n- Idade: ${userInfo.age || 'desconhecida'}` : '';
+    const fullPrompt = `${LELE_PROMPT}\n\nMensagem do usuário: ${message}${contextString}${userInfoString}`;
     
     let content = '';
 
     if (aiModel === "gemini-live") {
-      return await generateResponseWithGeminiLive(message, context);
+      return await generateResponseWithGeminiLive(message, context, userInfo);
     } else if (aiModel === "gemini") {
       const response = await gemini.models.generateContent({
         model: "gemini-2.5-flash",
@@ -494,6 +496,27 @@ class Storage {
       return data;
     } catch (error) {
       console.error('Database error in updateUserPreferences:', error);
+      throw error;
+    }
+  }
+
+  async updateUserInfo(userId: number, name?: string, age?: number) {
+    try {
+      const updates: any = {};
+      if (name !== undefined) updates.name = name;
+      if (age !== undefined) updates.age = age;
+      
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Database error in updateUserInfo:', error);
       throw error;
     }
   }
@@ -1198,7 +1221,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const conversations = await storage.getConversations(userId);
           const context = conversations.slice(-5).map(c => `${c.message} -> ${c.response}`);
           
-          const aiResponse = await generateResponse(message, context, aiModel);
+          // Add user info to context
+          const userInfo = {
+            name: user?.name || null,
+            age: user?.age || null
+          };
+          
+          const aiResponse = await generateResponse(message, context, aiModel, userInfo);
+          
+          // Check if the message contains a name or age response
+          const lowerMessage = message.toLowerCase();
+          
+          // Check for name patterns
+          if (!userInfo.name || userInfo.name === 'desconhecido') {
+            const namePatterns = [
+              /meu nome é ([a-záàâãéèêíïóôõöúçñ]+)/i,
+              /me chamo ([a-záàâãéèêíïóôõöúçñ]+)/i,
+              /sou o ([a-záàâãéèêíïóôõöúçñ]+)/i,
+              /sou a ([a-záàâãéèêíïóôõöúçñ]+)/i,
+              /^([a-záàâãéèêíïóôõöúçñ]+)$/i // Just the name
+            ];
+            
+            for (const pattern of namePatterns) {
+              const match = message.match(pattern);
+              if (match && match[1]) {
+                const name = match[1].charAt(0).toUpperCase() + match[1].slice(1);
+                await storage.updateUserInfo(userId, name, undefined);
+                break;
+              }
+            }
+          }
+          
+          // Check for age patterns
+          if (!userInfo.age) {
+            const agePatterns = [
+              /tenho (\d+) anos?/i,
+              /(\d+) anos?/i,
+              /^(\d+)$/i // Just the number
+            ];
+            
+            for (const pattern of agePatterns) {
+              const match = message.match(pattern);
+              if (match && match[1]) {
+                const age = parseInt(match[1]);
+                if (age >= 5 && age <= 18) { // Reasonable age range
+                  await storage.updateUserInfo(userId, undefined, age);
+                  break;
+                }
+              }
+            }
+          }
           
           const conversation = await storage.createConversation({
             userId,
