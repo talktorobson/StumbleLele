@@ -110,6 +110,30 @@ export const avatarState = pgTable("avatar_state", {
   lastInteraction: timestamp("last_interaction").defaultNow(),
 });
 
+// Achievements table - defines all available achievements
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(), // Emoji icon
+  category: text("category").notNull(), // social, games, chat, progression
+  criteria: text("criteria").notNull(), // e.g., "games_won:1", "friends_added:5", "messages_sent:50"
+  xpReward: integer("xp_reward").default(25),
+  rarity: text("rarity").default("common"), // common, rare, epic, legendary
+});
+
+// User achievements - tracks which achievements users have unlocked
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  achievementId: integer("achievement_id").references(() => achievements.id, { onDelete: "cascade" }).notNull(),
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+  progress: integer("progress").default(0), // For tracking partial progress
+}, (table) => ({
+  // Unique constraint: user can only unlock each achievement once
+  uniqueUserAchievement: unique("unique_user_achievement").on(table.userId, table.achievementId),
+}));
+
 // Enhanced user schema with friends chat system fields
 export const insertUserSchema = createInsertSchema(users).pick({
   name: true,
@@ -176,6 +200,23 @@ export const insertAvatarStateSchema = createInsertSchema(avatarState).pick({
   personality: true,
 });
 
+// Achievement schemas
+export const insertAchievementSchema = createInsertSchema(achievements).pick({
+  name: true,
+  description: true,
+  icon: true,
+  category: true,
+  criteria: true,
+  xpReward: true,
+  rarity: true,
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).pick({
+  userId: true,
+  achievementId: true,
+  progress: true,
+});
+
 // Enhanced type definitions for friends chat system
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -195,6 +236,10 @@ export type InsertGameProgress = z.infer<typeof insertGameProgressSchema>;
 export type GameProgress = typeof gameProgress.$inferSelect;
 export type InsertAvatarState = z.infer<typeof insertAvatarStateSchema>;
 export type AvatarState = typeof avatarState.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
+export type UserAchievement = typeof userAchievements.$inferSelect;
 
 // Additional types for friends chat functionality
 export type FriendWithUser = Friend & {
@@ -213,6 +258,12 @@ export type MessageWithSender = Message & {
   reactions?: MessageReaction[];
 };
 
+export type UserAchievementWithDetails = UserAchievement & {
+  achievement: Achievement;
+};
+
 export type FriendStatus = "pending" | "accepted" | "rejected" | "blocked";
 export type MessageType = "text" | "emoji" | "image" | "audio";
 export type ReactionEmoji = "❤️" | "😂" | "🤔" | "👍" | "🎉";
+export type AchievementCategory = "social" | "games" | "chat" | "progression";
+export type AchievementRarity = "common" | "rare" | "epic" | "legendary";
