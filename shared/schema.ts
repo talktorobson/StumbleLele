@@ -15,6 +15,11 @@ export const users = pgTable("users", {
   isOnline: boolean("is_online").default(false),
   lastSeen: timestamp("last_seen").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
+  // Daily login rewards fields
+  lastLoginDate: timestamp("last_login_date"),
+  loginStreak: integer("login_streak").default(0),
+  totalXp: integer("total_xp").default(0),
+  level: integer("level").default(1),
 });
 
 // AI conversations table (renamed from conversations for clarity)

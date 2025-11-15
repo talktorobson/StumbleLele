@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Avatar from "@/components/avatar";
 import Chat from "@/components/chat";
 import Games from "@/components/games";
@@ -7,6 +7,7 @@ import Friends from "@/components/friends";
 import Conversations from "@/components/conversations";
 import Memories from "@/components/memories";
 import Progress from "@/components/progress";
+import DailyLoginReward from "@/components/daily-login-reward";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -26,7 +27,13 @@ interface AvatarState {
 
 export default function Home() {
   const [currentSection, setCurrentSection] = useState("home");
-  
+  const [showRewardModal, setShowRewardModal] = useState(false);
+  const [loginReward, setLoginReward] = useState<{
+    streak: number;
+    xpEarned: number;
+    level: number;
+  } | null>(null);
+
   const userId = 1; // Default user Helena
 
   const { data: user } = useQuery({
@@ -37,8 +44,31 @@ export default function Home() {
     queryKey: ["/api/avatar", userId],
   });
 
+  // Daily login mutation
+  const dailyLoginMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/user/${userId}/daily-login`, {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error("Failed to track daily login");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.isNewDay && data.xpEarned > 0) {
+        setLoginReward({
+          streak: data.streak,
+          xpEarned: data.xpEarned,
+          level: data.level,
+        });
+        setShowRewardModal(true);
+      }
+    },
+  });
+
   useEffect(() => {
     document.title = "Stumble Lele - Sua Amiga AI";
+    // Track daily login on mount
+    dailyLoginMutation.mutate();
   }, []);
 
   const renderCurrentSection = () => {
@@ -188,6 +218,18 @@ export default function Home() {
           </div>
         </div>
       </nav>
+
+      {/* Daily Login Reward Modal */}
+      {loginReward && (
+        <DailyLoginReward
+          userId={userId}
+          isOpen={showRewardModal}
+          onClose={() => setShowRewardModal(false)}
+          streak={loginReward.streak}
+          xpEarned={loginReward.xpEarned}
+          level={loginReward.level}
+        />
+      )}
     </div>
   );
 }
