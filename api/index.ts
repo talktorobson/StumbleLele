@@ -505,18 +505,99 @@ class Storage {
       const updates: any = {};
       if (name !== undefined) updates.name = name;
       if (age !== undefined) updates.age = age;
-      
+
       const { data, error } = await supabase
         .from('users')
         .update(updates)
         .eq('id', userId)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     } catch (error) {
       console.error('Database error in updateUserInfo:', error);
+      throw error;
+    }
+  }
+
+  async trackDailyLogin(userId: number) {
+    try {
+      const user = await this.getOrCreateUser(userId);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      let lastLoginDate = user.last_login_date ? new Date(user.last_login_date) : null;
+      let lastLoginDay = lastLoginDate ? new Date(lastLoginDate.getFullYear(), lastLoginDate.getMonth(), lastLoginDate.getDate()) : null;
+
+      let loginStreak = user.login_streak || 0;
+      let isNewDay = false;
+      let xpEarned = 0;
+
+      // Check if it's a new day
+      if (!lastLoginDay || today.getTime() !== lastLoginDay.getTime()) {
+        isNewDay = true;
+
+        // Check if streak continues (logged in yesterday)
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (lastLoginDay && lastLoginDay.getTime() === yesterday.getTime()) {
+          // Streak continues
+          loginStreak += 1;
+        } else if (lastLoginDay && lastLoginDay.getTime() < yesterday.getTime()) {
+          // Streak broken, reset to 1
+          loginStreak = 1;
+        } else {
+          // First login or same day
+          loginStreak = Math.max(1, loginStreak);
+        }
+
+        // Calculate XP based on streak
+        const baseXp = 10;
+        const streakBonus = Math.min(loginStreak - 1, 6) * 5; // +5 XP per day, max 6 days
+        const specialBonus = loginStreak >= 7 ? 20 : 0; // +20 XP for 7-day streak
+        xpEarned = baseXp + streakBonus + specialBonus;
+
+        const totalXp = (user.total_xp || 0) + xpEarned;
+        const level = Math.floor(totalXp / 100) + 1; // Level up every 100 XP
+
+        // Update user
+        const { data, error } = await supabase
+          .from('users')
+          .update({
+            last_login_date: now.toISOString(),
+            login_streak: loginStreak,
+            total_xp: totalXp,
+            level: level
+          })
+          .eq('id', userId)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        return {
+          isNewDay: true,
+          streak: loginStreak,
+          xpEarned,
+          totalXp,
+          level,
+          isSpecialReward: loginStreak >= 7
+        };
+      }
+
+      // Already logged in today
+      return {
+        isNewDay: false,
+        streak: loginStreak,
+        xpEarned: 0,
+        totalXp: user.total_xp || 0,
+        level: user.level || 1,
+        isSpecialReward: false
+      };
+    } catch (error) {
+      console.error('Database error in trackDailyLogin:', error);
       throw error;
     }
   }
@@ -1198,13 +1279,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (parts[1] && parts[2] === 'ai-model' && req.method === 'POST') {
           const userId = parseInt(parts[1]);
           const { aiModel } = req.body;
-          
+
           if (!aiModel) {
             return res.status(400).json({ message: "aiModel é obrigatório" });
           }
-          
+
           const updatedUser = await storage.updateUserPreferences(userId, aiModel);
           return res.json(updatedUser);
+        }
+        // POST /api/user/{id}/daily-login - Track daily login and rewards
+        if (parts[1] && parts[2] === 'daily-login' && req.method === 'POST') {
+          const userId = parseInt(parts[1]);
+
+          try {
+            const loginReward = await storage.trackDailyLogin(userId);
+            return res.json(loginReward);
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(500).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro ao processar login diário" });
+          }
         }
         break;
 
