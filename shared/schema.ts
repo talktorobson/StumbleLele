@@ -76,6 +76,18 @@ export const messages = pgTable("messages", {
   messageType: text("message_type").default("text"), // text, emoji, image, audio
 });
 
+// New message reactions table
+export const messageReactions = pgTable("message_reactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  messageId: uuid("message_id").references(() => messages.id, { onDelete: "cascade" }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  emoji: text("emoji").notNull(), // ❤️ 😂 🤔 👍 🎉
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint: one user can only add one reaction per message
+  uniqueUserReaction: unique("unique_user_reaction").on(table.messageId, table.userId),
+}));
+
 export const gameProgress = pgTable("game_progress", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
@@ -139,6 +151,13 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   messageType: true,
 });
 
+// New message reactions schema
+export const insertMessageReactionSchema = createInsertSchema(messageReactions).pick({
+  messageId: true,
+  userId: true,
+  emoji: true,
+});
+
 export const insertGameProgressSchema = createInsertSchema(gameProgress).pick({
   userId: true,
   gameType: true,
@@ -165,6 +184,8 @@ export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+export type InsertMessageReaction = z.infer<typeof insertMessageReactionSchema>;
+export type MessageReaction = typeof messageReactions.$inferSelect;
 export type InsertGameProgress = z.infer<typeof insertGameProgressSchema>;
 export type GameProgress = typeof gameProgress.$inferSelect;
 export type InsertAvatarState = z.infer<typeof insertAvatarStateSchema>;
@@ -184,7 +205,9 @@ export type ConversationWithUsers = Conversation & {
 
 export type MessageWithSender = Message & {
   sender: User;
+  reactions?: MessageReaction[];
 };
 
 export type FriendStatus = "pending" | "accepted" | "rejected" | "blocked";
 export type MessageType = "text" | "emoji" | "image" | "audio";
+export type ReactionEmoji = "❤️" | "😂" | "🤔" | "👍" | "🎉";

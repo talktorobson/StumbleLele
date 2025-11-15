@@ -2,6 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -61,14 +72,31 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     <div className="fixed inset-0 bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md mx-auto bg-white/95 backdrop-blur-sm shadow-2xl border-4 border-pink-200 rounded-3xl overflow-hidden">
         <CardContent className="p-8 text-center relative">
-          {/* Skip button for parents */}
-          <Button
-            onClick={skipOnboarding}
-            variant="ghost"
-            className="absolute top-4 right-4 text-sm text-gray-400 hover:text-gray-600"
-          >
-            Pular
-          </Button>
+          {/* Skip button with confirmation dialog */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="absolute top-4 right-4 text-sm text-gray-400 hover:text-gray-600"
+              >
+                Pular Tutorial
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Pular o Tutorial?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que quer pular? O tutorial te ajuda a conhecer a Lele e todas as funcionalidades divertidas!
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Continuar Tutorial</AlertDialogCancel>
+                <AlertDialogAction onClick={skipOnboarding} className="bg-pink-500 hover:bg-pink-600">
+                  Sim, Pular
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           
           {/* Progress dots */}
           <div className="flex justify-center mb-6 space-x-2">

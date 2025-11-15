@@ -4,17 +4,18 @@ import Avatar from "@/components/avatar";
 import Chat from "@/components/chat";
 import Games from "@/components/games";
 import Friends from "@/components/friends";
+import Conversations from "@/components/conversations";
 import Memories from "@/components/memories";
 import Progress from "@/components/progress";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Home as HomeIcon, 
-  Gamepad2, 
-  Heart, 
-  Users, 
-  Settings, 
-  Mic 
+import {
+  Home as HomeIcon,
+  Gamepad2,
+  Heart,
+  Users,
+  Settings,
+  Mic
 } from "lucide-react";
 
 interface AvatarState {
@@ -46,6 +47,8 @@ export default function Home() {
         return <Games userId={userId} />;
       case "friends":
         return <Friends userId={userId} />;
+      case "conversations":
+        return <Conversations userId={userId} />;
       case "progress":
         return <Progress userId={userId} />;
       default:
@@ -120,54 +123,67 @@ export default function Home() {
             <Button
               variant="ghost"
               size="lg"
-              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
-                currentSection === "home" 
-                  ? "bg-gradient-to-br from-pink-400 to-purple-400 text-white shadow-lg scale-105" 
+              className={`flex flex-col items-center space-y-2 px-3 py-4 sm:px-5 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-14 min-h-16 ${
+                currentSection === "home"
+                  ? "bg-gradient-to-br from-pink-400 to-purple-400 text-white shadow-lg scale-105"
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("home")}
             >
               <span className="text-2xl">🏠</span>
-              <span className="text-sm font-bold">Início</span>
+              <span className="text-xs sm:text-sm font-bold">Início</span>
             </Button>
             <Button
               variant="ghost"
               size="lg"
-              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
-                currentSection === "games" 
-                  ? "bg-gradient-to-br from-green-400 to-blue-400 text-white shadow-lg scale-105" 
+              className={`flex flex-col items-center space-y-2 px-3 py-4 sm:px-5 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-14 min-h-16 ${
+                currentSection === "games"
+                  ? "bg-gradient-to-br from-green-400 to-blue-400 text-white shadow-lg scale-105"
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("games")}
             >
               <span className="text-2xl">🎮</span>
-              <span className="text-sm font-bold">Jogos</span>
+              <span className="text-xs sm:text-sm font-bold">Jogos</span>
             </Button>
             <Button
               variant="ghost"
               size="lg"
-              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
-                currentSection === "friends" 
-                  ? "bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg scale-105" 
+              className={`flex flex-col items-center space-y-2 px-3 py-4 sm:px-5 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-14 min-h-16 ${
+                currentSection === "conversations"
+                  ? "bg-gradient-to-br from-teal-400 to-cyan-400 text-white shadow-lg scale-105"
+                  : "text-purple-600 hover:bg-white/50"
+              }`}
+              onClick={() => setCurrentSection("conversations")}
+            >
+              <span className="text-2xl">💬</span>
+              <span className="text-xs sm:text-sm font-bold">Chat</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              className={`flex flex-col items-center space-y-2 px-3 py-4 sm:px-5 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-14 min-h-16 ${
+                currentSection === "friends"
+                  ? "bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg scale-105"
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("friends")}
             >
               <span className="text-2xl">👥</span>
-              <span className="text-sm font-bold">Amigos</span>
+              <span className="text-xs sm:text-sm font-bold">Amigos</span>
             </Button>
             <Button
               variant="ghost"
               size="lg"
-              className={`flex flex-col items-center space-y-2 px-4 py-4 sm:px-6 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-16 min-h-16 ${
-                currentSection === "progress" 
-                  ? "bg-gradient-to-br from-orange-400 to-red-400 text-white shadow-lg scale-105" 
+              className={`flex flex-col items-center space-y-2 px-3 py-4 sm:px-5 sm:py-5 rounded-3xl transform hover:scale-110 transition-all min-w-14 min-h-16 ${
+                currentSection === "progress"
+                  ? "bg-gradient-to-br from-orange-400 to-red-400 text-white shadow-lg scale-105"
                   : "text-purple-600 hover:bg-white/50"
               }`}
               onClick={() => setCurrentSection("progress")}
             >
               <span className="text-2xl">⚙️</span>
-              <span className="text-sm font-bold">Config</span>
+              <span className="text-xs sm:text-sm font-bold">Config</span>
             </Button>
           </div>
         </div>
