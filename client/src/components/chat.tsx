@@ -175,7 +175,53 @@ export default function Chat({ userId }: ChatProps) {
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
-        
+
+        {/* Quick Reply Buttons */}
+        {messages.length === 0 || !isProcessing && (
+          <div className="mb-3 sm:mb-4 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-gradient-to-r from-pink-100 to-purple-100 hover:from-pink-200 hover:to-purple-200 border-2 border-pink-300 text-purple-700 text-xs sm:text-sm font-semibold transition-all hover:scale-105"
+              onClick={() => setMessage("Conte uma piada")}
+              disabled={isProcessing}
+            >
+              😄 Conte uma piada
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-gradient-to-r from-green-100 to-blue-100 hover:from-green-200 hover:to-blue-200 border-2 border-green-300 text-blue-700 text-xs sm:text-sm font-semibold transition-all hover:scale-105"
+              onClick={() => setMessage("Vamos jogar")}
+              disabled={isProcessing}
+            >
+              🎮 Vamos jogar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-gradient-to-r from-yellow-100 to-orange-100 hover:from-yellow-200 hover:to-orange-200 border-2 border-yellow-300 text-orange-700 text-xs sm:text-sm font-semibold transition-all hover:scale-105"
+              onClick={() => setMessage("Me surpreenda")}
+              disabled={isProcessing}
+            >
+              ✨ Me surpreenda
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-300 text-pink-700 text-xs sm:text-sm font-semibold transition-all hover:scale-105"
+              onClick={() => setMessage("Conta uma história")}
+              disabled={isProcessing}
+            >
+              📚 Conta uma história
+            </Button>
+          </div>
+        )}
+
         {/* Input Area */}
         <form onSubmit={handleSubmit} className="flex items-center space-x-2 sm:space-x-3">
           <Button

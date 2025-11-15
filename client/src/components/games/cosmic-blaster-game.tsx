@@ -93,6 +93,22 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
     }
   };
 
+  // ESC key support for pause/resume
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (gameState === 'playing') {
+          handlePause();
+        } else if (gameState === 'paused') {
+          handleResume();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [gameState]);
+
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-blue-900 via-purple-900 to-black z-[9999] overflow-hidden">
       {/* Back Button */}
@@ -175,12 +191,18 @@ export default function CosmicBlasterGame({ onExit, onGameComplete, level }: Cos
       {gameState === 'paused' && (
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[1001]">
           <div className="bg-black/90 text-white p-6 md:p-8 rounded-2xl text-center max-w-sm mx-4">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-yellow-400">
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-yellow-400">
               ⏸️ Jogo Pausado! ⏸️
             </h2>
-            <Button onClick={handleResume} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg">
-              ▶️ Continuar 🎮
-            </Button>
+            <p className="mb-6 text-gray-300">Pressione ESC para pausar/continuar</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button onClick={handleResume} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg">
+                ▶️ Continuar
+              </Button>
+              <Button onClick={onExit} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full font-bold text-lg">
+                🚪 Sair
+              </Button>
+            </div>
           </div>
         </div>
       )}
