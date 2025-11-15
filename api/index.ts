@@ -1129,6 +1129,110 @@ class Storage {
       throw error;
     }
   }
+
+  // Achievement methods
+  async getUserAchievements(userId: number) {
+    try {
+      const { data, error } = await supabase
+        .from('user_achievements')
+        .select(`
+          *,
+          achievement:achievements(*)
+        `)
+        .eq('user_id', userId)
+        .order('unlocked_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Database error in getUserAchievements:', error);
+      return [];
+    }
+  }
+
+  async unlockAchievement(userId: number, achievementId: number) {
+    try {
+      // Check if already unlocked
+      const { data: existing } = await supabase
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('achievement_id', achievementId)
+        .single();
+
+      if (existing) {
+        return { alreadyUnlocked: true, achievement: null };
+      }
+
+      // Get achievement details
+      const { data: achievement, error: achError } = await supabase
+        .from('achievements')
+        .select('*')
+        .eq('id', achievementId)
+        .single();
+
+      if (achError) throw achError;
+
+      // Unlock achievement
+      const { data, error } = await supabase
+        .from('user_achievements')
+        .insert({
+          user_id: userId,
+          achievement_id: achievementId,
+          progress: 100
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Award XP
+      if (achievement.xp_reward) {
+        const user = await this.getUser(userId);
+        const newTotalXp = (user?.total_xp || 0) + achievement.xp_reward;
+        const newLevel = Math.floor(newTotalXp / 100) + 1;
+
+        await supabase
+          .from('users')
+          .update({
+            total_xp: newTotalXp,
+            level: newLevel
+          })
+          .eq('id', userId);
+      }
+
+      return { alreadyUnlocked: false, achievement };
+    } catch (error) {
+      console.error('Database error in unlockAchievement:', error);
+      throw error;
+    }
+  }
+
+  async checkAndUnlockAchievements(userId: number, criteria: string) {
+    try {
+      // Find achievements matching the criteria
+      const { data: achievements, error } = await supabase
+        .from('achievements')
+        .select('*')
+        .eq('criteria', criteria);
+
+      if (error) throw error;
+      if (!achievements || achievements.length === 0) return [];
+
+      const unlockedAchievements = [];
+      for (const achievement of achievements) {
+        const result = await this.unlockAchievement(userId, achievement.id);
+        if (!result.alreadyUnlocked && result.achievement) {
+          unlockedAchievements.push(result.achievement);
+        }
+      }
+
+      return unlockedAchievements;
+    } catch (error) {
+      console.error('Database error in checkAndUnlockAchievements:', error);
+      return [];
+    }
+  }
 }
 
 const storage = new Storage();
@@ -1464,6 +1568,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(404).json({ message: "Estado do avatar não encontrado" });
           }
           return res.json(avatarState);
+        }
+        break;
+
+      case 'achievements':
+        // GET /api/achievements/{userId} - Get user's unlocked achievements
+        if (parts[1] && req.method === 'GET') {
+          const userId = parseInt(parts[1]);
+          const achievements = await storage.getUserAchievements(userId);
+          return res.json(achievements);
+        }
+        // POST /api/achievements/{userId}/unlock - Unlock achievement by criteria
+        if (parts[1] && parts[2] === 'unlock' && req.method === 'POST') {
+          const userId = parseInt(parts[1]);
+          const { criteria } = req.body;
+
+          if (!criteria) {
+            return res.status(400).json({ message: "criteria é obrigatório" });
+          }
+
+          try {
+            const unlockedAchievements = await storage.checkAndUnlockAchievements(userId, criteria);
+            return res.json({
+              success: true,
+              achievements: unlockedAchievements
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              return res.status(500).json({ message: error.message });
+            }
+            return res.status(500).json({ message: "Erro ao desbloquear conquista" });
+          }
         }
         break;
 
